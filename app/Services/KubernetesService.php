@@ -114,6 +114,53 @@ class KubernetesService
         return $this->makeK8SRequest('/api/v1/services');
     }
 
+    public function getNamespaces()
+    {
+        return $this->makeK8SRequest('/api/v1/namespaces');
+    }
+
+
+    public function getEndpoints()
+    {
+        return $this->makeK8SRequest('/api/v1/endpoints');
+    }
+
+    public function getSecrets()
+    {
+        return $this->makeK8SRequest('/api/v1/secrets');
+    }
+
+    public function getConfigMaps()
+    {
+        return $this->makeK8SRequest('/api/v1/configmaps');
+    }
+
+    public function getPersistentVolumes()
+    {
+        return $this->makeK8SRequest('/api/v1/persistentvolumes');
+    }
+
+    public function getPersistentVolumeClaims()
+    {
+        return $this->makeK8SRequest('/api/v1/persistentvolumeclaims');
+    }
+
+    public function getEvents()
+    {
+        return $this->makeK8SRequest('/api/v1/events');
+    }
+
+    public function getServiceAccounts()
+    {
+        return $this->makeK8SRequest('/api/v1/serviceaccounts');
+    }
+
+    public function getReplicationControllers()
+    {
+        return $this->makeK8SRequest('/api/v1/replicationcontrollers');
+    }
+
+    
     // More methods like getDeployments, getServices, etc., can be added similarly
 }
 

@@ -46,5 +46,100 @@ class KubernetesController extends Controller
             return response()->json(['error' => $e->getMessage()], 500);
         }
     }
+
+    public function getNamespaces($configName)
+    {
+        try {
+            $service = $this->getServiceByConfigName($configName);
+            $namespaces = $service->getNamespaces();
+            return response()->json($namespaces);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+
+    public function getEndpoints($configName)
+    {
+        try {
+            $service = $this->getServiceByConfigName($configName);
+            $endpoints = $service->getEndpoints();
+            return response()->json($endpoints);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+
+    public function getSecrets($configName)
+    {
+        try {
+            $service = $this->getServiceByConfigName($configName);
+            $secrets = $service->getSecrets();
+            return response()->json($secrets);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+
+    public function getConfigMaps($configName)
+    {
+        try {
+            $service = $this->getServiceByConfigName($configName);
+            return response()->json($service->getConfigMaps());
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+
+    public function getPersistentVolumes($configName)
+    {
+        try {
+            $service = $this->getServiceByConfigName($configName);
+            return response()->json($service->getPersistentVolumes());
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+
+    public function getPersistentVolumeClaims($configName)
+    {
+        try {
+            $service = $this->getServiceByConfigName($configName);
+            return response()->json($service->getPersistentVolumeClaims());
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+
+    public function getEvents($configName)
+    {
+        try {
+            $service = $this->getServiceByConfigName($configName);
+            return response()->json($service->getEvents());
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+
+    public function getServiceAccounts($configName)
+    {
+        try {
+            $service = $this->getServiceByConfigName($configName);
+            return response()->json($service->getServiceAccounts());
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+
+    public function getReplicationControllers($configName)
+    {
+        try {
+            $service = $this->getServiceByConfigName($configName);
+            return response()->json($service->getReplicationControllers());
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+
+
 }
 
