@@ -140,6 +140,33 @@ class KubernetesController extends Controller
         }
     }
 
+    public function listClusters()
+    {
+        $path = env('KUBECONFIG_PATH');
+
+        if (!is_dir($path)) {
+            return response()->json(['error' => 'Kubeconfig path not found'], 500);
+        }
+
+        $files = scandir($path);
+        $clusters = [];
+
+        foreach ($files as $file) {
+            if ($file === '.' || $file === '..') {
+                continue;
+            }
+
+            $fullPath = $path . '/' . $file;
+
+            if (is_file($fullPath)) {
+                $clusters[] = $file; // return the full filename as-is (e.g., 'kpilot')
+            }
+        }
+
+        return response()->json($clusters);
+    }
+
+
 
 }
 

@@ -155,10 +155,8 @@ class KubernetesService
         return $this->makeK8SRequest('/api/v1/serviceaccounts');
     }
 
-    public function getReplicationControllers()
-    {
-        return $this->makeK8SRequest('/api/v1/replicationcontrollers');
-    }
+    
+
 
     
     // More methods like getDeployments, getServices, etc., can be added similarly

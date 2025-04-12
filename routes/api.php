@@ -9,6 +9,7 @@ use App\Http\Controllers\FileUploadController;
 //Route::get('/nodes', [KubernetesController::class, 'getNodes']);
 //Route::get('/pods', [KubernetesController::class, 'getPods']);
 //Route::get('/services', [KubernetesController::class, 'getServices']);
+Route::get('/clusters', [KubernetesController::class, 'listClusters']);
 
 Route::get('/{config}/nodes', [KubernetesController::class, 'getNodes']);
 Route::get('/{config}/pods', [KubernetesController::class, 'getPods']);
@@ -23,4 +24,6 @@ Route::get('/{config}/persistentvolumeclaims', [KubernetesController::class, 'ge
 Route::get('/{config}/events', [KubernetesController::class, 'getEvents']);
 Route::get('/{config}/serviceaccounts', [KubernetesController::class, 'getServiceAccounts']);
 Route::get('/{config}/replicationcontrollers', [KubernetesController::class, 'getReplicationControllers']);
+
+
 
