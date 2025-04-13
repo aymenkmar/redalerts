@@ -140,6 +140,17 @@ class KubernetesController extends Controller
         }
     }
 
+    public function getLimitRanges($configName)
+    {
+        try {
+            $service = $this->getServiceByConfigName($configName);
+            return response()->json($service->getLimitRanges());
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+
+
     public function listClusters()
     {
         $path = env('KUBECONFIG_PATH');
@@ -246,7 +257,7 @@ class KubernetesController extends Controller
         }
     }
 
-    
+
 
 
 }

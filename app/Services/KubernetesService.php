@@ -160,6 +160,13 @@ class KubernetesService
         return $this->makeK8SRequest('/api/v1/replicationcontrollers');
     }
     
+    public function getLimitRanges()
+    {
+        return $this->makeK8SRequest('/api/v1/limitranges');
+    }
+    
+
+
 
     
     // Apps API Group: apis/apps/v1

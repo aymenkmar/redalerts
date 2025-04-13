@@ -24,6 +24,7 @@ Route::get('/{config}/persistentvolumeclaims', [KubernetesController::class, 'ge
 Route::get('/{config}/events', [KubernetesController::class, 'getEvents']);
 Route::get('/{config}/serviceaccounts', [KubernetesController::class, 'getServiceAccounts']);
 Route::get('/{config}/replicationcontrollers', [KubernetesController::class, 'getReplicationControllers']);
+Route::get('/{config}/limitranges', [KubernetesController::class, 'getLimitRanges']);
 
 Route::get('/{config}/deployments', [KubernetesController::class, 'getDeployments']);
 Route::get('/{config}/replicasets', [KubernetesController::class, 'getReplicaSets']);
