@@ -155,10 +155,67 @@ class KubernetesService
         return $this->makeK8SRequest('/api/v1/serviceaccounts');
     }
 
+    public function getReplicationControllers()
+    {
+        return $this->makeK8SRequest('/api/v1/replicationcontrollers');
+    }
+    
+
+    
+    // Apps API Group: apis/apps/v1
+
+    public function getDeployments()
+    {
+        return $this->makeK8SRequest('/apis/apps/v1/deployments');
+    }
+
+    public function getReplicaSets()
+    {
+        return $this->makeK8SRequest('/apis/apps/v1/replicasets');
+    }
+    
+    public function getDaemonSets()
+    {
+        return $this->makeK8SRequest('/apis/apps/v1/daemonsets');
+    }
+
+    public function getStatefulSets()
+    {
+        return $this->makeK8SRequest('/apis/apps/v1/statefulsets');
+    }
+
+    //Batch API Group: apis/batch/v1
+
+    public function getJobs()
+    {
+        return $this->makeK8SRequest('/apis/batch/v1/jobs');
+    }
+
+    public function getCronJobs()
+    {
+        return $this->makeK8SRequest('/apis/batch/v1/cronjobs');
+    }
+    
+
+    //Networking API Group
+
+    public function getIngresses()
+    {
+        return $this->makeK8SRequest('/apis/networking.k8s.io/v1/ingresses');
+    }
+
+    public function getNetworkPolicies()
+    {
+        return $this->makeK8SRequest('/apis/networking.k8s.io/v1/networkpolicies');
+    }
+
     
 
 
+
+    
     
     // More methods like getDeployments, getServices, etc., can be added similarly
+    
 }
 

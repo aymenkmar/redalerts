@@ -25,5 +25,15 @@ Route::get('/{config}/events', [KubernetesController::class, 'getEvents']);
 Route::get('/{config}/serviceaccounts', [KubernetesController::class, 'getServiceAccounts']);
 Route::get('/{config}/replicationcontrollers', [KubernetesController::class, 'getReplicationControllers']);
 
+Route::get('/{config}/deployments', [KubernetesController::class, 'getDeployments']);
+Route::get('/{config}/replicasets', [KubernetesController::class, 'getReplicaSets']);
+Route::get('/{config}/daemonsets', [KubernetesController::class, 'getDaemonSets']);
+Route::get('/{config}/statefulsets', [KubernetesController::class, 'getStatefulSets']);
+
+Route::get('/{config}/jobs', [KubernetesController::class, 'getJobs']);
+Route::get('/{config}/cronjobs', [KubernetesController::class, 'getCronJobs']);
+
+Route::get('/{config}/ingresses', [KubernetesController::class, 'getIngresses']);
+Route::get('/{config}/networkpolicies', [KubernetesController::class, 'getNetworkPolicies']);
 
 

@@ -166,6 +166,87 @@ class KubernetesController extends Controller
         return response()->json($clusters);
     }
 
+    public function getDeployments($configName)
+    {
+        try {
+            $service = $this->getServiceByConfigName($configName);
+            return response()->json($service->getDeployments());
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+
+    public function getReplicaSets($configName)
+    {
+        try {
+            $service = $this->getServiceByConfigName($configName);
+            return response()->json($service->getReplicaSets());
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+    
+    public function getDaemonSets($configName)
+    {
+        try {
+            $service = $this->getServiceByConfigName($configName);
+            return response()->json($service->getDaemonSets());
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+
+    public function getStatefulSets($configName)
+    {
+        try {
+            $service = $this->getServiceByConfigName($configName);
+            return response()->json($service->getStatefulSets());
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+    
+    public function getJobs($configName)
+    {
+        try {
+            $service = $this->getServiceByConfigName($configName);
+            return response()->json($service->getJobs());
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+
+    public function getCronJobs($configName)
+    {
+        try {
+            $service = $this->getServiceByConfigName($configName);
+            return response()->json($service->getCronJobs());
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+
+    public function getIngresses($configName)
+    {
+        try {
+            $service = $this->getServiceByConfigName($configName);
+            return response()->json($service->getIngresses());
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+
+    public function getNetworkPolicies($configName)
+    {
+        try {
+            $service = $this->getServiceByConfigName($configName);
+            return response()->json($service->getNetworkPolicies());
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+
+    
 
 
 }
