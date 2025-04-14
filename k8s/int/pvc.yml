@@ -1,0 +1,28 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: redalerts-int-pv 
+  namespace: redalerts
+spec:
+  capacity:
+    storage: 5Gi 
+  volumeMode: Filesystem
+  accessModes:
+    - ReadWriteMany
+  persistentVolumeReclaimPolicy: Retain 
+  nfs: 
+    path: /NFSShares/redalerts-int
+    server: 192.168.1.1
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: redalerts-int-pvc
+  namespace: redalerts
+spec:
+  accessModes:
+    - ReadWriteMany
+  volumeMode: Filesystem
+  resources:
+    requests:
+      storage: 5Gi
