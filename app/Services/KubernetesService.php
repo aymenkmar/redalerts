@@ -159,16 +159,20 @@ class KubernetesService
     {
         return $this->makeK8SRequest('/api/v1/replicationcontrollers');
     }
-    
+
     public function getLimitRanges()
     {
         return $this->makeK8SRequest('/api/v1/limitranges');
     }
-    
+
+    public function getResourceQuotas($namespace)
+    {
+        return $this->makeK8SRequest("/api/v1/namespaces/{$namespace}/resourcequotas");
+    }
 
 
 
-    
+
     // Apps API Group: apis/apps/v1
 
     public function getDeployments()
@@ -180,7 +184,7 @@ class KubernetesService
     {
         return $this->makeK8SRequest('/apis/apps/v1/replicasets');
     }
-    
+
     public function getDaemonSets()
     {
         return $this->makeK8SRequest('/apis/apps/v1/daemonsets');
@@ -202,7 +206,7 @@ class KubernetesService
     {
         return $this->makeK8SRequest('/apis/batch/v1/cronjobs');
     }
-    
+
 
     //Networking API Group
 
@@ -216,13 +220,102 @@ class KubernetesService
         return $this->makeK8SRequest('/apis/networking.k8s.io/v1/networkpolicies');
     }
 
-    
+    // Applications
+    public function getApplications()
+    {
+        return $this->makeK8SRequest('/apis/app.k8s.io/v1beta1/applications');
+    }
 
+    // Horizontal Pod Autoscalers
+    public function getHorizontalPodAutoscalers()
+    {
+        return $this->makeK8SRequest('/apis/autoscaling/v2/horizontalpodautoscalers');
+    }
 
+    // Pod Disruption Budgets
+    public function getPodDisruptionBudgets()
+    {
+        return $this->makeK8SRequest('/apis/policy/v1/poddisruptionbudgets');
+    }
 
-    
-    
-    // More methods like getDeployments, getServices, etc., can be added similarly
-    
+    // Priority Classes
+    public function getPriorityClasses()
+    {
+        return $this->makeK8SRequest('/apis/scheduling.k8s.io/v1/priorityclasses');
+    }
+
+    // Runtime Classes
+    public function getRuntimeClasses()
+    {
+        return $this->makeK8SRequest('/apis/node.k8s.io/v1/runtimeclasses');
+    }
+
+    // Leases
+    public function getLeases()
+    {
+        return $this->makeK8SRequest('/apis/coordination.k8s.io/v1/leases');
+    }
+
+    // Mutating Webhook Configuration
+    public function getMutatingWebhookConfigurations()
+    {
+        return $this->makeK8SRequest('/apis/admissionregistration.k8s.io/v1/mutatingwebhookconfigurations');
+    }
+
+    // Validating Webhook Configuration
+    public function getValidatingWebhookConfigurations()
+    {
+        return $this->makeK8SRequest('/apis/admissionregistration.k8s.io/v1/validatingwebhookconfigurations');
+    }
+
+    // Ingress Classes
+    public function getIngressClasses()
+    {
+        return $this->makeK8SRequest('/apis/networking.k8s.io/v1/ingressclasses');
+    }
+
+    // Storage Classes
+    public function getStorageClasses()
+    {
+        return $this->makeK8SRequest('/apis/storage.k8s.io/v1/storageclasses');
+    }
+
+    // RBAC API Group
+    // Cluster Roles
+    public function getClusterRoles()
+    {
+        return $this->makeK8SRequest('/apis/rbac.authorization.k8s.io/v1/clusterroles');
+    }
+
+    // Roles
+    public function getRoles()
+    {
+        return $this->makeK8SRequest('/apis/rbac.authorization.k8s.io/v1/roles');
+    }
+
+    // Cluster Role Bindings
+    public function getClusterRoleBindings()
+    {
+        return $this->makeK8SRequest('/apis/rbac.authorization.k8s.io/v1/clusterrolebindings');
+    }
+
+    // Role Bindings
+    public function getRoleBindings()
+    {
+        return $this->makeK8SRequest('/apis/rbac.authorization.k8s.io/v1/rolebindings');
+    }
+
+    // Port Forwarding - This is a special case as it's not a standard API resource
+    // It requires a different implementation approach using the Kubernetes API
+    //public function createPortForward($namespace, $pod, $localPort, $podPort)
+    //{
+        // This is a placeholder for port forwarding functionality
+        // Actual implementation would require a more complex approach with websockets
+        // or using the kubectl port-forward command
+        //return [
+            //'status' => 'Not implemented',
+            //'message' => 'Port forwarding requires a different implementation approach'
+        //];
+    //}
 }
 

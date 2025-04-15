@@ -6,9 +6,7 @@ use App\Http\Controllers\FileUploadController;
 
 // routes/api.php
 
-//Route::get('/nodes', [KubernetesController::class, 'getNodes']);
-//Route::get('/pods', [KubernetesController::class, 'getPods']);
-//Route::get('/services', [KubernetesController::class, 'getServices']);
+
 Route::get('/clusters', [KubernetesController::class, 'listClusters']);
 
 Route::get('/{config}/nodes', [KubernetesController::class, 'getNodes']);
@@ -26,6 +24,8 @@ Route::get('/{config}/serviceaccounts', [KubernetesController::class, 'getServic
 Route::get('/{config}/replicationcontrollers', [KubernetesController::class, 'getReplicationControllers']);
 Route::get('/{config}/limitranges', [KubernetesController::class, 'getLimitRanges']);
 
+Route::get('/{config}/namespaces/{namespace}/resourcequotas', [KubernetesController::class, 'getResourceQuotas']);
+
 Route::get('/{config}/deployments', [KubernetesController::class, 'getDeployments']);
 Route::get('/{config}/replicasets', [KubernetesController::class, 'getReplicaSets']);
 Route::get('/{config}/daemonsets', [KubernetesController::class, 'getDaemonSets']);
@@ -37,4 +37,21 @@ Route::get('/{config}/cronjobs', [KubernetesController::class, 'getCronJobs']);
 Route::get('/{config}/ingresses', [KubernetesController::class, 'getIngresses']);
 Route::get('/{config}/networkpolicies', [KubernetesController::class, 'getNetworkPolicies']);
 
+// New API resources
+Route::get('/{config}/applications', [KubernetesController::class, 'getApplications']);
+Route::get('/{config}/horizontalpodautoscalers', [KubernetesController::class, 'getHorizontalPodAutoscalers']);
+Route::get('/{config}/poddisruptionbudgets', [KubernetesController::class, 'getPodDisruptionBudgets']);
+Route::get('/{config}/priorityclasses', [KubernetesController::class, 'getPriorityClasses']);
+Route::get('/{config}/runtimeclasses', [KubernetesController::class, 'getRuntimeClasses']);
+Route::get('/{config}/leases', [KubernetesController::class, 'getLeases']);
+Route::get('/{config}/mutatingwebhookconfigurations', [KubernetesController::class, 'getMutatingWebhookConfigurations']);
+Route::get('/{config}/validatingwebhookconfigurations', [KubernetesController::class, 'getValidatingWebhookConfigurations']);
+Route::get('/{config}/ingressclasses', [KubernetesController::class, 'getIngressClasses']);
+Route::get('/{config}/storageclasses', [KubernetesController::class, 'getStorageClasses']);
+Route::get('/{config}/clusterroles', [KubernetesController::class, 'getClusterRoles']);
+Route::get('/{config}/roles', [KubernetesController::class, 'getRoles']);
+Route::get('/{config}/clusterrolebindings', [KubernetesController::class, 'getClusterRoleBindings']);
+Route::get('/{config}/rolebindings', [KubernetesController::class, 'getRoleBindings']);
 
+// Port forwarding (special case)
+//Route::post('/{config}/namespaces/{namespace}/pods/{pod}/portforward', [KubernetesController::class, 'createPortForward']);

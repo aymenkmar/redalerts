@@ -150,6 +150,17 @@ class KubernetesController extends Controller
         }
     }
 
+    public function getResourceQuotas($configName, $namespace)
+    {
+        try {
+            $service = $this->getServiceByConfigName($configName);
+            $resourceQuotas = $service->getResourceQuotas($namespace);
+            return response()->json($resourceQuotas);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+
 
     public function listClusters()
     {
@@ -196,7 +207,7 @@ class KubernetesController extends Controller
             return response()->json(['error' => $e->getMessage()], 500);
         }
     }
-    
+
     public function getDaemonSets($configName)
     {
         try {
@@ -216,7 +227,7 @@ class KubernetesController extends Controller
             return response()->json(['error' => $e->getMessage()], 500);
         }
     }
-    
+
     public function getJobs($configName)
     {
         try {
@@ -257,8 +268,156 @@ class KubernetesController extends Controller
         }
     }
 
+    public function getApplications($configName)
+    {
+        try {
+            $service = $this->getServiceByConfigName($configName);
+            return response()->json($service->getApplications());
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
 
+    public function getHorizontalPodAutoscalers($configName)
+    {
+        try {
+            $service = $this->getServiceByConfigName($configName);
+            return response()->json($service->getHorizontalPodAutoscalers());
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
 
+    public function getPodDisruptionBudgets($configName)
+    {
+        try {
+            $service = $this->getServiceByConfigName($configName);
+            return response()->json($service->getPodDisruptionBudgets());
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
 
+    public function getPriorityClasses($configName)
+    {
+        try {
+            $service = $this->getServiceByConfigName($configName);
+            return response()->json($service->getPriorityClasses());
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+
+    public function getRuntimeClasses($configName)
+    {
+        try {
+            $service = $this->getServiceByConfigName($configName);
+            return response()->json($service->getRuntimeClasses());
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+
+    public function getLeases($configName)
+    {
+        try {
+            $service = $this->getServiceByConfigName($configName);
+            return response()->json($service->getLeases());
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+
+    public function getMutatingWebhookConfigurations($configName)
+    {
+        try {
+            $service = $this->getServiceByConfigName($configName);
+            return response()->json($service->getMutatingWebhookConfigurations());
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+
+    public function getValidatingWebhookConfigurations($configName)
+    {
+        try {
+            $service = $this->getServiceByConfigName($configName);
+            return response()->json($service->getValidatingWebhookConfigurations());
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+
+    public function getIngressClasses($configName)
+    {
+        try {
+            $service = $this->getServiceByConfigName($configName);
+            return response()->json($service->getIngressClasses());
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+
+    public function getStorageClasses($configName)
+    {
+        try {
+            $service = $this->getServiceByConfigName($configName);
+            return response()->json($service->getStorageClasses());
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+
+    public function getClusterRoles($configName)
+    {
+        try {
+            $service = $this->getServiceByConfigName($configName);
+            return response()->json($service->getClusterRoles());
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+
+    public function getRoles($configName)
+    {
+        try {
+            $service = $this->getServiceByConfigName($configName);
+            return response()->json($service->getRoles());
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+
+    public function getClusterRoleBindings($configName)
+    {
+        try {
+            $service = $this->getServiceByConfigName($configName);
+            return response()->json($service->getClusterRoleBindings());
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+
+    public function getRoleBindings($configName)
+    {
+        try {
+            $service = $this->getServiceByConfigName($configName);
+            return response()->json($service->getRoleBindings());
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+
+    //public function createPortForward($configName, $namespace, $pod, Request $request)
+    //{
+        //try {
+            //$service = $this->getServiceByConfigName($configName);
+            //$localPort = $request->input('localPort', 8000);
+            //$podPort = $request->input('podPort', 80);
+            //return response()->json($service->createPortForward($namespace, $pod, $localPort, $podPort));
+        //} catch (\Exception $e) {
+            //return response()->json(['error' => $e->getMessage()], 500);
+        //}
+    //}
 }
 
