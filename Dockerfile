@@ -29,7 +29,7 @@ RUN php artisan storage:link
 RUN php artisan optimize
 
 #END TO CHANGE BY DEVELOPPER
-
+RUN mkdir -p storage/app/kubeconfigs 
 RUN chmod -R 777 storage
 RUN chown -R www-data.www-data storage
 
