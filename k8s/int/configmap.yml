@@ -4,7 +4,7 @@ metadata:
   name: redalerts-int
   labels:
     name: redalerts-int
-  namespace: redalerts-int
+  namespace: redalerts
 data:
   APP_NAME: Redalerts
   APP_ENV: local
