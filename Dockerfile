@@ -13,7 +13,7 @@ RUN docker-php-ext-configure gd --with-freetype --with-webp --with-jpeg && docke
 
 
 #RUN cp k8s/queue-reverb.ini /etc/supervisor.d/queue-reverb.ini
-RUN cp k8s/default.ini /etc/supervisor.d/default.ini
+#RUN cp k8s/default.ini /etc/supervisor.d/default.ini
 USER www-data
 #START TO CHANGE BY DEVELOPPER
 RUN cp k8s/int/.env.k8s-int .env
@@ -23,8 +23,8 @@ RUN composer install
 RUN php artisan migrate --force
 #RUN php artisan db:seed --class=AdminPanelUserSeeder --force
 #RUN php artisan db:seed --class=ShieldSeeder --force
-RUN npm install
-RUN npm run build
+#RUN npm install
+#RUN npm run build
 RUN php artisan storage:link
 RUN php artisan optimize
 
