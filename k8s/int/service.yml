@@ -24,11 +24,7 @@ metadata:
     nginx.ingress.kubernetes.io/force-ssl-redirect: 'true'
     nginx.ingress.kubernetes.io/proxy-read-timeout: '3600'
     nginx.ingress.kubernetes.io/proxy-send-timeout: '3600'
-    nginx.ingress.kubernetes.io/satisfy: "any"
-    nginx.ingress.kubernetes.io/whitelist-source-range: "41.226.25.110/32,193.95.99.233/32,51.91.64.136/32,51.210.33.53/32,10.244.0.0/16"
-    nginx.ingress.kubernetes.io/auth-type: basic
-    nginx.ingress.kubernetes.io/auth-secret: basic-auth
-    nginx.ingress.kubernetes.io/auth-realm: 'Authentication Required - aaa'    
+
     nginx.ingress.kubernetes.io/server-snippets: |
       location / {
         add_header X-Robots-Tag "noindex, nofollow"
@@ -46,7 +42,7 @@ spec:
   tls:
     - hosts:
         - redalerts-int.k8s-v2.satoripop.io
-      secretName: redalerts-int-secret-tls
+      secretName: redalerts-int-secret
   rules:
     - host: redalerts-int.k8s-v2.satoripop.io
       http:
