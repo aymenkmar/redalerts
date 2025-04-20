@@ -3,11 +3,20 @@
 use App\Http\Controllers\KubernetesController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\FileUploadController;
+use App\Http\Controllers\AuthController;
 
-// routes/api.php
+// Public routes - no authentication required
+Route::match(['get', 'post'], '/login', [AuthController::class, 'login']);
+Route::post('/logout', [AuthController::class, 'logout']);
 
+// Protected routes
+Route::middleware('auth:sanctum')->group(function () {
+    Route::get('/user', function () {
+        return request()->user();
+    });
 
-Route::get('/clusters', [KubernetesController::class, 'listClusters']);
+    // Kubernetes routes
+    Route::get('/clusters', [KubernetesController::class, 'listClusters']);
 
 Route::get('/{config}/nodes', [KubernetesController::class, 'getNodes']);
 Route::get('/{config}/pods', [KubernetesController::class, 'getPods']);
@@ -55,3 +64,4 @@ Route::get('/{config}/rolebindings', [KubernetesController::class, 'getRoleBindi
 
 // Port forwarding (special case)
 //Route::post('/{config}/namespaces/{namespace}/pods/{pod}/portforward', [KubernetesController::class, 'createPortForward']);
+});
