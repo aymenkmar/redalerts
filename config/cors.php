@@ -19,7 +19,11 @@ return [
 
     'allowed_methods' => ['*'],
 
-    'allowed_origins' => ['https://frontend.redalerts.tn', 'http://localhost:3000', 'http://localhost:5173'],
+    'allowed_origins' => array_filter([
+        env('FRONTEND_URL'),
+        'http://localhost:3000',
+        'http://localhost:5173'
+    ]),
 
     'allowed_origins_patterns' => [],
 

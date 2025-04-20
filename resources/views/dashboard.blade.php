@@ -27,7 +27,7 @@
                 <a href="#" class="block py-3 px-6 hover:bg-red-700 transition duration-200">User Management</a>
                 <a href="#" class="block py-3 px-6 hover:bg-red-700 transition duration-200">Settings</a>
                 <a href="/auth-test" class="block py-3 px-6 hover:bg-red-700 transition duration-200">Auth Test</a>
-                <a href="https://frontend.redalerts.tn" class="block py-3 px-6 hover:bg-red-700 transition duration-200">Go to Frontend</a>
+                <a href="{{ env('FRONTEND_URL', 'https://frontend.redalerts.tn') }}" class="block py-3 px-6 hover:bg-red-700 transition duration-200">Go to Frontend</a>
             </nav>
             <div class="absolute bottom-0 w-64 p-6">
                 <form method="POST" action="{{ route('logout') }}" id="logout-form">
@@ -38,7 +38,7 @@
                 </form>
             </div>
         </div>
- 
+
         <!-- Main Content -->
         <div class="flex-1 overflow-auto">
             <header class="bg-white shadow">
@@ -46,7 +46,7 @@
                     <h2 class="text-xl font-semibold text-gray-800">Dashboard</h2>
                 </div>
             </header>
- 
+
             <main class="p-8">
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     <!-- Dashboard Cards -->
@@ -54,18 +54,18 @@
                         <h3 class="text-lg font-medium text-gray-800 mb-2">API Status</h3>
                         <p class="text-3xl font-bold text-green-500">Online</p>
                     </div>
- 
+
                     <div class="bg-white rounded-lg shadow p-6">
                         <h3 class="text-lg font-medium text-gray-800 mb-2">API Requests</h3>
                         <p class="text-3xl font-bold text-gray-700">1,234</p>
                     </div>
- 
+
                     <div class="bg-white rounded-lg shadow p-6">
                         <h3 class="text-lg font-medium text-gray-800 mb-2">Active Users</h3>
                         <p class="text-3xl font-bold text-gray-700">{{ \App\Models\User::count() }}</p>
                     </div>
                 </div>
- 
+
                 <div class="mt-8 bg-white rounded-lg shadow">
                     <div class="px-6 py-4 border-b border-gray-200">
                         <h3 class="text-lg font-medium text-gray-800">Recent Activity</h3>

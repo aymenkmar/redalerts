@@ -28,7 +28,7 @@
                 <a href="#" class="block py-3 px-6 hover:bg-red-700 transition duration-200">User Management</a>
                 <a href="#" class="block py-3 px-6 hover:bg-red-700 transition duration-200">Settings</a>
                 <a href="/auth-test" class="block py-3 px-6 bg-red-700 font-medium">Auth Test</a>
-                <a href="https://frontend.redalerts.tn" class="block py-3 px-6 hover:bg-red-700 transition duration-200">Go to Frontend</a>
+                <a href="{{ env('FRONTEND_URL', 'https://frontend.redalerts.tn') }}" class="block py-3 px-6 hover:bg-red-700 transition duration-200">Go to Frontend</a>
             </nav>
             <div class="absolute bottom-0 w-64 p-6">
                 <form method="POST" action="{{ route('logout') }}">
@@ -216,7 +216,7 @@
                         'X-CSRF-TOKEN': getCsrfToken()
                     },
                     body: JSON.stringify({
-                        email: 'admin@redalerts.tn',
+                        email: '{{ env('ADMIN_EMAIL', 'admin@redalerts.tn') }}',
                         password: 'password'
                     }),
                     credentials: 'same-origin'
