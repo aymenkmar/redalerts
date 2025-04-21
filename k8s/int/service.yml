@@ -41,10 +41,10 @@ metadata:
 spec:
   tls:
     - hosts:
-        - redalerts-int.k8s.satoripop.io
-      secretName: redalerts-int-secret-ssl
+        - redalerts-back.k8s.satoripop.io
+      secretName: redalerts-back-secret-tls
   rules:
-    - host: redalerts-int.k8s.satoripop.io
+    - host: redalerts-back.k8s.satoripop.io
       http:
         paths:
           - path: /
