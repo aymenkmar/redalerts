@@ -76,4 +76,4 @@ data:
   VITE_APP_NAME: "${APP_NAME}"
 
 
-  KUBECONFIG_PATH: /home/redalerts/httpdocs/backend/storage/app/kubeconfigs
+  KUBECONFIG_PATH: /var/www/html/storage/app/kubeconfigs
