@@ -13,6 +13,7 @@ data:
   APP_TIMEZONE: UTC
   APP_URL: https://redalerts-back.k8s.satoripop.io
   ASSET_URL: https://redalerts-back.k8s.satoripop.io
+  FORCE_HTTPS: "true"
 
   APP_LOCALE: en
   APP_FALLBACK_LOCALE: en
