@@ -9,7 +9,9 @@ USER root
 #COPY NGINX CONF (LARAVEL)
 RUN cp k8s/nginx.conf /etc/nginx/nginx.conf
 RUN apk add --no-cache  freetype-dev libjpeg-turbo-dev libwebp-dev libpng-dev 
-RUN apk add --no-cache php8.3-yaml
+RUN apk add --no-cache php8.3-dev libyaml-dev gcc make autoconf
+RUN pecl install yaml
+RUN docker-php-ext-enable yaml
 RUN docker-php-ext-configure gd --with-freetype --with-webp --with-jpeg && docker-php-ext-install gd 
 
 
