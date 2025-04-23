@@ -10,7 +10,7 @@ USER root
 RUN cp k8s/nginx.conf /etc/nginx/nginx.conf
 RUN apk add --no-cache  freetype-dev libjpeg-turbo-dev libwebp-dev libpng-dev
 RUN docker-php-ext-configure gd --with-freetype --with-webp --with-jpeg && docker-php-ext-install gd 
-RUN composer require symfony/yaml
+
 
 #RUN cp k8s/queue-reverb.ini /etc/supervisor.d/queue-reverb.ini
 #RUN cp k8s/default.ini /etc/supervisor.d/default.ini
@@ -18,6 +18,7 @@ USER www-data
 #START TO CHANGE BY DEVELOPPER
 RUN cp k8s/int/.env.k8s-int .env
 RUN composer install
+RUN composer require symfony/yaml
 #RUN composer require plan2net/webp
 
 RUN php artisan migrate --force
