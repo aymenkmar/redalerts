@@ -6,6 +6,8 @@ COPY --chown=www-data . .
 ENV COMPOSER_MEMORY_LIMIT=-1
 
 USER root
+RUN cat /etc/passwd
+ 
 #COPY NGINX CONF (LARAVEL)
 RUN cp k8s/nginx.conf /etc/nginx/nginx.conf
 RUN apk add --no-cache  freetype-dev libjpeg-turbo-dev libwebp-dev libpng-dev 
@@ -34,7 +36,7 @@ RUN php artisan optimize
 #END TO CHANGE BY DEVELOPPER
 RUN mkdir -p storage/app/kubeconfigs 
 RUN chmod -R 777 storage
-RUN chown -R www-data.www-data storage
+RUN chown -R www-data:www-data storage
 
 USER root
 RUN mkdir /tmpstorage
