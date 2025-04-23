@@ -8,8 +8,8 @@ ENV COMPOSER_MEMORY_LIMIT=-1
 USER root
 #COPY NGINX CONF (LARAVEL)
 RUN cp k8s/nginx.conf /etc/nginx/nginx.conf
-RUN apk add --no-cache  freetype-dev libjpeg-turbo-dev libwebp-dev libpng-dev php8.3-yaml
-
+RUN apk add --no-cache  freetype-dev libjpeg-turbo-dev libwebp-dev libpng-dev 
+RUN apk add --no-cache php8.3-yaml
 RUN docker-php-ext-configure gd --with-freetype --with-webp --with-jpeg && docker-php-ext-install gd 
 
 
@@ -19,7 +19,7 @@ USER www-data
 #START TO CHANGE BY DEVELOPPER
 RUN cp k8s/int/.env.k8s-int .env
 RUN composer install
-
+#RUN composer require symfony/yaml
 #RUN composer require plan2net/webp
 
 RUN php artisan migrate --force
