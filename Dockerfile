@@ -1,4 +1,4 @@
-FROM nexus.satoripop.io:8083/repository/php-images/php-8.3-nginx-node20:latest
+FROM nexus.satoripop.io:8083/repository/php-images/php-8.4-nginx-node20:latest
 LABEL maintainer="ridha.bennjima@satoripop.com"
 USER www-data
 COPY --chown=www-data . .
