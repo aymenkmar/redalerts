@@ -188,6 +188,8 @@ class KubernetesController extends Controller
         return response()->json($clusters);
     }
 
+
+
     public function getDeployments($configName)
     {
         try {

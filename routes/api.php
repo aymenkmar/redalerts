@@ -17,6 +17,8 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Kubernetes routes
     Route::get('/clusters', [KubernetesController::class, 'listClusters']);
+    Route::get('/check-cluster/{clusterName}', [FileUploadController::class, 'checkClusterExists']);
+    Route::post('/upload-kubeconfig', [FileUploadController::class, 'uploadKubeconfig']);
 
 Route::get('/{config}/nodes', [KubernetesController::class, 'getNodes']);
 Route::get('/{config}/pods', [KubernetesController::class, 'getPods']);
