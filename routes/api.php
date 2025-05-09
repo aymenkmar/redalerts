@@ -64,6 +64,19 @@ Route::get('/{config}/roles', [KubernetesController::class, 'getRoles']);
 Route::get('/{config}/clusterrolebindings', [KubernetesController::class, 'getClusterRoleBindings']);
 Route::get('/{config}/rolebindings', [KubernetesController::class, 'getRoleBindings']);
 
+// Custom Resource Definitions
+Route::get('/{config}/customresourcedefinitions', [KubernetesController::class, 'getCustomResourceDefinitions']);
+
+// Cert Manager Resources
+Route::get('/{config}/certificates', [KubernetesController::class, 'getCertificates']);
+Route::get('/{config}/certificaterequests', [KubernetesController::class, 'getCertificateRequests']);
+Route::get('/{config}/issuers', [KubernetesController::class, 'getIssuers']);
+Route::get('/{config}/clusterissuers', [KubernetesController::class, 'getClusterIssuers']);
+
+// ACME Resources
+Route::get('/{config}/challenges', [KubernetesController::class, 'getChallenges']);
+Route::get('/{config}/orders', [KubernetesController::class, 'getOrders']);
+
 // Port forwarding (special case)
 //Route::post('/{config}/namespaces/{namespace}/pods/{pod}/portforward', [KubernetesController::class, 'createPortForward']);
 });

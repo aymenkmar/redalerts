@@ -305,6 +305,52 @@ class KubernetesService
         return $this->makeK8SRequest('/apis/rbac.authorization.k8s.io/v1/rolebindings');
     }
 
+    // Custom Resource Definitions
+    public function getCustomResourceDefinitions()
+    {
+        return $this->makeK8SRequest('/apis/apiextensions.k8s.io/v1/customresourcedefinitions');
+    }
+
+    // Cert Manager API Group: cert-manager.io/v1
+
+    // Certificates
+    public function getCertificates()
+    {
+        return $this->makeK8SRequest('/apis/cert-manager.io/v1/certificates');
+    }
+
+    // Certificate Requests
+    public function getCertificateRequests()
+    {
+        return $this->makeK8SRequest('/apis/cert-manager.io/v1/certificaterequests');
+    }
+
+    // Issuers
+    public function getIssuers()
+    {
+        return $this->makeK8SRequest('/apis/cert-manager.io/v1/issuers');
+    }
+
+    // Cluster Issuers
+    public function getClusterIssuers()
+    {
+        return $this->makeK8SRequest('/apis/cert-manager.io/v1/clusterissuers');
+    }
+
+    // ACME API Group: acme.cert-manager.io/v1
+
+    // Challenges
+    public function getChallenges()
+    {
+        return $this->makeK8SRequest('/apis/acme.cert-manager.io/v1/challenges');
+    }
+
+    // Orders
+    public function getOrders()
+    {
+        return $this->makeK8SRequest('/apis/acme.cert-manager.io/v1/orders');
+    }
+
     // Port Forwarding - This is a special case as it's not a standard API resource
     // It requires a different implementation approach using the Kubernetes API
     //public function createPortForward($namespace, $pod, $localPort, $podPort)
