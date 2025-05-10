@@ -480,6 +480,28 @@ class KubernetesController extends Controller
         }
     }
 
+    // Helm API endpoints
+
+    public function getHelmCharts($configName)
+    {
+        try {
+            $service = $this->getServiceByConfigName($configName);
+            return response()->json($service->getHelmCharts());
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+
+    public function getHelmReleases($configName)
+    {
+        try {
+            $service = $this->getServiceByConfigName($configName);
+            return response()->json($service->getHelmReleases());
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+
     //public function createPortForward($configName, $namespace, $pod, Request $request)
     //{
         //try {

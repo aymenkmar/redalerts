@@ -77,6 +77,10 @@ Route::get('/{config}/clusterissuers', [KubernetesController::class, 'getCluster
 Route::get('/{config}/challenges', [KubernetesController::class, 'getChallenges']);
 Route::get('/{config}/orders', [KubernetesController::class, 'getOrders']);
 
+// Helm Resources
+Route::get('/{config}/helmcharts', [KubernetesController::class, 'getHelmCharts']);
+Route::get('/{config}/helmreleases', [KubernetesController::class, 'getHelmReleases']);
+
 // Port forwarding (special case)
 //Route::post('/{config}/namespaces/{namespace}/pods/{pod}/portforward', [KubernetesController::class, 'createPortForward']);
 });

@@ -351,6 +351,61 @@ class KubernetesService
         return $this->makeK8SRequest('/apis/acme.cert-manager.io/v1/orders');
     }
 
+    // Helm API Group
+
+    // Helm Charts
+    public function getHelmCharts()
+    {
+        // For Helm charts, we need to use the Helm API which is not directly accessible via Kubernetes API
+        // We'll execute the helm command and parse the output
+        $command = "KUBECONFIG={$this->kubeconfigPath} helm repo list -o json";
+        $repoOutput = shell_exec($command);
+        $repos = json_decode($repoOutput, true) ?: [];
+
+        $allCharts = [];
+
+        foreach ($repos as $repo) {
+            $repoName = $repo['name'];
+            $command = "KUBECONFIG={$this->kubeconfigPath} helm search repo {$repoName} -o json";
+            $chartsOutput = shell_exec($command);
+            $charts = json_decode($chartsOutput, true) ?: [];
+
+            foreach ($charts as &$chart) {
+                // Add repository information to each chart
+                $chart['repository'] = $repoName;
+
+                // Extract chart name without repository prefix
+                $fullName = $chart['name'];
+                $chart['name'] = str_replace("{$repoName}/", "", $fullName);
+
+                $allCharts[] = $chart;
+            }
+        }
+
+        // Format the response to match Kubernetes API style
+        return [
+            'kind' => 'HelmChartList',
+            'apiVersion' => 'v1',
+            'items' => $allCharts
+        ];
+    }
+
+    // Helm Releases
+    public function getHelmReleases()
+    {
+        // Execute helm list command to get all releases
+        $command = "KUBECONFIG={$this->kubeconfigPath} helm list --all-namespaces -o json";
+        $output = shell_exec($command);
+        $releases = json_decode($output, true) ?: [];
+
+        // Format the response to match Kubernetes API style
+        return [
+            'kind' => 'HelmReleaseList',
+            'apiVersion' => 'v1',
+            'items' => $releases
+        ];
+    }
+
     // Port Forwarding - This is a special case as it's not a standard API resource
     // It requires a different implementation approach using the Kubernetes API
     //public function createPortForward($namespace, $pod, $localPort, $podPort)
