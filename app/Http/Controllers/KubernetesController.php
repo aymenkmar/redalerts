@@ -3,6 +3,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Cluster;
 use App\Services\KubernetesService;
 use Illuminate\Http\Request;
 
@@ -171,7 +172,7 @@ class KubernetesController extends Controller
         }
 
         $files = scandir($path);
-        $clusters = [];
+        $clusterFiles = [];
 
         foreach ($files as $file) {
             if ($file === '.' || $file === '..') {
@@ -181,11 +182,35 @@ class KubernetesController extends Controller
             $fullPath = $path . '/' . $file;
 
             if (is_file($fullPath)) {
-                $clusters[] = $file; // return the full filename as-is (e.g., 'kpilot')
+                $clusterFiles[] = $file; // store the full filename as-is (e.g., 'kpilot')
             }
         }
 
-        return response()->json($clusters);
+        // Get cluster information from the database
+        $clusterData = [];
+        foreach ($clusterFiles as $clusterName) {
+            $cluster = Cluster::where('name', $clusterName)->first();
+
+            if ($cluster) {
+                $clusterData[] = [
+                    'name' => $clusterName,
+                    'upload_time' => $cluster->upload_time
+                ];
+            } else {
+                // If not in database yet, add it with current time
+                $cluster = Cluster::create([
+                    'name' => $clusterName,
+                    'upload_time' => now()
+                ]);
+
+                $clusterData[] = [
+                    'name' => $clusterName,
+                    'upload_time' => $cluster->upload_time
+                ];
+            }
+        }
+
+        return response()->json($clusterData);
     }
 
 

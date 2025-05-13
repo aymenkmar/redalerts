@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Cluster;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
@@ -74,6 +75,12 @@ class FileUploadController extends Controller
             // Save the file
             $content = file_get_contents($file->getRealPath());
             file_put_contents($filePath, $content);
+
+            // Save or update cluster information in the database
+            Cluster::updateOrCreate(
+                ['name' => $clusterName],
+                ['upload_time' => now()]
+            );
 
             // Log the successful upload
             Log::info("Kubeconfig file uploaded successfully: {$clusterName}");
