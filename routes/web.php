@@ -19,6 +19,12 @@ Route::middleware('auth')->group(function () {
     // Admin Dashboard (original Laravel dashboard)
     Route::get('/dashboard', [AuthController::class, 'dashboard'])->name('dashboard');
 
+    // Kubernetes Dashboard
+    Route::get('/dashboard-kubernetes', \App\Livewire\KubernetesDashboard::class)->name('dashboard-kubernetes');
+
+    // Kubernetes Nodes
+    Route::get('/kubernetes/nodes', \App\Livewire\Kubernetes\NodeList::class)->name('kubernetes.nodes');
+
     Route::get('/auth-test', function() {
         return view('api-test');
     });
