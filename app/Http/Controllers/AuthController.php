@@ -17,7 +17,7 @@ class AuthController extends Controller
     public function showLoginForm()
     {
         if (Auth::check()) {
-            return redirect('/dashboard');
+            return redirect('/main-dashboard');
         }
 
         return view('auth.login');
@@ -77,7 +77,7 @@ class AuthController extends Controller
             // For web requests, use session authentication
             if (Auth::attempt($request->only('email', 'password'), $request->boolean('remember'))) {
                 $request->session()->regenerate();
-                return redirect()->intended('/dashboard');
+                return redirect()->intended('/main-dashboard');
             }
 
             // Authentication failed for web requests
