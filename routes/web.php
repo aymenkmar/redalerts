@@ -37,6 +37,31 @@ Route::middleware('auth')->group(function () {
         Route::get('/cronjobs', \App\Livewire\Kubernetes\Workloads\CronJobList::class)->name('cronjobs');
     });
 
+    // Kubernetes Config
+    Route::prefix('kubernetes/config')->name('kubernetes.config.')->group(function () {
+        Route::get('/configmaps', \App\Livewire\Kubernetes\Config\ConfigMapList::class)->name('configmaps');
+        Route::get('/secrets', \App\Livewire\Kubernetes\Config\SecretList::class)->name('secrets');
+        Route::get('/resourcequotas', \App\Livewire\Kubernetes\Config\ResourceQuotaList::class)->name('resourcequotas');
+        Route::get('/limitranges', \App\Livewire\Kubernetes\Config\LimitRangeList::class)->name('limitranges');
+        Route::get('/horizontalpodautoscalers', \App\Livewire\Kubernetes\Config\HorizontalPodAutoscalerList::class)->name('horizontalpodautoscalers');
+    });
+
+    // Kubernetes Network
+    Route::prefix('kubernetes/network')->name('kubernetes.network.')->group(function () {
+        Route::get('/services', \App\Livewire\Kubernetes\Network\ServiceList::class)->name('services');
+        Route::get('/endpoints', \App\Livewire\Kubernetes\Network\EndpointList::class)->name('endpoints');
+        Route::get('/ingresses', \App\Livewire\Kubernetes\Network\IngressList::class)->name('ingresses');
+        Route::get('/ingressclasses', \App\Livewire\Kubernetes\Network\IngressClassList::class)->name('ingressclasses');
+        Route::get('/networkpolicies', \App\Livewire\Kubernetes\Network\NetworkPolicyList::class)->name('networkpolicies');
+    });
+
+    // Kubernetes Storage
+    Route::prefix('kubernetes/storage')->name('kubernetes.storage.')->group(function () {
+        Route::get('/persistentvolumeclaims', \App\Livewire\Kubernetes\Storage\PersistentVolumeClaimList::class)->name('persistentvolumeclaims');
+        Route::get('/persistentvolumes', \App\Livewire\Kubernetes\Storage\PersistentVolumeList::class)->name('persistentvolumes');
+        Route::get('/storageclasses', \App\Livewire\Kubernetes\Storage\StorageClassList::class)->name('storageclasses');
+    });
+
     Route::get('/auth-test', function() {
         return view('api-test');
     });
