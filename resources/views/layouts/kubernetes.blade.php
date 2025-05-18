@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <script src="https://cdn.tailwindcss.com"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <title>RedAlerts - Kubernetes Dashboard</title>
 
     <!-- Fonts -->
@@ -50,14 +51,49 @@
                     <span class="text-sm">Nodes</span>
                 </a>
 
-                <div class="flex items-center space-x-2 py-2 px-3 hover:bg-gray-800 rounded">
-                    <svg class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
-                    </svg>
-                    <span class="text-sm">Workloads</span>
-                    <svg class="h-4 w-4 text-gray-400 ml-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-                    </svg>
+                <!-- Workloads Section -->
+                <div x-data="{ open: {{ request()->is('kubernetes/workloads*') ? 'true' : 'false' }} }">
+                    <button @click="open = !open" class="flex items-center justify-between w-full py-2 px-3 hover:bg-gray-800 rounded {{ request()->is('kubernetes/workloads*') ? 'bg-gray-800' : '' }}">
+                        <div class="flex items-center space-x-2">
+                            <svg class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                            </svg>
+                            <span class="text-sm">Workloads</span>
+                        </div>
+                        <svg x-show="!open" class="h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                        </svg>
+                        <svg x-show="open" class="h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                        </svg>
+                    </button>
+
+                    <div x-show="open" class="ml-4 mt-2 space-y-1">
+                        <a href="{{ route('kubernetes.workloads.pods') }}" class="flex items-center space-x-2 py-2 px-3 hover:bg-gray-800 rounded {{ request()->is('kubernetes/workloads/pods') ? 'bg-red-600' : '' }}">
+                            <span class="text-sm">Pods</span>
+                        </a>
+                        <a href="{{ route('kubernetes.workloads.deployments') }}" class="flex items-center space-x-2 py-2 px-3 hover:bg-gray-800 rounded {{ request()->is('kubernetes/workloads/deployments') ? 'bg-red-600' : '' }}">
+                            <span class="text-sm">Deployments</span>
+                        </a>
+                        <a href="{{ route('kubernetes.workloads.daemonsets') }}" class="flex items-center space-x-2 py-2 px-3 hover:bg-gray-800 rounded {{ request()->is('kubernetes/workloads/daemonsets') ? 'bg-red-600' : '' }}">
+                            <span class="text-sm">Daemon Sets</span>
+                        </a>
+                        <a href="{{ route('kubernetes.workloads.statefulsets') }}" class="flex items-center space-x-2 py-2 px-3 hover:bg-gray-800 rounded {{ request()->is('kubernetes/workloads/statefulsets') ? 'bg-red-600' : '' }}">
+                            <span class="text-sm">Stateful Sets</span>
+                        </a>
+                        <a href="{{ route('kubernetes.workloads.replicasets') }}" class="flex items-center space-x-2 py-2 px-3 hover:bg-gray-800 rounded {{ request()->is('kubernetes/workloads/replicasets') ? 'bg-red-600' : '' }}">
+                            <span class="text-sm">Replica Sets</span>
+                        </a>
+                        <a href="{{ route('kubernetes.workloads.replicationcontrollers') }}" class="flex items-center space-x-2 py-2 px-3 hover:bg-gray-800 rounded {{ request()->is('kubernetes/workloads/replicationcontrollers') ? 'bg-red-600' : '' }}">
+                            <span class="text-sm">Replication Controllers</span>
+                        </a>
+                        <a href="{{ route('kubernetes.workloads.jobs') }}" class="flex items-center space-x-2 py-2 px-3 hover:bg-gray-800 rounded {{ request()->is('kubernetes/workloads/jobs') ? 'bg-red-600' : '' }}">
+                            <span class="text-sm">Jobs</span>
+                        </a>
+                        <a href="{{ route('kubernetes.workloads.cronjobs') }}" class="flex items-center space-x-2 py-2 px-3 hover:bg-gray-800 rounded {{ request()->is('kubernetes/workloads/cronjobs') ? 'bg-red-600' : '' }}">
+                            <span class="text-sm">Cron Jobs</span>
+                        </a>
+                    </div>
                 </div>
 
                 <div class="flex items-center space-x-2 py-2 px-3 hover:bg-gray-800 rounded">

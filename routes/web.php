@@ -25,6 +25,18 @@ Route::middleware('auth')->group(function () {
     // Kubernetes Nodes
     Route::get('/kubernetes/nodes', \App\Livewire\Kubernetes\NodeList::class)->name('kubernetes.nodes');
 
+    // Kubernetes Workloads
+    Route::prefix('kubernetes/workloads')->name('kubernetes.workloads.')->group(function () {
+        Route::get('/pods', \App\Livewire\Kubernetes\Workloads\PodList::class)->name('pods');
+        Route::get('/deployments', \App\Livewire\Kubernetes\Workloads\DeploymentList::class)->name('deployments');
+        Route::get('/daemonsets', \App\Livewire\Kubernetes\Workloads\DaemonSetList::class)->name('daemonsets');
+        Route::get('/statefulsets', \App\Livewire\Kubernetes\Workloads\StatefulSetList::class)->name('statefulsets');
+        Route::get('/replicasets', \App\Livewire\Kubernetes\Workloads\ReplicaSetList::class)->name('replicasets');
+        Route::get('/replicationcontrollers', \App\Livewire\Kubernetes\Workloads\ReplicationControllerList::class)->name('replicationcontrollers');
+        Route::get('/jobs', \App\Livewire\Kubernetes\Workloads\JobList::class)->name('jobs');
+        Route::get('/cronjobs', \App\Livewire\Kubernetes\Workloads\CronJobList::class)->name('cronjobs');
+    });
+
     Route::get('/auth-test', function() {
         return view('api-test');
     });

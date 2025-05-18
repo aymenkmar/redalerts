@@ -15,6 +15,11 @@ class NodeList extends Component
     public $selectedCluster = null;
     public $searchTerm = '';
 
+    // Pagination properties
+    public $perPage = 10;
+    public $currentPage = 1;
+    public $totalItems = 0;
+
     public function mount()
     {
         // Check if user is authenticated
@@ -56,21 +61,26 @@ class NodeList extends Component
 
     public function formatAge($timestamp)
     {
+        if (!$timestamp) {
+            return 'N/A';
+        }
+
         $creationTime = Carbon::parse($timestamp);
         $now = Carbon::now();
         $diffInDays = $creationTime->diffInDays($now);
 
-        if ($diffInDays > 0) {
+        // For Lens IDE style formatting
+        if ($diffInDays >= 1) {
             return $diffInDays . 'd';
         }
 
         $diffInHours = $creationTime->diffInHours($now);
-        if ($diffInHours > 0) {
+        if ($diffInHours >= 1) {
             return $diffInHours . 'h';
         }
 
         $diffInMinutes = $creationTime->diffInMinutes($now);
-        if ($diffInMinutes > 0) {
+        if ($diffInMinutes >= 1) {
             return $diffInMinutes . 'm';
         }
 
@@ -100,18 +110,62 @@ class NodeList extends Component
         return $roles ?: 'worker';
     }
 
-    public function render()
+    public function getFilteredNodesProperty()
     {
-        $filteredNodes = collect($this->nodes);
+        if (empty($this->nodes)) {
+            return [];
+        }
 
-        if ($this->searchTerm) {
-            $filteredNodes = $filteredNodes->filter(function ($node) {
-                return str_contains(strtolower($node['metadata']['name']), strtolower($this->searchTerm));
+        $nodes = collect($this->nodes);
+
+        // Filter by search term
+        if (!empty($this->searchTerm)) {
+            $searchTerm = strtolower($this->searchTerm);
+            $nodes = $nodes->filter(function ($node) use ($searchTerm) {
+                $name = strtolower($node['metadata']['name'] ?? '');
+                $roles = strtolower($this->getNodeRoles($node));
+                $version = strtolower($node['status']['nodeInfo']['kubeletVersion'] ?? '');
+
+                return str_contains($name, $searchTerm) ||
+                       str_contains($roles, $searchTerm) ||
+                       str_contains($version, $searchTerm);
             });
         }
 
+        // Update total count for pagination
+        $this->totalItems = $nodes->count();
+
+        // Apply pagination
+        $paginatedNodes = $nodes->forPage($this->currentPage, $this->perPage);
+
+        return $paginatedNodes->values()->all();
+    }
+
+    // Pagination methods
+    public function nextPage()
+    {
+        $maxPage = ceil($this->totalItems / $this->perPage);
+        if ($this->currentPage < $maxPage) {
+            $this->currentPage++;
+        }
+    }
+
+    public function previousPage()
+    {
+        if ($this->currentPage > 1) {
+            $this->currentPage--;
+        }
+    }
+
+    public function goToPage($page)
+    {
+        $this->currentPage = $page;
+    }
+
+    public function render()
+    {
         return view('livewire.kubernetes.node-list', [
-            'filteredNodes' => $filteredNodes->toArray()
+            'nodes' => $this->filteredNodes,
         ])->layout('layouts.kubernetes');
     }
 }
