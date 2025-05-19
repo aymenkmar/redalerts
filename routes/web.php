@@ -25,6 +25,12 @@ Route::middleware('auth')->group(function () {
     // Kubernetes Nodes
     Route::get('/kubernetes/nodes', \App\Livewire\Kubernetes\NodeList::class)->name('kubernetes.nodes');
 
+    // Kubernetes Namespaces
+    Route::get('/kubernetes/namespaces', \App\Livewire\Kubernetes\NamespaceList::class)->name('kubernetes.namespaces');
+
+    // Kubernetes Events
+    Route::get('/kubernetes/events', \App\Livewire\Kubernetes\EventList::class)->name('kubernetes.events');
+
     // Kubernetes Workloads
     Route::prefix('kubernetes/workloads')->name('kubernetes.workloads.')->group(function () {
         Route::get('/pods', \App\Livewire\Kubernetes\Workloads\PodList::class)->name('pods');

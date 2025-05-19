@@ -44,7 +44,7 @@
                     </a>
                 </div>
 
-                <a href="{{ route('kubernetes.nodes') }}" class="flex items-center space-x-2 py-2 px-3 hover:bg-gray-800 rounded">
+                <a href="{{ route('kubernetes.nodes') }}" class="flex items-center space-x-2 py-2 px-3 hover:bg-gray-800 rounded {{ request()->is('kubernetes/nodes') ? 'bg-gray-800' : '' }}">
                     <svg class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h14M5 12a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v4a2 2 0 01-2 2M5 12a2 2 0 00-2 2v4a2 2 0 002 2h14a2 2 0 002-2v-4a2 2 0 00-2-2m-2-4h.01M17 16h.01" />
                     </svg>
@@ -198,6 +198,20 @@
                         </a>
                     </div>
                 </div>
+
+                <a href="{{ route('kubernetes.namespaces') }}" class="flex items-center space-x-2 py-2 px-3 hover:bg-gray-800 rounded {{ request()->is('kubernetes/namespaces') ? 'bg-gray-800' : '' }}">
+                    <svg class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                    </svg>
+                    <span class="text-sm">Namespaces</span>
+                </a>
+
+                <a href="{{ route('kubernetes.events') }}" class="flex items-center space-x-2 py-2 px-3 hover:bg-gray-800 rounded {{ request()->is('kubernetes/events') ? 'bg-gray-800' : '' }}">
+                    <svg class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <span class="text-sm">Events</span>
+                </a>
             </div>
         </div>
 
