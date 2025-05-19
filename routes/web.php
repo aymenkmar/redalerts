@@ -31,6 +31,26 @@ Route::middleware('auth')->group(function () {
     // Kubernetes Events
     Route::get('/kubernetes/events', \App\Livewire\Kubernetes\EventList::class)->name('kubernetes.events');
 
+    // Kubernetes Access Control
+    Route::get('/kubernetes/serviceaccounts', \App\Livewire\Kubernetes\AccessControl\ServiceAccountList::class)->name('kubernetes.serviceaccounts');
+    Route::get('/kubernetes/clusterroles', \App\Livewire\Kubernetes\AccessControl\ClusterRoleList::class)->name('kubernetes.clusterroles');
+    Route::get('/kubernetes/roles', \App\Livewire\Kubernetes\AccessControl\RoleList::class)->name('kubernetes.roles');
+    Route::get('/kubernetes/clusterrolebindings', \App\Livewire\Kubernetes\AccessControl\ClusterRoleBindingList::class)->name('kubernetes.clusterrolebindings');
+    Route::get('/kubernetes/rolebindings', \App\Livewire\Kubernetes\AccessControl\RoleBindingList::class)->name('kubernetes.rolebindings');
+
+    // Kubernetes Custom Resources
+    Route::get('/kubernetes/definitions', \App\Livewire\Kubernetes\CustomResources\DefinitionList::class)->name('kubernetes.definitions');
+
+    // ACME Resources
+    Route::get('/kubernetes/challenges', \App\Livewire\Kubernetes\CustomResources\ACME\ChallengeList::class)->name('kubernetes.challenges');
+    Route::get('/kubernetes/orders', \App\Livewire\Kubernetes\CustomResources\ACME\OrderList::class)->name('kubernetes.orders');
+
+    // Cert Manager Resources
+    Route::get('/kubernetes/certificates', \App\Livewire\Kubernetes\CustomResources\CertManager\CertificateList::class)->name('kubernetes.certificates');
+    Route::get('/kubernetes/certificaterequests', \App\Livewire\Kubernetes\CustomResources\CertManager\CertificateRequestList::class)->name('kubernetes.certificaterequests');
+    Route::get('/kubernetes/issuers', \App\Livewire\Kubernetes\CustomResources\CertManager\IssuerList::class)->name('kubernetes.issuers');
+    Route::get('/kubernetes/clusterissuers', \App\Livewire\Kubernetes\CustomResources\CertManager\ClusterIssuerList::class)->name('kubernetes.clusterissuers');
+
     // Kubernetes Workloads
     Route::prefix('kubernetes/workloads')->name('kubernetes.workloads.')->group(function () {
         Route::get('/pods', \App\Livewire\Kubernetes\Workloads\PodList::class)->name('pods');
