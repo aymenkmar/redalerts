@@ -102,36 +102,36 @@
 
                 <!-- Config Section -->
                 <div x-data="{ open: {{ request()->is('kubernetes/config*') ? 'true' : 'false' }} }">
-                    <button @click="open = !open" class="flex items-center justify-between w-full py-2 px-3 hover:bg-gray-800 rounded {{ request()->is('kubernetes/config*') ? 'bg-red-600' : '' }}">
-                        <div class="flex items-center space-x-2">
-                            <svg class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <button @click="open = !open" class="flex items-center justify-between w-full py-3 px-4 hover:bg-gray-800 rounded {{ request()->is('kubernetes/config*') ? 'bg-red-600' : '' }}">
+                        <div class="flex items-center space-x-3">
+                            <svg class="h-6 w-6 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                             </svg>
-                            <span class="text-sm">Config</span>
+                            <span class="text-base">Config</span>
                         </div>
-                        <svg x-show="!open" x-cloak class="h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <svg x-show="!open" x-cloak class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
                         </svg>
-                        <svg x-show="open" x-cloak class="h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <svg x-show="open" x-cloak class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
                         </svg>
                     </button>
 
-                    <div x-show="open" x-cloak class="ml-4 mt-2 space-y-1">
-                        <a href="{{ route('kubernetes.config.configmaps') }}" class="flex items-center space-x-2 py-2 px-3 hover:bg-gray-800 rounded {{ request()->is('kubernetes/config/configmaps') ? 'bg-red-600' : '' }}">
+                    <div x-show="open" x-cloak class="ml-6 mt-2 space-y-2">
+                        <a href="{{ route('kubernetes.config.configmaps') }}" class="flex items-center space-x-3 py-2 px-3 hover:bg-gray-800 rounded {{ request()->is('kubernetes/config/configmaps') ? 'bg-red-600' : '' }}">
                             <span class="text-sm">Config Maps</span>
                         </a>
-                        <a href="{{ route('kubernetes.config.secrets') }}" class="flex items-center space-x-2 py-2 px-3 hover:bg-gray-800 rounded {{ request()->is('kubernetes/config/secrets') ? 'bg-red-600' : '' }}">
+                        <a href="{{ route('kubernetes.config.secrets') }}" class="flex items-center space-x-3 py-2 px-3 hover:bg-gray-800 rounded {{ request()->is('kubernetes/config/secrets') ? 'bg-red-600' : '' }}">
                             <span class="text-sm">Secrets</span>
                         </a>
-                        <a href="{{ route('kubernetes.config.resourcequotas') }}" class="flex items-center space-x-2 py-2 px-3 hover:bg-gray-800 rounded {{ request()->is('kubernetes/config/resourcequotas') ? 'bg-red-600' : '' }}">
+                        <a href="{{ route('kubernetes.config.resourcequotas') }}" class="flex items-center space-x-3 py-2 px-3 hover:bg-gray-800 rounded {{ request()->is('kubernetes/config/resourcequotas') ? 'bg-red-600' : '' }}">
                             <span class="text-sm">Resource Quotas</span>
                         </a>
-                        <a href="{{ route('kubernetes.config.limitranges') }}" class="flex items-center space-x-2 py-2 px-3 hover:bg-gray-800 rounded {{ request()->is('kubernetes/config/limitranges') ? 'bg-red-600' : '' }}">
+                        <a href="{{ route('kubernetes.config.limitranges') }}" class="flex items-center space-x-3 py-2 px-3 hover:bg-gray-800 rounded {{ request()->is('kubernetes/config/limitranges') ? 'bg-red-600' : '' }}">
                             <span class="text-sm">Limit Ranges</span>
                         </a>
-                        <a href="{{ route('kubernetes.config.horizontalpodautoscalers') }}" class="flex items-center space-x-2 py-2 px-3 hover:bg-gray-800 rounded {{ request()->is('kubernetes/config/horizontalpodautoscalers') ? 'bg-red-600' : '' }}">
+                        <a href="{{ route('kubernetes.config.horizontalpodautoscalers') }}" class="flex items-center space-x-3 py-2 px-3 hover:bg-gray-800 rounded {{ request()->is('kubernetes/config/horizontalpodautoscalers') ? 'bg-red-600' : '' }}">
                             <span class="text-sm">Horizontal Pod Autoscalers</span>
                         </a>
                     </div>
@@ -139,35 +139,35 @@
 
                 <!-- Network Section -->
                 <div x-data="{ open: {{ request()->is('kubernetes/network*') ? 'true' : 'false' }} }">
-                    <button @click="open = !open" class="flex items-center justify-between w-full py-2 px-3 hover:bg-gray-800 rounded {{ request()->is('kubernetes/network*') ? 'bg-red-600' : '' }}">
-                        <div class="flex items-center space-x-2">
-                            <svg class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <button @click="open = !open" class="flex items-center justify-between w-full py-3 px-4 hover:bg-gray-800 rounded {{ request()->is('kubernetes/network*') ? 'bg-red-600' : '' }}">
+                        <div class="flex items-center space-x-3">
+                            <svg class="h-6 w-6 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z" />
                             </svg>
-                            <span class="text-sm">Network</span>
+                            <span class="text-base">Network</span>
                         </div>
-                        <svg x-show="!open" x-cloak class="h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <svg x-show="!open" x-cloak class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
                         </svg>
-                        <svg x-show="open" x-cloak class="h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <svg x-show="open" x-cloak class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
                         </svg>
                     </button>
 
-                    <div x-show="open" x-cloak class="ml-4 mt-2 space-y-1">
-                        <a href="{{ route('kubernetes.network.services') }}" class="flex items-center space-x-2 py-2 px-3 hover:bg-gray-800 rounded {{ request()->is('kubernetes/network/services') ? 'bg-red-600' : '' }}">
+                    <div x-show="open" x-cloak class="ml-6 mt-2 space-y-2">
+                        <a href="{{ route('kubernetes.network.services') }}" class="flex items-center space-x-3 py-2 px-3 hover:bg-gray-800 rounded {{ request()->is('kubernetes/network/services') ? 'bg-red-600' : '' }}">
                             <span class="text-sm">Services</span>
                         </a>
-                        <a href="{{ route('kubernetes.network.endpoints') }}" class="flex items-center space-x-2 py-2 px-3 hover:bg-gray-800 rounded {{ request()->is('kubernetes/network/endpoints') ? 'bg-red-600' : '' }}">
+                        <a href="{{ route('kubernetes.network.endpoints') }}" class="flex items-center space-x-3 py-2 px-3 hover:bg-gray-800 rounded {{ request()->is('kubernetes/network/endpoints') ? 'bg-red-600' : '' }}">
                             <span class="text-sm">Endpoints</span>
                         </a>
-                        <a href="{{ route('kubernetes.network.ingresses') }}" class="flex items-center space-x-2 py-2 px-3 hover:bg-gray-800 rounded {{ request()->is('kubernetes/network/ingresses') ? 'bg-red-600' : '' }}">
+                        <a href="{{ route('kubernetes.network.ingresses') }}" class="flex items-center space-x-3 py-2 px-3 hover:bg-gray-800 rounded {{ request()->is('kubernetes/network/ingresses') ? 'bg-red-600' : '' }}">
                             <span class="text-sm">Ingresses</span>
                         </a>
-                        <a href="{{ route('kubernetes.network.ingressclasses') }}" class="flex items-center space-x-2 py-2 px-3 hover:bg-gray-800 rounded {{ request()->is('kubernetes/network/ingressclasses') ? 'bg-red-600' : '' }}">
+                        <a href="{{ route('kubernetes.network.ingressclasses') }}" class="flex items-center space-x-3 py-2 px-3 hover:bg-gray-800 rounded {{ request()->is('kubernetes/network/ingressclasses') ? 'bg-red-600' : '' }}">
                             <span class="text-sm">Ingress Classes</span>
                         </a>
-                        <a href="{{ route('kubernetes.network.networkpolicies') }}" class="flex items-center space-x-2 py-2 px-3 hover:bg-gray-800 rounded {{ request()->is('kubernetes/network/networkpolicies') ? 'bg-red-600' : '' }}">
+                        <a href="{{ route('kubernetes.network.networkpolicies') }}" class="flex items-center space-x-3 py-2 px-3 hover:bg-gray-800 rounded {{ request()->is('kubernetes/network/networkpolicies') ? 'bg-red-600' : '' }}">
                             <span class="text-sm">Network Policies</span>
                         </a>
                     </div>
@@ -175,29 +175,29 @@
 
                 <!-- Storage Section -->
                 <div x-data="{ open: {{ request()->is('kubernetes/storage*') ? 'true' : 'false' }} }">
-                    <button @click="open = !open" class="flex items-center justify-between w-full py-2 px-3 hover:bg-gray-800 rounded {{ request()->is('kubernetes/storage*') ? 'bg-red-600' : '' }}">
-                        <div class="flex items-center space-x-2">
-                            <svg class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <button @click="open = !open" class="flex items-center justify-between w-full py-3 px-4 hover:bg-gray-800 rounded {{ request()->is('kubernetes/storage*') ? 'bg-red-600' : '' }}">
+                        <div class="flex items-center space-x-3">
+                            <svg class="h-6 w-6 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2" />
                             </svg>
-                            <span class="text-sm">Storage</span>
+                            <span class="text-base">Storage</span>
                         </div>
-                        <svg x-show="!open" x-cloak class="h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <svg x-show="!open" x-cloak class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
                         </svg>
-                        <svg x-show="open" x-cloak class="h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <svg x-show="open" x-cloak class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
                         </svg>
                     </button>
 
-                    <div x-show="open" x-cloak class="ml-4 mt-2 space-y-1">
-                        <a href="{{ route('kubernetes.storage.persistentvolumeclaims') }}" class="flex items-center space-x-2 py-2 px-3 hover:bg-gray-800 rounded {{ request()->is('kubernetes/storage/persistentvolumeclaims') ? 'bg-red-600' : '' }}">
+                    <div x-show="open" x-cloak class="ml-6 mt-2 space-y-2">
+                        <a href="{{ route('kubernetes.storage.persistentvolumeclaims') }}" class="flex items-center space-x-3 py-2 px-3 hover:bg-gray-800 rounded {{ request()->is('kubernetes/storage/persistentvolumeclaims') ? 'bg-red-600' : '' }}">
                             <span class="text-sm">Persistent Volume Claims</span>
                         </a>
-                        <a href="{{ route('kubernetes.storage.persistentvolumes') }}" class="flex items-center space-x-2 py-2 px-3 hover:bg-gray-800 rounded {{ request()->is('kubernetes/storage/persistentvolumes') ? 'bg-red-600' : '' }}">
+                        <a href="{{ route('kubernetes.storage.persistentvolumes') }}" class="flex items-center space-x-3 py-2 px-3 hover:bg-gray-800 rounded {{ request()->is('kubernetes/storage/persistentvolumes') ? 'bg-red-600' : '' }}">
                             <span class="text-sm">Persistent Volumes</span>
                         </a>
-                        <a href="{{ route('kubernetes.storage.storageclasses') }}" class="flex items-center space-x-2 py-2 px-3 hover:bg-gray-800 rounded {{ request()->is('kubernetes/storage/storageclasses') ? 'bg-red-600' : '' }}">
+                        <a href="{{ route('kubernetes.storage.storageclasses') }}" class="flex items-center space-x-3 py-2 px-3 hover:bg-gray-800 rounded {{ request()->is('kubernetes/storage/storageclasses') ? 'bg-red-600' : '' }}">
                             <span class="text-sm">Storage Classes</span>
                         </a>
                     </div>
@@ -269,22 +269,22 @@
 
                 <!-- Custom Resources Section -->
                 <div x-data="{ open: {{ request()->is('kubernetes/definitions') || request()->is('kubernetes/challenges') || request()->is('kubernetes/orders') || request()->is('kubernetes/certificates') || request()->is('kubernetes/certificaterequests') || request()->is('kubernetes/issuers') || request()->is('kubernetes/clusterissuers') ? 'true' : 'false' }} }" class="mt-2">
-                    <button @click="open = !open" class="w-full flex items-center justify-between py-2 px-3 hover:bg-gray-800 rounded {{ request()->is('kubernetes/definitions') || request()->is('kubernetes/challenges') || request()->is('kubernetes/orders') || request()->is('kubernetes/certificates') || request()->is('kubernetes/certificaterequests') || request()->is('kubernetes/issuers') || request()->is('kubernetes/clusterissuers') ? 'bg-red-600' : '' }}">
-                        <div class="flex items-center space-x-2">
-                            <svg class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <button @click="open = !open" class="w-full flex items-center justify-between py-3 px-4 hover:bg-gray-800 rounded {{ request()->is('kubernetes/definitions') || request()->is('kubernetes/challenges') || request()->is('kubernetes/orders') || request()->is('kubernetes/certificates') || request()->is('kubernetes/certificaterequests') || request()->is('kubernetes/issuers') || request()->is('kubernetes/clusterissuers') ? 'bg-red-600' : '' }}">
+                        <div class="flex items-center space-x-3">
+                            <svg class="h-6 w-6 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4" />
                             </svg>
-                            <span class="text-sm">Custom Resources</span>
+                            <span class="text-base">Custom Resources</span>
                         </div>
-                        <svg x-show="!open" x-cloak class="h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <svg x-show="!open" x-cloak class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
                         </svg>
-                        <svg x-show="open" x-cloak class="h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <svg x-show="open" x-cloak class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
                         </svg>
                     </button>
-                    <div x-show="open" x-cloak class="pl-4 mt-2 space-y-1">
-                        <a href="{{ route('kubernetes.definitions') }}" class="flex items-center space-x-2 py-2 px-3 hover:bg-gray-800 rounded {{ request()->is('kubernetes/definitions') ? 'bg-red-600' : '' }}">
+                    <div x-show="open" x-cloak class="ml-6 mt-2 space-y-2">
+                        <a href="{{ route('kubernetes.definitions') }}" class="flex items-center space-x-3 py-2 px-3 hover:bg-gray-800 rounded {{ request()->is('kubernetes/definitions') ? 'bg-red-600' : '' }}">
                             <svg class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                             </svg>
@@ -293,28 +293,28 @@
 
                         <!-- ACME Resources -->
                         <div x-data="{ open: {{ request()->is('kubernetes/challenges') || request()->is('kubernetes/orders') ? 'true' : 'false' }} }" class="mt-2">
-                            <button @click="open = !open" class="w-full flex items-center justify-between py-2 px-3 hover:bg-gray-800 rounded {{ request()->is('kubernetes/challenges') || request()->is('kubernetes/orders') ? 'bg-red-600' : '' }}">
-                                <div class="flex items-center space-x-2">
+                            <button @click="open = !open" class="w-full flex items-center justify-between py-3 px-4 hover:bg-gray-800 rounded {{ request()->is('kubernetes/challenges') || request()->is('kubernetes/orders') ? 'bg-red-600' : '' }}">
+                                <div class="flex items-center space-x-3">
                                     <svg class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
                                     </svg>
-                                    <span class="text-sm">acme.cert-manager.io</span>
+                                    <span class="text-base">acme.cert-manager.io</span>
                                 </div>
-                                <svg x-show="!open" x-cloak class="h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <svg x-show="!open" x-cloak class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
                                 </svg>
-                                <svg x-show="open" x-cloak class="h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <svg x-show="open" x-cloak class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
                                 </svg>
                             </button>
-                            <div x-show="open" x-cloak class="pl-4 mt-2 space-y-1">
-                                <a href="{{ route('kubernetes.challenges') }}" class="flex items-center space-x-2 py-2 px-3 hover:bg-gray-800 rounded {{ request()->is('kubernetes/challenges') ? 'bg-red-600' : '' }}">
+                            <div x-show="open" x-cloak class="ml-6 mt-2 space-y-2">
+                                <a href="{{ route('kubernetes.challenges') }}" class="flex items-center space-x-3 py-2 px-3 hover:bg-gray-800 rounded {{ request()->is('kubernetes/challenges') ? 'bg-red-600' : '' }}">
                                     <svg class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                                     </svg>
                                     <span class="text-sm">Challenges</span>
                                 </a>
-                                <a href="{{ route('kubernetes.orders') }}" class="flex items-center space-x-2 py-2 px-3 hover:bg-gray-800 rounded {{ request()->is('kubernetes/orders') ? 'bg-red-600' : '' }}">
+                                <a href="{{ route('kubernetes.orders') }}" class="flex items-center space-x-3 py-2 px-3 hover:bg-gray-800 rounded {{ request()->is('kubernetes/orders') ? 'bg-red-600' : '' }}">
                                     <svg class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
                                     </svg>
@@ -325,40 +325,40 @@
 
                         <!-- Cert Manager Resources -->
                         <div x-data="{ open: {{ request()->is('kubernetes/certificates') || request()->is('kubernetes/certificaterequests') || request()->is('kubernetes/issuers') || request()->is('kubernetes/clusterissuers') ? 'true' : 'false' }} }" class="mt-2">
-                            <button @click="open = !open" class="w-full flex items-center justify-between py-2 px-3 hover:bg-gray-800 rounded {{ request()->is('kubernetes/certificates') || request()->is('kubernetes/certificaterequests') || request()->is('kubernetes/issuers') || request()->is('kubernetes/clusterissuers') ? 'bg-red-600' : '' }}">
-                                <div class="flex items-center space-x-2">
+                            <button @click="open = !open" class="w-full flex items-center justify-between py-3 px-4 hover:bg-gray-800 rounded {{ request()->is('kubernetes/certificates') || request()->is('kubernetes/certificaterequests') || request()->is('kubernetes/issuers') || request()->is('kubernetes/clusterissuers') ? 'bg-red-600' : '' }}">
+                                <div class="flex items-center space-x-3">
                                     <svg class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                                     </svg>
-                                    <span class="text-sm">cert-manager.io</span>
+                                    <span class="text-base">cert-manager.io</span>
                                 </div>
-                                <svg x-show="!open" x-cloak class="h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <svg x-show="!open" x-cloak class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
                                 </svg>
-                                <svg x-show="open" x-cloak class="h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <svg x-show="open" x-cloak class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
                                 </svg>
                             </button>
-                            <div x-show="open" x-cloak class="pl-4 mt-2 space-y-1">
-                                <a href="{{ route('kubernetes.certificates') }}" class="flex items-center space-x-2 py-2 px-3 hover:bg-gray-800 rounded {{ request()->is('kubernetes/certificates') ? 'bg-red-600' : '' }}">
+                            <div x-show="open" x-cloak class="ml-6 mt-2 space-y-2">
+                                <a href="{{ route('kubernetes.certificates') }}" class="flex items-center space-x-3 py-2 px-3 hover:bg-gray-800 rounded {{ request()->is('kubernetes/certificates') ? 'bg-red-600' : '' }}">
                                     <svg class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
                                     </svg>
                                     <span class="text-sm">Certificates</span>
                                 </a>
-                                <a href="{{ route('kubernetes.certificaterequests') }}" class="flex items-center space-x-2 py-2 px-3 hover:bg-gray-800 rounded {{ request()->is('kubernetes/certificaterequests') ? 'bg-red-600' : '' }}">
+                                <a href="{{ route('kubernetes.certificaterequests') }}" class="flex items-center space-x-3 py-2 px-3 hover:bg-gray-800 rounded {{ request()->is('kubernetes/certificaterequests') ? 'bg-red-600' : '' }}">
                                     <svg class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
                                     </svg>
                                     <span class="text-sm">Certificate Requests</span>
                                 </a>
-                                <a href="{{ route('kubernetes.issuers') }}" class="flex items-center space-x-2 py-2 px-3 hover:bg-gray-800 rounded {{ request()->is('kubernetes/issuers') ? 'bg-red-600' : '' }}">
+                                <a href="{{ route('kubernetes.issuers') }}" class="flex items-center space-x-3 py-2 px-3 hover:bg-gray-800 rounded {{ request()->is('kubernetes/issuers') ? 'bg-red-600' : '' }}">
                                     <svg class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
                                     </svg>
                                     <span class="text-sm">Issuers</span>
                                 </a>
-                                <a href="{{ route('kubernetes.clusterissuers') }}" class="flex items-center space-x-2 py-2 px-3 hover:bg-gray-800 rounded {{ request()->is('kubernetes/clusterissuers') ? 'bg-red-600' : '' }}">
+                                <a href="{{ route('kubernetes.clusterissuers') }}" class="flex items-center space-x-3 py-2 px-3 hover:bg-gray-800 rounded {{ request()->is('kubernetes/clusterissuers') ? 'bg-red-600' : '' }}">
                                     <svg class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
                                     </svg>
