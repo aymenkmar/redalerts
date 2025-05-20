@@ -33,6 +33,10 @@ class EventList extends Component
         if ($this->selectedCluster) {
             $this->loadNamespaces();
             $this->loadEvents();
+        } else {
+            // Set error message when no cluster is selected
+            $this->error = 'Please select a cluster first';
+            $this->loading = false;
         }
     }
 

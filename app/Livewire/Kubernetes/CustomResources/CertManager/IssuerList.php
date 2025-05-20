@@ -17,22 +17,26 @@ class IssuerList extends Component
     public $selectedNamespaces = ['all'];
     public $namespaces = [];
     public $showNamespaceFilter = false;
-    
+
     // Pagination properties
     public $perPage = 10;
     public $currentPage = 1;
     public $totalItems = 0;
-    
+
     protected $listeners = ['clusterSelected' => 'handleClusterSelected'];
 
     public function mount()
     {
         // Get the selected cluster from session
         $this->selectedCluster = session('selectedCluster');
-        
+
         if ($this->selectedCluster) {
             $this->loadNamespaces();
             $this->loadIssuers();
+        } else {
+            // Set error message when no cluster is selected
+            $this->error = 'Please select a cluster first';
+            $this->loading = false;
         }
     }
 
@@ -40,12 +44,12 @@ class IssuerList extends Component
     {
         // Save the selected cluster to session
         session(['selectedCluster' => $this->selectedCluster]);
-        
+
         // Load issuers for the selected cluster
         $this->loadNamespaces();
         $this->loadIssuers();
     }
-    
+
     public function loadNamespaces()
     {
         try {
@@ -88,7 +92,7 @@ class IssuerList extends Component
             $this->loading = false;
         }
     }
-    
+
     public function toggleNamespaceFilter()
     {
         $this->showNamespaceFilter = !$this->showNamespaceFilter;
@@ -141,15 +145,15 @@ class IssuerList extends Component
             $issuers = $issuers->filter(function ($issuer) use ($searchTerm) {
                 $name = strtolower($issuer['metadata']['name'] ?? '');
                 $namespace = strtolower($issuer['metadata']['namespace'] ?? 'default');
-                
-                return str_contains($name, $searchTerm) || 
+
+                return str_contains($name, $searchTerm) ||
                        str_contains($namespace, $searchTerm);
             });
         }
 
         // Calculate total for pagination
         $this->totalItems = $issuers->count();
-        
+
         // Reset current page if it's out of bounds
         $maxPage = max(1, ceil($this->totalItems / $this->perPage));
         if ($this->currentPage > $maxPage) {
@@ -169,7 +173,7 @@ class IssuerList extends Component
         }
 
         foreach ($issuer['status']['conditions'] as $condition) {
-            if (isset($condition['type']) && $condition['type'] === 'Ready' && 
+            if (isset($condition['type']) && $condition['type'] === 'Ready' &&
                 isset($condition['status']) && $condition['status'] === 'True') {
                 return true;
             }
@@ -187,21 +191,21 @@ class IssuerList extends Component
         $creationTime = Carbon::parse($timestamp);
         $now = Carbon::now();
         $diffInDays = $creationTime->diffInDays($now);
-        
+
         if ($diffInDays > 0) {
             return $diffInDays . 'd';
         }
-        
+
         $diffInHours = $creationTime->diffInHours($now);
         if ($diffInHours > 0) {
             return $diffInHours . 'h';
         }
-        
+
         $diffInMinutes = $creationTime->diffInMinutes($now);
         if ($diffInMinutes > 0) {
             return $diffInMinutes . 'm';
         }
-        
+
         return $creationTime->diffInSeconds($now) . 's';
     }
 
@@ -219,16 +223,16 @@ class IssuerList extends Component
             $this->currentPage++;
         }
     }
-    
+
     public function goToPage($page)
     {
         // Validate the page number to ensure it's within valid range
         $maxPage = max(1, ceil($this->totalItems / $this->perPage));
         $page = max(1, min($maxPage, (int)$page));
-        
+
         $this->currentPage = $page;
     }
-    
+
     public function handleClusterSelected($clusterName)
     {
         $this->selectedCluster = $clusterName;
@@ -245,10 +249,10 @@ class IssuerList extends Component
         } catch (\Exception $e) {
             // Log the error
             \Illuminate\Support\Facades\Log::error('Error rendering Issuers page: ' . $e->getMessage());
-            
+
             // Reset pagination to first page
             $this->currentPage = 1;
-            
+
             // Return the view with an error message
             return view('livewire.kubernetes.custom-resources.cert-manager.issuer-list', [
                 'filteredIssuers' => [],

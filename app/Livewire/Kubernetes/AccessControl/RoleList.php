@@ -17,22 +17,26 @@ class RoleList extends Component
     public $selectedNamespaces = ['all'];
     public $namespaces = [];
     public $showNamespaceFilter = false;
-    
+
     // Pagination properties
     public $perPage = 10;
     public $currentPage = 1;
     public $totalItems = 0;
-    
+
     protected $listeners = ['clusterSelected' => 'handleClusterSelected'];
 
     public function mount()
     {
         // Get the selected cluster from session
         $this->selectedCluster = session('selectedCluster');
-        
+
         if ($this->selectedCluster) {
             $this->loadNamespaces();
             $this->loadRoles();
+        } else {
+            // Set error message when no cluster is selected
+            $this->error = 'Please select a cluster first';
+            $this->loading = false;
         }
     }
 
@@ -40,12 +44,12 @@ class RoleList extends Component
     {
         // Save the selected cluster to session
         session(['selectedCluster' => $this->selectedCluster]);
-        
+
         // Load roles for the selected cluster
         $this->loadNamespaces();
         $this->loadRoles();
     }
-    
+
     public function loadNamespaces()
     {
         try {
@@ -88,7 +92,7 @@ class RoleList extends Component
             $this->loading = false;
         }
     }
-    
+
     public function toggleNamespaceFilter()
     {
         $this->showNamespaceFilter = !$this->showNamespaceFilter;
@@ -141,15 +145,15 @@ class RoleList extends Component
             $roles = $roles->filter(function ($role) use ($searchTerm) {
                 $name = strtolower($role['metadata']['name'] ?? '');
                 $namespace = strtolower($role['metadata']['namespace'] ?? 'default');
-                
-                return str_contains($name, $searchTerm) || 
+
+                return str_contains($name, $searchTerm) ||
                        str_contains($namespace, $searchTerm);
             });
         }
 
         // Calculate total for pagination
         $this->totalItems = $roles->count();
-        
+
         // Reset current page if it's out of bounds
         $maxPage = max(1, ceil($this->totalItems / $this->perPage));
         if ($this->currentPage > $maxPage) {
@@ -171,21 +175,21 @@ class RoleList extends Component
         $creationTime = Carbon::parse($timestamp);
         $now = Carbon::now();
         $diffInDays = $creationTime->diffInDays($now);
-        
+
         if ($diffInDays > 0) {
             return $diffInDays . 'd';
         }
-        
+
         $diffInHours = $creationTime->diffInHours($now);
         if ($diffInHours > 0) {
             return $diffInHours . 'h';
         }
-        
+
         $diffInMinutes = $creationTime->diffInMinutes($now);
         if ($diffInMinutes > 0) {
             return $diffInMinutes . 'm';
         }
-        
+
         return $creationTime->diffInSeconds($now) . 's';
     }
 
@@ -203,16 +207,16 @@ class RoleList extends Component
             $this->currentPage++;
         }
     }
-    
+
     public function goToPage($page)
     {
         // Validate the page number to ensure it's within valid range
         $maxPage = max(1, ceil($this->totalItems / $this->perPage));
         $page = max(1, min($maxPage, (int)$page));
-        
+
         $this->currentPage = $page;
     }
-    
+
     public function handleClusterSelected($clusterName)
     {
         $this->selectedCluster = $clusterName;
@@ -229,10 +233,10 @@ class RoleList extends Component
         } catch (\Exception $e) {
             // Log the error
             \Illuminate\Support\Facades\Log::error('Error rendering Roles page: ' . $e->getMessage());
-            
+
             // Reset pagination to first page
             $this->currentPage = 1;
-            
+
             // Return the view with an error message
             return view('livewire.kubernetes.access-control.role-list', [
                 'filteredRoles' => [],

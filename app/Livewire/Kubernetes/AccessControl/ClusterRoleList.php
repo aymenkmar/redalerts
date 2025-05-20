@@ -14,21 +14,25 @@ class ClusterRoleList extends Component
     public $error = null;
     public $selectedCluster = null;
     public $searchTerm = '';
-    
+
     // Pagination properties
     public $perPage = 10;
     public $currentPage = 1;
     public $totalItems = 0;
-    
+
     protected $listeners = ['clusterSelected' => 'handleClusterSelected'];
 
     public function mount()
     {
         // Get the selected cluster from session
         $this->selectedCluster = session('selectedCluster');
-        
+
         if ($this->selectedCluster) {
             $this->loadClusterRoles();
+        } else {
+            // Set error message when no cluster is selected
+            $this->error = 'Please select a cluster first';
+            $this->loading = false;
         }
     }
 
@@ -36,7 +40,7 @@ class ClusterRoleList extends Component
     {
         // Save the selected cluster to session
         session(['selectedCluster' => $this->selectedCluster]);
-        
+
         // Load cluster roles for the selected cluster
         $this->loadClusterRoles();
     }
@@ -76,14 +80,14 @@ class ClusterRoleList extends Component
             $searchTerm = strtolower($this->searchTerm);
             $clusterRoles = $clusterRoles->filter(function ($clusterRole) use ($searchTerm) {
                 $name = strtolower($clusterRole['metadata']['name'] ?? '');
-                
+
                 return str_contains($name, $searchTerm);
             });
         }
 
         // Calculate total for pagination
         $this->totalItems = $clusterRoles->count();
-        
+
         // Reset current page if it's out of bounds
         $maxPage = max(1, ceil($this->totalItems / $this->perPage));
         if ($this->currentPage > $maxPage) {
@@ -105,21 +109,21 @@ class ClusterRoleList extends Component
         $creationTime = Carbon::parse($timestamp);
         $now = Carbon::now();
         $diffInDays = $creationTime->diffInDays($now);
-        
+
         if ($diffInDays > 0) {
             return $diffInDays . 'd';
         }
-        
+
         $diffInHours = $creationTime->diffInHours($now);
         if ($diffInHours > 0) {
             return $diffInHours . 'h';
         }
-        
+
         $diffInMinutes = $creationTime->diffInMinutes($now);
         if ($diffInMinutes > 0) {
             return $diffInMinutes . 'm';
         }
-        
+
         return $creationTime->diffInSeconds($now) . 's';
     }
 
@@ -137,16 +141,16 @@ class ClusterRoleList extends Component
             $this->currentPage++;
         }
     }
-    
+
     public function goToPage($page)
     {
         // Validate the page number to ensure it's within valid range
         $maxPage = max(1, ceil($this->totalItems / $this->perPage));
         $page = max(1, min($maxPage, (int)$page));
-        
+
         $this->currentPage = $page;
     }
-    
+
     public function handleClusterSelected($clusterName)
     {
         $this->selectedCluster = $clusterName;
@@ -162,10 +166,10 @@ class ClusterRoleList extends Component
         } catch (\Exception $e) {
             // Log the error
             \Illuminate\Support\Facades\Log::error('Error rendering Cluster Roles page: ' . $e->getMessage());
-            
+
             // Reset pagination to first page
             $this->currentPage = 1;
-            
+
             // Return the view with an error message
             return view('livewire.kubernetes.access-control.cluster-role-list', [
                 'filteredClusterRoles' => [],
