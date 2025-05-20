@@ -21,6 +21,13 @@ class ClusterSelector extends Component
     public function mount()
     {
         $this->selectedCluster = session('selectedCluster', null);
+        $this->showUploadModal = session('showUploadModal', false);
+
+        // Clear the session flag
+        if ($this->showUploadModal) {
+            session()->forget('showUploadModal');
+        }
+
         $this->loadClusters();
     }
 

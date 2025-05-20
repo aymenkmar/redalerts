@@ -6,6 +6,7 @@ namespace App\Http\Controllers;
 use App\Models\Cluster;
 use App\Services\KubernetesService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Session;
 
 class KubernetesController extends Controller
 {
@@ -538,5 +539,54 @@ class KubernetesController extends Controller
             //return response()->json(['error' => $e->getMessage()], 500);
         //}
     //}
+
+    /**
+     * Handle the cluster selection.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\RedirectResponse
+     */
+    public function selectCluster(Request $request)
+    {
+        $clusterName = $request->input('cluster_name');
+
+        if ($clusterName) {
+            // Store the selected cluster in the session
+            session(['selectedCluster' => $clusterName]);
+        }
+
+        // Redirect back to the previous page
+        return redirect()->back();
+    }
+
+    /**
+     * Show the upload modal.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\RedirectResponse
+     */
+    public function showUploadModal(Request $request)
+    {
+        // Store a flag in the session to show the upload modal
+        session(['showUploadModal' => true]);
+
+        // Redirect back to the previous page
+        return redirect()->back();
+    }
+
+    /**
+     * Close the upload modal.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\RedirectResponse
+     */
+    public function closeUploadModal(Request $request)
+    {
+        // Clear the session flag
+        session()->forget('showUploadModal');
+
+        // Redirect back to the previous page
+        return redirect()->back();
+    }
 }
 

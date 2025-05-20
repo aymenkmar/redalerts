@@ -459,6 +459,30 @@
                     window.location.reload();
                 }, 1000);
             });
+
+            // Global click handler to close dropdowns
+            document.addEventListener('click', function(event) {
+                // Skip if the click is on a button with wire:click (let Livewire handle it)
+                if (event.target.closest('[wire\\:click]')) {
+                    return;
+                }
+
+                // Find all open dropdowns
+                const openDropdowns = document.querySelectorAll('.cluster-dropdown-menu');
+
+                openDropdowns.forEach(dropdown => {
+                    // Check if the click was outside the dropdown
+                    if (!dropdown.contains(event.target) &&
+                        !event.target.closest('.cluster-dropdown-toggle')) {
+                        // Find the Livewire component ID
+                        const componentId = dropdown.closest('[wire\\:id]')?.getAttribute('wire:id');
+                        if (componentId) {
+                            // Call the Livewire method to close the dropdown
+                            Livewire.find(componentId).set('showDropdown', false);
+                        }
+                    }
+                });
+            });
         });
     </script>
 </body>

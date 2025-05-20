@@ -22,6 +22,13 @@ Route::middleware('auth')->group(function () {
     // Kubernetes Dashboard
     Route::get('/dashboard-kubernetes', \App\Livewire\KubernetesDashboard::class)->name('dashboard-kubernetes');
 
+    // Kubernetes Cluster Selection
+    Route::post('/kubernetes/select-cluster', [\App\Http\Controllers\KubernetesController::class, 'selectCluster'])->name('kubernetes.select-cluster');
+
+    // Kubernetes Upload Modal
+    Route::post('/kubernetes/upload-modal', [\App\Http\Controllers\KubernetesController::class, 'showUploadModal'])->name('kubernetes.upload-modal');
+    Route::post('/kubernetes/close-modal', [\App\Http\Controllers\KubernetesController::class, 'closeUploadModal'])->name('kubernetes.close-modal');
+
     // Kubernetes Nodes
     Route::get('/kubernetes/nodes', \App\Livewire\Kubernetes\NodeList::class)->name('kubernetes.nodes');
 
