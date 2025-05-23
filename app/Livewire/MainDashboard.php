@@ -14,6 +14,7 @@ class MainDashboard extends Component
             return redirect()->route('login');
         }
 
-        return view('livewire.main-dashboard');
+        return view('livewire.main-dashboard')
+            ->layout('layouts.main');
     }
 }
