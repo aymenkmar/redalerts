@@ -15,6 +15,17 @@ class NodeList extends Component
     public $selectedCluster = null;
     public $searchTerm = '';
 
+    protected $queryString = ['searchTerm' => ['except' => '']];
+
+    // Define updatable properties
+    protected $updatesQueryString = ['searchTerm'];
+
+    // Reset pagination when search term changes
+    public function updatedSearchTerm()
+    {
+        $this->currentPage = 1;
+    }
+
     // Pagination properties
     public $perPage = 10;
     public $currentPage = 1;
@@ -165,7 +176,7 @@ class NodeList extends Component
     public function render()
     {
         return view('livewire.kubernetes.node-list', [
-            'nodes' => $this->filteredNodes,
+            'filteredNodes' => $this->filteredNodes,
         ])->layout('layouts.kubernetes');
     }
 }

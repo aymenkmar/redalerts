@@ -3,10 +3,10 @@
         <svg class="h-4 w-4 text-gray-500 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
         </svg>
-        <input 
-            type="text" 
-            wire:model.live.debounce.300ms="searchTerm" 
-            placeholder="Search..." 
+        <input
+            type="text"
+            wire:model.live.debounce.300ms="searchTerm"
+            placeholder="{{ $placeholder ?? 'Search...' }}"
             class="text-sm text-gray-700 border-0 focus:ring-0 focus:outline-none w-full"
         >
         @if($searchTerm)
