@@ -24,7 +24,7 @@
         }
     </style>
 </head>
-<body class="bg-pattern min-h-screen">
+<body class="bg-pattern min-h-screen" x-data>
     <div class="min-h-screen flex flex-col">
         <!-- Main Content -->
         <main class="flex-grow">

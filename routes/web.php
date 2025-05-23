@@ -19,6 +19,9 @@ Route::middleware('auth')->group(function () {
     // Admin Dashboard (original Laravel dashboard)
     Route::get('/dashboard', [AuthController::class, 'dashboard'])->name('dashboard');
 
+    // User Profile
+    Route::get('/profile', \App\Livewire\UserProfile::class)->name('profile');
+
     // Kubernetes Dashboard
     Route::get('/dashboard-kubernetes', \App\Livewire\KubernetesDashboard::class)->name('dashboard-kubernetes');
 
