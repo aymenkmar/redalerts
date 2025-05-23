@@ -14,7 +14,7 @@
 
     <div class="flex flex-col sm:flex-row gap-4 items-start sm:items-center mb-6">
         @include('livewire.kubernetes.components.namespace-filter')
-        @include('livewire.kubernetes.components.search-input')
+        @include('livewire.kubernetes.components.search-input', ['placeholder' => 'Search deployments...'])
     </div>
 
     <div class="bg-white rounded-lg shadow overflow-hidden">

@@ -143,17 +143,10 @@ class EventList extends Component
         if (!empty($this->searchTerm)) {
             $searchTerm = strtolower($this->searchTerm);
             $events = $events->filter(function ($event) use ($searchTerm) {
-                $type = strtolower($event['type'] ?? '');
-                $message = strtolower($event['message'] ?? '');
                 $namespace = strtolower($event['metadata']['namespace'] ?? 'default');
-                $involvedObject = strtolower($event['involvedObject']['kind'] ?? '') . '/' . strtolower($event['involvedObject']['name'] ?? '');
-                $source = strtolower($event['source']['component'] ?? '') . (isset($event['source']['host']) ? '/' . strtolower($event['source']['host']) : '');
+                $involvedObject = strtolower($event['involvedObject']['name'] ?? '');
 
-                return str_contains($type, $searchTerm) ||
-                       str_contains($message, $searchTerm) ||
-                       str_contains($namespace, $searchTerm) ||
-                       str_contains($involvedObject, $searchTerm) ||
-                       str_contains($source, $searchTerm);
+                return str_contains($namespace, $searchTerm) || str_contains($involvedObject, $searchTerm);
             });
         }
 

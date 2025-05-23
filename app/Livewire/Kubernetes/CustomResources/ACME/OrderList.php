@@ -145,11 +145,8 @@ class OrderList extends Component
             $orders = $orders->filter(function ($order) use ($searchTerm) {
                 $name = strtolower($order['metadata']['name'] ?? '');
                 $namespace = strtolower($order['metadata']['namespace'] ?? 'default');
-                $state = strtolower($order['status']['state'] ?? '');
 
-                return str_contains($name, $searchTerm) ||
-                       str_contains($namespace, $searchTerm) ||
-                       str_contains($state, $searchTerm);
+                return str_contains($name, $searchTerm) || str_contains($namespace, $searchTerm);
             });
         }
 

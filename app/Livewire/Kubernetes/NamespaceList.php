@@ -80,12 +80,8 @@ class NamespaceList extends Component
             $searchTerm = strtolower($this->searchTerm);
             $namespaces = $namespaces->filter(function ($namespace) use ($searchTerm) {
                 $name = strtolower($namespace['metadata']['name'] ?? '');
-                $labels = $namespace['metadata']['labels'] ?? [];
-                $labelsString = collect($labels)->map(function ($value, $key) {
-                    return strtolower("$key: $value");
-                })->implode(' ');
 
-                return str_contains($name, $searchTerm) || str_contains($labelsString, $searchTerm);
+                return str_contains($name, $searchTerm);
             });
         }
 

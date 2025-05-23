@@ -134,12 +134,8 @@ class NodeList extends Component
             $searchTerm = strtolower($this->searchTerm);
             $nodes = $nodes->filter(function ($node) use ($searchTerm) {
                 $name = strtolower($node['metadata']['name'] ?? '');
-                $roles = strtolower($this->getNodeRoles($node));
-                $version = strtolower($node['status']['nodeInfo']['kubeletVersion'] ?? '');
 
-                return str_contains($name, $searchTerm) ||
-                       str_contains($roles, $searchTerm) ||
-                       str_contains($version, $searchTerm);
+                return str_contains($name, $searchTerm);
             });
         }
 

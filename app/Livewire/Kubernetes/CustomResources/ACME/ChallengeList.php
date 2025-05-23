@@ -145,13 +145,8 @@ class ChallengeList extends Component
             $challenges = $challenges->filter(function ($challenge) use ($searchTerm) {
                 $name = strtolower($challenge['metadata']['name'] ?? '');
                 $namespace = strtolower($challenge['metadata']['namespace'] ?? 'default');
-                $state = strtolower($challenge['status']['state'] ?? '');
-                $domain = strtolower($challenge['spec']['dnsName'] ?? '');
 
-                return str_contains($name, $searchTerm) ||
-                       str_contains($namespace, $searchTerm) ||
-                       str_contains($state, $searchTerm) ||
-                       str_contains($domain, $searchTerm);
+                return str_contains($name, $searchTerm) || str_contains($namespace, $searchTerm);
             });
         }
 

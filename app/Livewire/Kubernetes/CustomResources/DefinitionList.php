@@ -14,19 +14,19 @@ class DefinitionList extends Component
     public $error = null;
     public $selectedCluster = null;
     public $searchTerm = '';
-    
+
     // Pagination properties
     public $perPage = 10;
     public $currentPage = 1;
     public $totalItems = 0;
-    
+
     protected $listeners = ['clusterSelected' => 'handleClusterSelected'];
 
     public function mount()
     {
         // Get the selected cluster from session
         $this->selectedCluster = session('selectedCluster');
-        
+
         if ($this->selectedCluster) {
             $this->loadDefinitions();
         }
@@ -36,7 +36,7 @@ class DefinitionList extends Component
     {
         // Save the selected cluster to session
         session(['selectedCluster' => $this->selectedCluster]);
-        
+
         // Load custom resource definitions for the selected cluster
         $this->loadDefinitions();
     }
@@ -76,20 +76,14 @@ class DefinitionList extends Component
             $searchTerm = strtolower($this->searchTerm);
             $definitions = $definitions->filter(function ($definition) use ($searchTerm) {
                 $name = strtolower($definition['metadata']['name'] ?? '');
-                $group = strtolower($definition['spec']['group'] ?? '');
-                $kind = strtolower($definition['spec']['names']['kind'] ?? '');
-                $scope = strtolower($definition['spec']['scope'] ?? '');
-                
-                return str_contains($name, $searchTerm) || 
-                       str_contains($group, $searchTerm) ||
-                       str_contains($kind, $searchTerm) ||
-                       str_contains($scope, $searchTerm);
+
+                return str_contains($name, $searchTerm);
             });
         }
 
         // Calculate total for pagination
         $this->totalItems = $definitions->count();
-        
+
         // Reset current page if it's out of bounds
         $maxPage = max(1, ceil($this->totalItems / $this->perPage));
         if ($this->currentPage > $maxPage) {
@@ -125,21 +119,21 @@ class DefinitionList extends Component
         $creationTime = Carbon::parse($timestamp);
         $now = Carbon::now();
         $diffInDays = $creationTime->diffInDays($now);
-        
+
         if ($diffInDays > 0) {
             return $diffInDays . 'd';
         }
-        
+
         $diffInHours = $creationTime->diffInHours($now);
         if ($diffInHours > 0) {
             return $diffInHours . 'h';
         }
-        
+
         $diffInMinutes = $creationTime->diffInMinutes($now);
         if ($diffInMinutes > 0) {
             return $diffInMinutes . 'm';
         }
-        
+
         return $creationTime->diffInSeconds($now) . 's';
     }
 
@@ -157,16 +151,16 @@ class DefinitionList extends Component
             $this->currentPage++;
         }
     }
-    
+
     public function goToPage($page)
     {
         // Validate the page number to ensure it's within valid range
         $maxPage = max(1, ceil($this->totalItems / $this->perPage));
         $page = max(1, min($maxPage, (int)$page));
-        
+
         $this->currentPage = $page;
     }
-    
+
     public function handleClusterSelected($clusterName)
     {
         $this->selectedCluster = $clusterName;
@@ -182,10 +176,10 @@ class DefinitionList extends Component
         } catch (\Exception $e) {
             // Log the error
             \Illuminate\Support\Facades\Log::error('Error rendering Custom Resource Definitions page: ' . $e->getMessage());
-            
+
             // Reset pagination to first page
             $this->currentPage = 1;
-            
+
             // Return the view with an error message
             return view('livewire.kubernetes.custom-resources.definition-list', [
                 'filteredDefinitions' => [],

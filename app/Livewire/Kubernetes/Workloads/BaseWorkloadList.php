@@ -18,12 +18,28 @@ abstract class BaseWorkloadList extends Component
     public $namespaces = [];
     public $showNamespaceFilter = false;
 
+    protected $queryString = [
+        'searchTerm' => ['except' => ''],
+        'selectedNamespaces' => ['except' => ['all']]
+    ];
+
     // Pagination properties
     public $perPage = 10;
     public $currentPage = 1;
     public $totalItems = 0;
 
     abstract protected function getResourceMethod(): string;
+
+    // Reset pagination when search term or namespace selection changes
+    public function updatedSearchTerm()
+    {
+        $this->currentPage = 1;
+    }
+
+    public function updatedSelectedNamespaces()
+    {
+        $this->currentPage = 1;
+    }
 
     public function mount()
     {
@@ -202,4 +218,5 @@ abstract class BaseWorkloadList extends Component
     {
         $this->currentPage = $page;
     }
+
 }
