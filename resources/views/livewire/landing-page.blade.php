@@ -28,13 +28,13 @@
     <!-- Main Content -->
     <main class="flex-grow">
         <!-- Hero Section -->
-        <div class="bg-gradient-to-b from-gray-50 to-gray-100 py-16">
+        <div class="bg-gradient-to-b from-gray-50 to-gray-100 py-12">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
                 <h2 class="text-4xl font-extrabold text-gray-900 sm:text-5xl sm:tracking-tight lg:text-6xl">
                     Welcome to RedAlerts
                 </h2>
                 <p class="mt-5 max-w-xl mx-auto text-xl text-gray-500">
-                    A comprehensive Kubernetes monitoring and management platform
+                    A comprehensive monitoring and management platform
                 </p>
                 <div class="mt-8 flex justify-center">
                     <a href="{{ route('login') }}" class="px-6 py-3 bg-red-600 text-white rounded-md font-medium hover:bg-red-700 transition duration-200 shadow-md">
@@ -44,10 +44,10 @@
             </div>
         </div>
 
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
 
             <!-- Features Section -->
-            <div class="mt-12">
+            <div class="mt-6">
                 <div class="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
                     <!-- Feature 1 -->
                     <div class="bg-white overflow-hidden shadow rounded-lg hover:shadow-xl transition-shadow duration-300">
@@ -55,13 +55,13 @@
                             <div class="flex items-center mb-4">
                                 <div class="bg-red-100 p-3 rounded-full mr-4">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
                                     </svg>
                                 </div>
-                                <h3 class="text-lg font-medium text-gray-900">Real-time Monitoring</h3>
+                                <h3 class="text-lg font-medium text-gray-900">Kubernetes Clusters Management</h3>
                             </div>
                             <p class="text-sm text-gray-500">
-                                Monitor your Kubernetes clusters in real-time with comprehensive dashboards and alerts.
+                                Monitor and manage your Kubernetes clusters, pods, deployments, and other resources with comprehensive dashboards.
                             </p>
                         </div>
                     </div>
@@ -72,13 +72,13 @@
                             <div class="flex items-center mb-4">
                                 <div class="bg-red-100 p-3 rounded-full mr-4">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4" />
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
                                     </svg>
                                 </div>
-                                <h3 class="text-lg font-medium text-gray-900">Resource Management</h3>
+                                <h3 class="text-lg font-medium text-gray-900">Website Monitoring</h3>
                             </div>
                             <p class="text-sm text-gray-500">
-                                Efficiently manage your Kubernetes resources including nodes, pods, services, and more.
+                                Monitor website uptime, response times, SSL certificates, and domain expiration dates with real-time alerts.
                             </p>
                         </div>
                     </div>
@@ -89,13 +89,14 @@
                             <div class="flex items-center mb-4">
                                 <div class="bg-red-100 p-3 rounded-full mr-4">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8a2 2 0 012-2h10a2 2 0 012 2v8a2 2 0 01-2 2H7a2 2 0 01-2-2V8z" />
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4" />
                                     </svg>
                                 </div>
-                                <h3 class="text-lg font-medium text-gray-900">Security Insights</h3>
+                                <h3 class="text-lg font-medium text-gray-900">OVH Server Expiration</h3>
                             </div>
                             <p class="text-sm text-gray-500">
-                                Get insights into your cluster's security posture and identify potential vulnerabilities.
+                                Track OVH server expiration dates, renewal status, and receive alerts before your servers expire.
                             </p>
                         </div>
                     </div>
