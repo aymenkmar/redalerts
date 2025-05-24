@@ -98,22 +98,7 @@
                     </div>
                 </a>
 
-                <!-- SSL Certificates Card -->
-                <a href="#" class="feature-card bg-white rounded-lg shadow-md overflow-hidden">
-                    <div class="p-6">
-                        <div class="flex items-center mb-4">
-                            <div class="icon-container bg-gray-600 p-3 rounded-lg mr-4">
-                                <svg class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                                </svg>
-                            </div>
-                            <h2 class="text-xl font-bold text-gray-800">SSL Certificates</h2>
-                        </div>
-                        <p class="text-gray-600 text-sm">Monitor SSL certificate expiration dates and security status.</p>
-                    </div>
-                </a>
-
-                <!-- Domain Expiration Card -->
+                <!-- Website Monitoring Card -->
                 <a href="#" class="feature-card bg-white rounded-lg shadow-md overflow-hidden">
                     <div class="p-6">
                         <div class="flex items-center mb-4">
@@ -122,9 +107,9 @@
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
                                 </svg>
                             </div>
-                            <h2 class="text-xl font-bold text-gray-800">Domain Expiration</h2>
+                            <h2 class="text-xl font-bold text-gray-800">Website Monitoring</h2>
                         </div>
-                        <p class="text-gray-600 text-sm">Track domain name expiration dates and renewal status.</p>
+                        <p class="text-gray-600 text-sm">Monitor website uptime, SSL certificates, domain expiration, and availability status.</p>
                     </div>
                 </a>
 
@@ -140,36 +125,6 @@
                             <h2 class="text-xl font-bold text-gray-800">OVH Server Expiration</h2>
                         </div>
                         <p class="text-gray-600 text-sm">Monitor OVH server expiration dates and renewal status.</p>
-                    </div>
-                </a>
-
-                <!-- Site Availability Card -->
-                <a href="#" class="feature-card bg-white rounded-lg shadow-md overflow-hidden">
-                    <div class="p-6">
-                        <div class="flex items-center mb-4">
-                            <div class="icon-container bg-gray-600 p-3 rounded-lg mr-4">
-                                <svg class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-                                </svg>
-                            </div>
-                            <h2 class="text-xl font-bold text-gray-800">Site Availability</h2>
-                        </div>
-                        <p class="text-gray-600 text-sm">Monitor website uptime, response time, and availability status.</p>
-                    </div>
-                </a>
-
-                <!-- Storage Monitoring Card -->
-                <a href="#" class="feature-card bg-white rounded-lg shadow-md overflow-hidden">
-                    <div class="p-6">
-                        <div class="flex items-center mb-4">
-                            <div class="icon-container bg-gray-600 p-3 rounded-lg mr-4">
-                                <svg class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4" />
-                                </svg>
-                            </div>
-                            <h2 class="text-xl font-bold text-gray-800">Storage Monitoring</h2>
-                        </div>
-                        <p class="text-gray-600 text-sm">Track storage usage and capacity across your infrastructure.</p>
                     </div>
                 </a>
             </div>
