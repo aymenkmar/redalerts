@@ -1,6 +1,6 @@
 
-<div class="min-h-screen flex items-center justify-center bg-gray-100">
-    <div class="w-full max-w-md bg-white rounded-lg shadow-lg p-8">
+<div class="min-h-screen flex items-center justify-center bg-gray-100 px-4">
+    <div class="w-full max-w-md bg-white rounded-lg shadow-lg p-6 sm:p-8">
         <div class="text-center mb-6">
             <h2 class="text-2xl font-bold text-red-600">RedAlerts</h2>
             <p class="text-sm text-gray-600 mt-1">Login to access your dashboard</p>
