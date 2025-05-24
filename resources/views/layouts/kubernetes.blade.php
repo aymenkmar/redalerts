@@ -24,10 +24,19 @@
         /* We're not using custom red colors anymore, using Tailwind's built-in red-600 instead */
     </style>
 </head>
-<body x-data>
-    <div class="flex min-h-screen">
+<body x-data="{ sidebarOpen: false }">
+    <div class="min-h-screen">
         <!-- Sidebar -->
-        <div class="w-64 bg-gray-900 text-white flex-shrink-0">
+        <div class="sidebar-container fixed top-0 left-0 w-64 h-full bg-gray-900 text-white z-40 overflow-y-auto transition-transform duration-300 ease-in-out"
+             :class="{ 'sidebar-hidden': sidebarOpen }">
+            <style>
+                .sidebar-container {
+                    transform: translateX(0);
+                }
+                .sidebar-container.sidebar-hidden {
+                    transform: translateX(-100%);
+                }
+            </style>
             <div class="p-6">
                 <a href="{{ route('main-dashboard') }}" class="flex items-center space-x-3 mb-8">
                     <div class="bg-red-600 p-2 rounded">
@@ -371,11 +380,39 @@
         </div>
 
         <!-- Main Content -->
-        <div class="flex-1 flex flex-col">
+        <div class="main-content-area" :class="{ 'sidebar-hidden': sidebarOpen }">
+            <style>
+                .main-content-area {
+                    margin-left: 256px;
+                    min-height: 100vh;
+                    display: flex;
+                    flex-direction: column;
+                    transition: margin-left 0.3s ease-in-out;
+                }
+                .main-content-area.sidebar-hidden {
+                    margin-left: 0;
+                }
+            </style>
+            <!-- Show sidebar button (when sidebar is hidden) -->
+            <div x-show="sidebarOpen" class="fixed top-4 left-4 z-50">
+                <button @click="sidebarOpen = false"
+                        class="p-2 rounded-md bg-gray-900 text-white hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-red-500 shadow-lg">
+                    <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                    </svg>
+                </button>
+            </div>
+
             <!-- Header with Cluster Selector -->
-            <header class="bg-white shadow-sm py-3 px-6 flex items-center justify-between">
+            <header class="bg-white shadow-sm py-3 px-6 flex items-center justify-between sticky top-0 z-50">
                 <div class="flex items-center">
-                    <!-- Empty div to maintain layout -->
+                    <!-- Hamburger button in navbar -->
+                    <button @click="sidebarOpen = !sidebarOpen"
+                            class="p-2 rounded-md text-gray-600 hover:text-gray-900 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-red-500 mr-4">
+                        <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                        </svg>
+                    </button>
                 </div>
 
                 <div class="flex items-center space-x-4">
@@ -400,7 +437,8 @@
                              x-transition:leave="transition ease-in duration-75"
                              x-transition:leave-start="transform opacity-100 scale-100"
                              x-transition:leave-end="transform opacity-0 scale-95"
-                             class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50">
+                             class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1"
+                             style="z-index: 45;">
                             <a href="{{ route('profile') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
                                 Profile
                             </a>
@@ -416,8 +454,10 @@
             </header>
 
             <!-- Page Content -->
-            <div class="flex-1 p-6 bg-gray-100">
-                {{ $slot }}
+            <div class="flex-1 p-6 bg-gray-100 overflow-x-hidden">
+                <div class="max-w-full">
+                    {{ $slot }}
+                </div>
             </div>
         </div>
     </div>

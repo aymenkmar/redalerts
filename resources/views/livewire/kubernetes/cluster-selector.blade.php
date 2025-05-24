@@ -16,7 +16,8 @@
 
     @if($showDropdown)
     <div
-        class="cluster-dropdown-menu absolute right-0 mt-2 w-64 bg-white border border-gray-200 rounded shadow-lg z-50"
+        class="cluster-dropdown-menu absolute right-0 mt-2 w-64 bg-white border border-gray-200 rounded shadow-lg"
+        style="z-index: 45;"
     >
         <div class="max-h-60 overflow-y-auto">
             @if(count($clusters) > 0)
