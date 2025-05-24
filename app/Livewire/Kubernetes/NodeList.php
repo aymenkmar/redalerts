@@ -4,7 +4,7 @@ namespace App\Livewire\Kubernetes;
 
 use Livewire\Component;
 use Illuminate\Support\Facades\Auth;
-use App\Services\KubernetesService;
+use App\Services\CachedKubernetesService;
 use Carbon\Carbon;
 
 class NodeList extends Component
@@ -13,23 +13,8 @@ class NodeList extends Component
     public $loading = true;
     public $error = null;
     public $selectedCluster = null;
-    public $searchTerm = '';
 
-    protected $queryString = ['searchTerm' => ['except' => '']];
-
-    // Define updatable properties
-    protected $updatesQueryString = ['searchTerm'];
-
-    // Reset pagination when search term changes
-    public function updatedSearchTerm()
-    {
-        $this->currentPage = 1;
-    }
-
-    // Pagination properties
-    public $perPage = 10;
-    public $currentPage = 1;
-    public $totalItems = 0;
+    protected $queryString = [];
 
     public function mount()
     {
@@ -38,36 +23,89 @@ class NodeList extends Component
             return redirect()->route('login');
         }
 
-        // Get the selected cluster from session
-        $this->selectedCluster = session('selectedCluster', null);
-
-        if (!$this->selectedCluster) {
-            return redirect()->route('dashboard-kubernetes')->with('error', 'Please select a cluster first');
+        // Try both session keys for compatibility
+        $this->selectedCluster = session('selectedCluster') ?? session('selected_cluster');
+        if ($this->selectedCluster) {
+            $this->loadData();
+        } else {
+            $this->error = 'Please select a cluster first';
+            $this->loading = false;
         }
-
-        $this->loadNodes();
     }
 
-    public function loadNodes()
+    public function loadData()
     {
         $this->loading = true;
         $this->error = null;
 
         try {
             $kubeconfigPath = env('KUBECONFIG_PATH', storage_path('app/kubeconfigs')) . '/' . $this->selectedCluster;
-            $service = new KubernetesService($kubeconfigPath);
-            $response = $service->getNodes();
 
-            if (isset($response['items'])) {
-                $this->nodes = $response['items'];
+            if (!file_exists($kubeconfigPath)) {
+                throw new \Exception('Kubeconfig file not found: ' . $kubeconfigPath);
+            }
+
+            // Try cached service first, fallback to regular service
+            try {
+                $service = new CachedKubernetesService($kubeconfigPath);
+                $nodesResponse = $service->getNodes();
+            } catch (\Exception $e) {
+                // Fallback to regular service if cached service fails
+                $service = new \App\Services\KubernetesService($kubeconfigPath);
+                $nodesResponse = $service->getNodes();
+            }
+
+            if (isset($nodesResponse['items'])) {
+                $this->nodes = $nodesResponse['items'];
             } else {
                 $this->nodes = [];
+                // If no items, check if there's an error in the response
+                if (isset($nodesResponse['message'])) {
+                    throw new \Exception('Kubernetes API error: ' . $nodesResponse['message']);
+                }
             }
+
         } catch (\Exception $e) {
             $this->error = 'Failed to load nodes: ' . $e->getMessage();
         } finally {
             $this->loading = false;
         }
+    }
+
+    public function refreshData()
+    {
+        try {
+            // Refresh the selected cluster from session
+            $this->selectedCluster = session('selectedCluster') ?? session('selected_cluster');
+
+            if (!$this->selectedCluster) {
+                $this->error = 'Please select a cluster first';
+                return;
+            }
+
+            $kubeconfigPath = env('KUBECONFIG_PATH', storage_path('app/kubeconfigs')) . '/' . $this->selectedCluster;
+            $service = new CachedKubernetesService($kubeconfigPath);
+
+            // Force refresh cache
+            $service->clearCache();
+            $this->loadData();
+
+            $this->dispatch('notify', [
+                'type' => 'success',
+                'message' => 'Nodes data refreshed successfully'
+            ]);
+        } catch (\Exception $e) {
+            $this->dispatch('notify', [
+                'type' => 'error',
+                'message' => 'Failed to refresh data: ' . $e->getMessage()
+            ]);
+        }
+    }
+
+    // Keep for backward compatibility
+    public function loadNodes()
+    {
+        $this->loadData();
     }
 
     public function formatAge($timestamp)
@@ -121,58 +159,8 @@ class NodeList extends Component
         return $roles ?: 'worker';
     }
 
-    public function getFilteredNodesProperty()
-    {
-        if (empty($this->nodes)) {
-            return [];
-        }
-
-        $nodes = collect($this->nodes);
-
-        // Filter by search term
-        if (!empty($this->searchTerm)) {
-            $searchTerm = strtolower($this->searchTerm);
-            $nodes = $nodes->filter(function ($node) use ($searchTerm) {
-                $name = strtolower($node['metadata']['name'] ?? '');
-
-                return str_contains($name, $searchTerm);
-            });
-        }
-
-        // Update total count for pagination
-        $this->totalItems = $nodes->count();
-
-        // Apply pagination
-        $paginatedNodes = $nodes->forPage($this->currentPage, $this->perPage);
-
-        return $paginatedNodes->values()->all();
-    }
-
-    // Pagination methods
-    public function nextPage()
-    {
-        $maxPage = ceil($this->totalItems / $this->perPage);
-        if ($this->currentPage < $maxPage) {
-            $this->currentPage++;
-        }
-    }
-
-    public function previousPage()
-    {
-        if ($this->currentPage > 1) {
-            $this->currentPage--;
-        }
-    }
-
-    public function goToPage($page)
-    {
-        $this->currentPage = $page;
-    }
-
     public function render()
     {
-        return view('livewire.kubernetes.node-list', [
-            'filteredNodes' => $this->filteredNodes,
-        ])->layout('layouts.kubernetes');
+        return view('livewire.kubernetes.node-list')->layout('layouts.kubernetes');
     }
 }

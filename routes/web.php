@@ -102,6 +102,55 @@ Route::middleware('auth')->group(function () {
         return view('api-test');
     });
 
+    // Debug route for testing cluster connection
+    Route::get('/debug-cluster', function() {
+        try {
+            $clusters = [];
+            $kubeconfigPath = env('KUBECONFIG_PATH', storage_path('app/kubeconfigs'));
+
+            if (is_dir($kubeconfigPath)) {
+                $files = scandir($kubeconfigPath);
+                foreach ($files as $file) {
+                    if ($file !== '.' && $file !== '..' && is_file($kubeconfigPath . '/' . $file)) {
+                        $clusters[] = $file;
+                    }
+                }
+            }
+
+            $selectedCluster = session('selectedCluster') ?? session('selected_cluster');
+            $testResults = [];
+
+            if ($selectedCluster && in_array($selectedCluster, $clusters)) {
+                try {
+                    $service = new \App\Services\KubernetesService($kubeconfigPath . '/' . $selectedCluster);
+                    $podsResponse = $service->getPods();
+                    $testResults['pods'] = [
+                        'success' => true,
+                        'count' => count($podsResponse['items'] ?? []),
+                        'first_pod' => isset($podsResponse['items'][0]) ? $podsResponse['items'][0]['metadata']['name'] : 'none'
+                    ];
+                } catch (\Exception $e) {
+                    $testResults['pods'] = [
+                        'success' => false,
+                        'error' => $e->getMessage()
+                    ];
+                }
+            }
+
+            return response()->json([
+                'available_clusters' => $clusters,
+                'selected_cluster' => $selectedCluster,
+                'session_keys' => [
+                    'selectedCluster' => session('selectedCluster'),
+                    'selected_cluster' => session('selected_cluster')
+                ],
+                'test_results' => $testResults
+            ]);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    });
+
     // API Management page (placeholder for now)
     Route::get('/api-management', function() {
         return view('dashboard'); // Using dashboard view as placeholder
