@@ -217,6 +217,139 @@ class CachedKubernetesService
     }
 
     /**
+     * Get config maps with caching
+     */
+    public function getConfigMaps($forceRefresh = false)
+    {
+        $cacheKey = $this->cachePrefix . 'configmaps';
+
+        if ($forceRefresh) {
+            Cache::forget($cacheKey);
+        }
+
+        return Cache::remember($cacheKey, $this->defaultCacheTtl, function () {
+            try {
+                Log::info('Fetching config maps from Kubernetes API');
+                return $this->kubernetesService->getConfigMaps();
+            } catch (\Exception $e) {
+                Log::error('Failed to fetch config maps: ' . $e->getMessage());
+                throw $e;
+            }
+        });
+    }
+
+    /**
+     * Get secrets with caching
+     */
+    public function getSecrets($forceRefresh = false)
+    {
+        $cacheKey = $this->cachePrefix . 'secrets';
+
+        if ($forceRefresh) {
+            Cache::forget($cacheKey);
+        }
+
+        return Cache::remember($cacheKey, $this->defaultCacheTtl, function () {
+            try {
+                Log::info('Fetching secrets from Kubernetes API');
+                return $this->kubernetesService->getSecrets();
+            } catch (\Exception $e) {
+                Log::error('Failed to fetch secrets: ' . $e->getMessage());
+                throw $e;
+            }
+        });
+    }
+
+    /**
+     * Get resource quotas with caching (from all namespaces)
+     */
+    public function getResourceQuotas($forceRefresh = false)
+    {
+        $cacheKey = $this->cachePrefix . 'resourcequotas';
+
+        if ($forceRefresh) {
+            Cache::forget($cacheKey);
+        }
+
+        return Cache::remember($cacheKey, $this->defaultCacheTtl, function () {
+            try {
+                Log::info('Fetching resource quotas from Kubernetes API');
+
+                // First get all namespaces
+                $namespacesResponse = $this->kubernetesService->getNamespaces();
+                $allResourceQuotas = ['items' => []];
+
+                if (isset($namespacesResponse['items'])) {
+                    foreach ($namespacesResponse['items'] as $namespace) {
+                        $namespaceName = $namespace['metadata']['name'];
+                        try {
+                            $quotasResponse = $this->kubernetesService->getResourceQuotas($namespaceName);
+                            if (isset($quotasResponse['items'])) {
+                                $allResourceQuotas['items'] = array_merge(
+                                    $allResourceQuotas['items'],
+                                    $quotasResponse['items']
+                                );
+                            }
+                        } catch (\Exception $e) {
+                            // Log but continue with other namespaces
+                            Log::warning("Failed to fetch resource quotas for namespace {$namespaceName}: " . $e->getMessage());
+                        }
+                    }
+                }
+
+                return $allResourceQuotas;
+            } catch (\Exception $e) {
+                Log::error('Failed to fetch resource quotas: ' . $e->getMessage());
+                throw $e;
+            }
+        });
+    }
+
+    /**
+     * Get limit ranges with caching
+     */
+    public function getLimitRanges($forceRefresh = false)
+    {
+        $cacheKey = $this->cachePrefix . 'limitranges';
+
+        if ($forceRefresh) {
+            Cache::forget($cacheKey);
+        }
+
+        return Cache::remember($cacheKey, $this->defaultCacheTtl, function () {
+            try {
+                Log::info('Fetching limit ranges from Kubernetes API');
+                return $this->kubernetesService->getLimitRanges();
+            } catch (\Exception $e) {
+                Log::error('Failed to fetch limit ranges: ' . $e->getMessage());
+                throw $e;
+            }
+        });
+    }
+
+    /**
+     * Get horizontal pod autoscalers with caching
+     */
+    public function getHorizontalPodAutoscalers($forceRefresh = false)
+    {
+        $cacheKey = $this->cachePrefix . 'horizontalpodautoscalers';
+
+        if ($forceRefresh) {
+            Cache::forget($cacheKey);
+        }
+
+        return Cache::remember($cacheKey, $this->defaultCacheTtl, function () {
+            try {
+                Log::info('Fetching horizontal pod autoscalers from Kubernetes API');
+                return $this->kubernetesService->getHorizontalPodAutoscalers();
+            } catch (\Exception $e) {
+                Log::error('Failed to fetch horizontal pod autoscalers: ' . $e->getMessage());
+                throw $e;
+            }
+        });
+    }
+
+    /**
      * Get namespaces with caching
      */
     public function getNamespaces($forceRefresh = false)
@@ -253,6 +386,11 @@ class CachedKubernetesService
             $this->cachePrefix . 'replicationcontrollers',
             $this->cachePrefix . 'jobs',
             $this->cachePrefix . 'cronjobs',
+            $this->cachePrefix . 'configmaps',
+            $this->cachePrefix . 'secrets',
+            $this->cachePrefix . 'resourcequotas',
+            $this->cachePrefix . 'limitranges',
+            $this->cachePrefix . 'horizontalpodautoscalers',
             $this->cachePrefix . 'namespaces',
         ];
 
@@ -278,6 +416,11 @@ class CachedKubernetesService
             'replicationcontrollers' => $this->cachePrefix . 'replicationcontrollers',
             'jobs' => $this->cachePrefix . 'jobs',
             'cronjobs' => $this->cachePrefix . 'cronjobs',
+            'configmaps' => $this->cachePrefix . 'configmaps',
+            'secrets' => $this->cachePrefix . 'secrets',
+            'resourcequotas' => $this->cachePrefix . 'resourcequotas',
+            'limitranges' => $this->cachePrefix . 'limitranges',
+            'horizontalpodautoscalers' => $this->cachePrefix . 'horizontalpodautoscalers',
             'namespaces' => $this->cachePrefix . 'namespaces',
         ];
 
