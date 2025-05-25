@@ -52,8 +52,14 @@ class ClusterRoleList extends Component
 
         try {
             $kubeconfigPath = env('KUBECONFIG_PATH', storage_path('app/kubeconfigs')) . '/' . $this->selectedCluster;
-            $service = new KubernetesService($kubeconfigPath);
-            $response = $service->getClusterRoles();
+
+            try {
+                $service = new \App\Services\CachedKubernetesService($kubeconfigPath);
+                $response = $service->getClusterRoles();
+            } catch (\Exception $e) {
+                $service = new KubernetesService($kubeconfigPath);
+                $response = $service->getClusterRoles();
+            }
 
             if (isset($response['items'])) {
                 $this->clusterRoles = $response['items'];
@@ -64,6 +70,34 @@ class ClusterRoleList extends Component
             $this->error = 'Failed to load cluster roles: ' . $e->getMessage();
         } finally {
             $this->loading = false;
+        }
+    }
+
+    public function refreshData()
+    {
+        try {
+            $this->selectedCluster = session('selectedCluster') ?? session('selected_cluster');
+
+            if (!$this->selectedCluster) {
+                $this->error = 'Please select a cluster first';
+                return;
+            }
+
+            $kubeconfigPath = env('KUBECONFIG_PATH', storage_path('app/kubeconfigs')) . '/' . $this->selectedCluster;
+            $service = new \App\Services\CachedKubernetesService($kubeconfigPath);
+
+            $service->clearCache();
+            $this->loadClusterRoles();
+
+            $this->dispatch('notify', [
+                'type' => 'success',
+                'message' => 'Cluster roles data refreshed successfully'
+            ]);
+        } catch (\Exception $e) {
+            $this->dispatch('notify', [
+                'type' => 'error',
+                'message' => 'Failed to refresh data: ' . $e->getMessage()
+            ]);
         }
     }
 

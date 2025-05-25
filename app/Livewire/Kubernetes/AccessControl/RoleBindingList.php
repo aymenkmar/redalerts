@@ -17,19 +17,19 @@ class RoleBindingList extends Component
     public $selectedNamespaces = ['all'];
     public $namespaces = [];
     public $showNamespaceFilter = false;
-    
+
     // Pagination properties
     public $perPage = 10;
     public $currentPage = 1;
     public $totalItems = 0;
-    
+
     protected $listeners = ['clusterSelected' => 'handleClusterSelected'];
 
     public function mount()
     {
         // Get the selected cluster from session
         $this->selectedCluster = session('selectedCluster');
-        
+
         if ($this->selectedCluster) {
             $this->loadNamespaces();
             $this->loadRoleBindings();
@@ -40,18 +40,24 @@ class RoleBindingList extends Component
     {
         // Save the selected cluster to session
         session(['selectedCluster' => $this->selectedCluster]);
-        
+
         // Load role bindings for the selected cluster
         $this->loadNamespaces();
         $this->loadRoleBindings();
     }
-    
+
     public function loadNamespaces()
     {
         try {
             $kubeconfigPath = env('KUBECONFIG_PATH', storage_path('app/kubeconfigs')) . '/' . $this->selectedCluster;
-            $service = new KubernetesService($kubeconfigPath);
-            $response = $service->getNamespaces();
+
+            try {
+                $service = new \App\Services\CachedKubernetesService($kubeconfigPath);
+                $response = $service->getNamespaces();
+            } catch (\Exception $e) {
+                $service = new KubernetesService($kubeconfigPath);
+                $response = $service->getNamespaces();
+            }
 
             if (isset($response['items'])) {
                 $this->namespaces = collect($response['items'])
@@ -74,8 +80,14 @@ class RoleBindingList extends Component
 
         try {
             $kubeconfigPath = env('KUBECONFIG_PATH', storage_path('app/kubeconfigs')) . '/' . $this->selectedCluster;
-            $service = new KubernetesService($kubeconfigPath);
-            $response = $service->getRoleBindings();
+
+            try {
+                $service = new \App\Services\CachedKubernetesService($kubeconfigPath);
+                $response = $service->getRoleBindings();
+            } catch (\Exception $e) {
+                $service = new KubernetesService($kubeconfigPath);
+                $response = $service->getRoleBindings();
+            }
 
             if (isset($response['items'])) {
                 $this->roleBindings = $response['items'];
@@ -88,7 +100,36 @@ class RoleBindingList extends Component
             $this->loading = false;
         }
     }
-    
+
+    public function refreshData()
+    {
+        try {
+            $this->selectedCluster = session('selectedCluster') ?? session('selected_cluster');
+
+            if (!$this->selectedCluster) {
+                $this->error = 'Please select a cluster first';
+                return;
+            }
+
+            $kubeconfigPath = env('KUBECONFIG_PATH', storage_path('app/kubeconfigs')) . '/' . $this->selectedCluster;
+            $service = new \App\Services\CachedKubernetesService($kubeconfigPath);
+
+            $service->clearCache();
+            $this->loadNamespaces();
+            $this->loadRoleBindings();
+
+            $this->dispatch('notify', [
+                'type' => 'success',
+                'message' => 'Role bindings data refreshed successfully'
+            ]);
+        } catch (\Exception $e) {
+            $this->dispatch('notify', [
+                'type' => 'error',
+                'message' => 'Failed to refresh data: ' . $e->getMessage()
+            ]);
+        }
+    }
+
     public function toggleNamespaceFilter()
     {
         $this->showNamespaceFilter = !$this->showNamespaceFilter;
@@ -142,8 +183,8 @@ class RoleBindingList extends Component
                 $name = strtolower($roleBinding['metadata']['name'] ?? '');
                 $namespace = strtolower($roleBinding['metadata']['namespace'] ?? 'default');
                 $roleRef = strtolower($roleBinding['roleRef']['name'] ?? '');
-                
-                return str_contains($name, $searchTerm) || 
+
+                return str_contains($name, $searchTerm) ||
                        str_contains($namespace, $searchTerm) ||
                        str_contains($roleRef, $searchTerm);
             });
@@ -151,7 +192,7 @@ class RoleBindingList extends Component
 
         // Calculate total for pagination
         $this->totalItems = $roleBindings->count();
-        
+
         // Reset current page if it's out of bounds
         $maxPage = max(1, ceil($this->totalItems / $this->perPage));
         if ($this->currentPage > $maxPage) {
@@ -175,7 +216,7 @@ class RoleBindingList extends Component
                 $kind = $subject['kind'] ?? '';
                 $name = $subject['name'] ?? '';
                 $namespace = isset($subject['namespace']) ? "/{$subject['namespace']}" : '';
-                
+
                 return "{$kind}: {$name}{$namespace}";
             })
             ->implode(', ');
@@ -190,21 +231,21 @@ class RoleBindingList extends Component
         $creationTime = Carbon::parse($timestamp);
         $now = Carbon::now();
         $diffInDays = $creationTime->diffInDays($now);
-        
+
         if ($diffInDays > 0) {
             return $diffInDays . 'd';
         }
-        
+
         $diffInHours = $creationTime->diffInHours($now);
         if ($diffInHours > 0) {
             return $diffInHours . 'h';
         }
-        
+
         $diffInMinutes = $creationTime->diffInMinutes($now);
         if ($diffInMinutes > 0) {
             return $diffInMinutes . 'm';
         }
-        
+
         return $creationTime->diffInSeconds($now) . 's';
     }
 
@@ -222,16 +263,16 @@ class RoleBindingList extends Component
             $this->currentPage++;
         }
     }
-    
+
     public function goToPage($page)
     {
         // Validate the page number to ensure it's within valid range
         $maxPage = max(1, ceil($this->totalItems / $this->perPage));
         $page = max(1, min($maxPage, (int)$page));
-        
+
         $this->currentPage = $page;
     }
-    
+
     public function handleClusterSelected($clusterName)
     {
         $this->selectedCluster = $clusterName;
@@ -248,10 +289,10 @@ class RoleBindingList extends Component
         } catch (\Exception $e) {
             // Log the error
             \Illuminate\Support\Facades\Log::error('Error rendering Role Bindings page: ' . $e->getMessage());
-            
+
             // Reset pagination to first page
             $this->currentPage = 1;
-            
+
             // Return the view with an error message
             return view('livewire.kubernetes.access-control.role-binding-list', [
                 'filteredRoleBindings' => [],

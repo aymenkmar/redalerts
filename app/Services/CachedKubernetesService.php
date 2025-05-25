@@ -350,6 +350,380 @@ class CachedKubernetesService
     }
 
     /**
+     * Get services with caching
+     */
+    public function getServices($forceRefresh = false)
+    {
+        $cacheKey = $this->cachePrefix . 'services';
+
+        if ($forceRefresh) {
+            Cache::forget($cacheKey);
+        }
+
+        return Cache::remember($cacheKey, $this->defaultCacheTtl, function () {
+            try {
+                Log::info('Fetching services from Kubernetes API');
+                return $this->kubernetesService->getServices();
+            } catch (\Exception $e) {
+                Log::error('Failed to fetch services: ' . $e->getMessage());
+                throw $e;
+            }
+        });
+    }
+
+    /**
+     * Get endpoints with caching
+     */
+    public function getEndpoints($forceRefresh = false)
+    {
+        $cacheKey = $this->cachePrefix . 'endpoints';
+
+        if ($forceRefresh) {
+            Cache::forget($cacheKey);
+        }
+
+        return Cache::remember($cacheKey, $this->defaultCacheTtl, function () {
+            try {
+                Log::info('Fetching endpoints from Kubernetes API');
+                return $this->kubernetesService->getEndpoints();
+            } catch (\Exception $e) {
+                Log::error('Failed to fetch endpoints: ' . $e->getMessage());
+                throw $e;
+            }
+        });
+    }
+
+    /**
+     * Get ingresses with caching
+     */
+    public function getIngresses($forceRefresh = false)
+    {
+        $cacheKey = $this->cachePrefix . 'ingresses';
+
+        if ($forceRefresh) {
+            Cache::forget($cacheKey);
+        }
+
+        return Cache::remember($cacheKey, $this->defaultCacheTtl, function () {
+            try {
+                Log::info('Fetching ingresses from Kubernetes API');
+                return $this->kubernetesService->getIngresses();
+            } catch (\Exception $e) {
+                Log::error('Failed to fetch ingresses: ' . $e->getMessage());
+                throw $e;
+            }
+        });
+    }
+
+    /**
+     * Get ingress classes with caching
+     */
+    public function getIngressClasses($forceRefresh = false)
+    {
+        $cacheKey = $this->cachePrefix . 'ingressclasses';
+
+        if ($forceRefresh) {
+            Cache::forget($cacheKey);
+        }
+
+        return Cache::remember($cacheKey, $this->defaultCacheTtl, function () {
+            try {
+                Log::info('Fetching ingress classes from Kubernetes API');
+                return $this->kubernetesService->getIngressClasses();
+            } catch (\Exception $e) {
+                Log::error('Failed to fetch ingress classes: ' . $e->getMessage());
+                throw $e;
+            }
+        });
+    }
+
+    /**
+     * Get network policies with caching
+     */
+    public function getNetworkPolicies($forceRefresh = false)
+    {
+        $cacheKey = $this->cachePrefix . 'networkpolicies';
+
+        if ($forceRefresh) {
+            Cache::forget($cacheKey);
+        }
+
+        return Cache::remember($cacheKey, $this->defaultCacheTtl, function () {
+            try {
+                Log::info('Fetching network policies from Kubernetes API');
+                return $this->kubernetesService->getNetworkPolicies();
+            } catch (\Exception $e) {
+                Log::error('Failed to fetch network policies: ' . $e->getMessage());
+                throw $e;
+            }
+        });
+    }
+
+    /**
+     * Get persistent volume claims with caching
+     */
+    public function getPersistentVolumeClaims($forceRefresh = false)
+    {
+        $cacheKey = $this->cachePrefix . 'persistentvolumeclaims';
+
+        if ($forceRefresh) {
+            Cache::forget($cacheKey);
+        }
+
+        return Cache::remember($cacheKey, $this->defaultCacheTtl, function () {
+            try {
+                Log::info('Fetching persistent volume claims from Kubernetes API');
+                return $this->kubernetesService->getPersistentVolumeClaims();
+            } catch (\Exception $e) {
+                Log::error('Failed to fetch persistent volume claims: ' . $e->getMessage());
+                throw $e;
+            }
+        });
+    }
+
+    /**
+     * Get persistent volumes with caching
+     */
+    public function getPersistentVolumes($forceRefresh = false)
+    {
+        $cacheKey = $this->cachePrefix . 'persistentvolumes';
+
+        if ($forceRefresh) {
+            Cache::forget($cacheKey);
+        }
+
+        return Cache::remember($cacheKey, $this->defaultCacheTtl, function () {
+            try {
+                Log::info('Fetching persistent volumes from Kubernetes API');
+                return $this->kubernetesService->getPersistentVolumes();
+            } catch (\Exception $e) {
+                Log::error('Failed to fetch persistent volumes: ' . $e->getMessage());
+                throw $e;
+            }
+        });
+    }
+
+    /**
+     * Get storage classes with caching
+     */
+    public function getStorageClasses($forceRefresh = false)
+    {
+        $cacheKey = $this->cachePrefix . 'storageclasses';
+
+        if ($forceRefresh) {
+            Cache::forget($cacheKey);
+        }
+
+        return Cache::remember($cacheKey, $this->defaultCacheTtl, function () {
+            try {
+                Log::info('Fetching storage classes from Kubernetes API');
+                return $this->kubernetesService->getStorageClasses();
+            } catch (\Exception $e) {
+                Log::error('Failed to fetch storage classes: ' . $e->getMessage());
+                throw $e;
+            }
+        });
+    }
+
+    /**
+     * Get events with caching
+     */
+    public function getEvents($forceRefresh = false)
+    {
+        $cacheKey = $this->cachePrefix . 'events';
+
+        if ($forceRefresh) {
+            Cache::forget($cacheKey);
+        }
+
+        return Cache::remember($cacheKey, $this->defaultCacheTtl, function () {
+            try {
+                Log::info('Fetching events from Kubernetes API');
+                return $this->kubernetesService->getEvents();
+            } catch (\Exception $e) {
+                Log::error('Failed to fetch events: ' . $e->getMessage());
+                throw $e;
+            }
+        });
+    }
+
+    /**
+     * Get service accounts with caching
+     */
+    public function getServiceAccounts($forceRefresh = false)
+    {
+        $cacheKey = $this->cachePrefix . 'serviceaccounts';
+
+        if ($forceRefresh) {
+            Cache::forget($cacheKey);
+        }
+
+        return Cache::remember($cacheKey, $this->defaultCacheTtl, function () {
+            try {
+                Log::info('Fetching service accounts from Kubernetes API');
+                return $this->kubernetesService->getServiceAccounts();
+            } catch (\Exception $e) {
+                Log::error('Failed to fetch service accounts: ' . $e->getMessage());
+                throw $e;
+            }
+        });
+    }
+
+    /**
+     * Get cluster roles with caching
+     */
+    public function getClusterRoles($forceRefresh = false)
+    {
+        $cacheKey = $this->cachePrefix . 'clusterroles';
+
+        if ($forceRefresh) {
+            Cache::forget($cacheKey);
+        }
+
+        return Cache::remember($cacheKey, $this->defaultCacheTtl, function () {
+            try {
+                Log::info('Fetching cluster roles from Kubernetes API');
+                return $this->kubernetesService->getClusterRoles();
+            } catch (\Exception $e) {
+                Log::error('Failed to fetch cluster roles: ' . $e->getMessage());
+                throw $e;
+            }
+        });
+    }
+
+    /**
+     * Get roles with caching
+     */
+    public function getRoles($forceRefresh = false)
+    {
+        $cacheKey = $this->cachePrefix . 'roles';
+
+        if ($forceRefresh) {
+            Cache::forget($cacheKey);
+        }
+
+        return Cache::remember($cacheKey, $this->defaultCacheTtl, function () {
+            try {
+                Log::info('Fetching roles from Kubernetes API');
+                return $this->kubernetesService->getRoles();
+            } catch (\Exception $e) {
+                Log::error('Failed to fetch roles: ' . $e->getMessage());
+                throw $e;
+            }
+        });
+    }
+
+    /**
+     * Get cluster role bindings with caching
+     */
+    public function getClusterRoleBindings($forceRefresh = false)
+    {
+        $cacheKey = $this->cachePrefix . 'clusterrolebindings';
+
+        if ($forceRefresh) {
+            Cache::forget($cacheKey);
+        }
+
+        return Cache::remember($cacheKey, $this->defaultCacheTtl, function () {
+            try {
+                Log::info('Fetching cluster role bindings from Kubernetes API');
+                return $this->kubernetesService->getClusterRoleBindings();
+            } catch (\Exception $e) {
+                Log::error('Failed to fetch cluster role bindings: ' . $e->getMessage());
+                throw $e;
+            }
+        });
+    }
+
+    /**
+     * Get role bindings with caching
+     */
+    public function getRoleBindings($forceRefresh = false)
+    {
+        $cacheKey = $this->cachePrefix . 'rolebindings';
+
+        if ($forceRefresh) {
+            Cache::forget($cacheKey);
+        }
+
+        return Cache::remember($cacheKey, $this->defaultCacheTtl, function () {
+            try {
+                Log::info('Fetching role bindings from Kubernetes API');
+                return $this->kubernetesService->getRoleBindings();
+            } catch (\Exception $e) {
+                Log::error('Failed to fetch role bindings: ' . $e->getMessage());
+                throw $e;
+            }
+        });
+    }
+
+    /**
+     * Get custom resource definitions with caching
+     */
+    public function getCustomResourceDefinitions($forceRefresh = false)
+    {
+        $cacheKey = $this->cachePrefix . 'customresourcedefinitions';
+
+        if ($forceRefresh) {
+            Cache::forget($cacheKey);
+        }
+
+        return Cache::remember($cacheKey, $this->defaultCacheTtl, function () {
+            try {
+                Log::info('Fetching custom resource definitions from Kubernetes API');
+                return $this->kubernetesService->getCustomResourceDefinitions();
+            } catch (\Exception $e) {
+                Log::error('Failed to fetch custom resource definitions: ' . $e->getMessage());
+                throw $e;
+            }
+        });
+    }
+
+    /**
+     * Get ACME challenges with caching
+     */
+    public function getChallenges($forceRefresh = false)
+    {
+        $cacheKey = $this->cachePrefix . 'challenges';
+
+        if ($forceRefresh) {
+            Cache::forget($cacheKey);
+        }
+
+        return Cache::remember($cacheKey, $this->defaultCacheTtl, function () {
+            try {
+                Log::info('Fetching ACME challenges from Kubernetes API');
+                return $this->kubernetesService->getChallenges();
+            } catch (\Exception $e) {
+                Log::error('Failed to fetch ACME challenges: ' . $e->getMessage());
+                throw $e;
+            }
+        });
+    }
+
+    /**
+     * Get ACME orders with caching
+     */
+    public function getOrders($forceRefresh = false)
+    {
+        $cacheKey = $this->cachePrefix . 'orders';
+
+        if ($forceRefresh) {
+            Cache::forget($cacheKey);
+        }
+
+        return Cache::remember($cacheKey, $this->defaultCacheTtl, function () {
+            try {
+                Log::info('Fetching ACME orders from Kubernetes API');
+                return $this->kubernetesService->getOrders();
+            } catch (\Exception $e) {
+                Log::error('Failed to fetch ACME orders: ' . $e->getMessage());
+                throw $e;
+            }
+        });
+    }
+
+    /**
      * Get namespaces with caching
      */
     public function getNamespaces($forceRefresh = false)
@@ -391,6 +765,23 @@ class CachedKubernetesService
             $this->cachePrefix . 'resourcequotas',
             $this->cachePrefix . 'limitranges',
             $this->cachePrefix . 'horizontalpodautoscalers',
+            $this->cachePrefix . 'services',
+            $this->cachePrefix . 'endpoints',
+            $this->cachePrefix . 'ingresses',
+            $this->cachePrefix . 'ingressclasses',
+            $this->cachePrefix . 'networkpolicies',
+            $this->cachePrefix . 'persistentvolumeclaims',
+            $this->cachePrefix . 'persistentvolumes',
+            $this->cachePrefix . 'storageclasses',
+            $this->cachePrefix . 'events',
+            $this->cachePrefix . 'serviceaccounts',
+            $this->cachePrefix . 'clusterroles',
+            $this->cachePrefix . 'roles',
+            $this->cachePrefix . 'clusterrolebindings',
+            $this->cachePrefix . 'rolebindings',
+            $this->cachePrefix . 'customresourcedefinitions',
+            $this->cachePrefix . 'challenges',
+            $this->cachePrefix . 'orders',
             $this->cachePrefix . 'namespaces',
         ];
 
@@ -421,6 +812,23 @@ class CachedKubernetesService
             'resourcequotas' => $this->cachePrefix . 'resourcequotas',
             'limitranges' => $this->cachePrefix . 'limitranges',
             'horizontalpodautoscalers' => $this->cachePrefix . 'horizontalpodautoscalers',
+            'services' => $this->cachePrefix . 'services',
+            'endpoints' => $this->cachePrefix . 'endpoints',
+            'ingresses' => $this->cachePrefix . 'ingresses',
+            'ingressclasses' => $this->cachePrefix . 'ingressclasses',
+            'networkpolicies' => $this->cachePrefix . 'networkpolicies',
+            'persistentvolumeclaims' => $this->cachePrefix . 'persistentvolumeclaims',
+            'persistentvolumes' => $this->cachePrefix . 'persistentvolumes',
+            'storageclasses' => $this->cachePrefix . 'storageclasses',
+            'events' => $this->cachePrefix . 'events',
+            'serviceaccounts' => $this->cachePrefix . 'serviceaccounts',
+            'clusterroles' => $this->cachePrefix . 'clusterroles',
+            'roles' => $this->cachePrefix . 'roles',
+            'clusterrolebindings' => $this->cachePrefix . 'clusterrolebindings',
+            'rolebindings' => $this->cachePrefix . 'rolebindings',
+            'customresourcedefinitions' => $this->cachePrefix . 'customresourcedefinitions',
+            'challenges' => $this->cachePrefix . 'challenges',
+            'orders' => $this->cachePrefix . 'orders',
             'namespaces' => $this->cachePrefix . 'namespaces',
         ];
 

@@ -1,5 +1,17 @@
-<div>
-    <h1 class="text-2xl font-bold mb-6">Custom Resource Definitions</h1>
+<div x-data="definitionsList()" x-init="init()">
+    <div class="flex justify-between items-center mb-6">
+        <h1 class="text-2xl font-bold">Custom Resource Definitions</h1>
+        <button
+            wire:click="refreshData"
+            class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+            :disabled="loading"
+        >
+            <svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+            </svg>
+            Refresh
+        </button>
+    </div>
 
     @if($error)
     <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-6" role="alert">
@@ -9,11 +21,70 @@
             </svg>
             <span class="block sm:inline">{{ $error }}</span>
         </div>
+        @if(str_contains($error, 'select a cluster'))
+        <div class="mt-3">
+            <p class="text-sm">Available clusters:</p>
+            @php
+                $kubeconfigPath = env('KUBECONFIG_PATH', storage_path('app/kubeconfigs'));
+                $clusters = [];
+                if (is_dir($kubeconfigPath)) {
+                    $files = scandir($kubeconfigPath);
+                    foreach ($files as $file) {
+                        if ($file !== '.' && $file !== '..' && is_file($kubeconfigPath . '/' . $file)) {
+                            $clusters[] = $file;
+                        }
+                    }
+                }
+            @endphp
+            @if(count($clusters) > 0)
+                <div class="flex flex-wrap gap-2 mt-2">
+                    @foreach($clusters as $cluster)
+                        <button
+                            onclick="selectCluster('{{ $cluster }}')"
+                            class="px-3 py-1 bg-blue-600 text-white text-sm rounded hover:bg-blue-700"
+                        >
+                            {{ $cluster }}
+                        </button>
+                    @endforeach
+                </div>
+                <script>
+                    function selectCluster(clusterName) {
+                        fetch('/kubernetes/select-cluster', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                            },
+                            body: JSON.stringify({ cluster_name: clusterName })
+                        }).then(() => {
+                            location.reload();
+                        });
+                    }
+                </script>
+            @else
+                <p class="text-sm text-gray-600 mt-2">No clusters found. Please upload a kubeconfig file first.</p>
+            @endif
+        </div>
+        @endif
     </div>
     @endif
 
+    <!-- Search Input (No namespace filter since CRDs are cluster-scoped) -->
     <div class="flex flex-col sm:flex-row gap-4 items-start sm:items-center mb-6">
-        @include('livewire.kubernetes.components.search-input')
+        <div class="relative flex-1 max-w-md">
+            <input
+                type="text"
+                x-model="searchTerm"
+                @input="filterDefinitions()"
+                placeholder="Search custom resource definitions..."
+                class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:ring-red-500 focus:border-red-500"
+            >
+            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                </svg>
+            </div>
+        </div>
     </div>
 
     <div class="bg-white rounded-lg shadow overflow-hidden">
@@ -26,60 +97,180 @@
             <p class="text-gray-600">Please select a cluster from the dropdown to view custom resource definitions.</p>
         </div>
         @else
-        <div class="overflow-x-auto">
+        <!-- Loading state for client-side operations -->
+        <div x-show="clientLoading" class="flex justify-center items-center h-64">
+            <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-red-600"></div>
+        </div>
+
+        <!-- Table -->
+        <div x-show="!clientLoading" class="overflow-x-auto">
             <table class="min-w-full divide-y divide-gray-200">
                 <thead class="bg-gray-50">
                     <tr>
-                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Resource
-                        </th>
-                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Group
-                        </th>
-                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Version
-                        </th>
-                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Scope
-                        </th>
-                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Age
-                        </th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Resource</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Group</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Version</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Scope</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Age</th>
                     </tr>
                 </thead>
                 <tbody class="bg-white divide-y divide-gray-200">
-                    @forelse($filteredDefinitions as $definition)
-                    <tr class="hover:bg-gray-50">
-                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                            {{ $definition['spec']['names']['kind'] ?? 'N/A' }}
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            {{ $definition['spec']['group'] ?? 'N/A' }}
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            {{ $this->getStorageVersion($definition) }}
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            {{ $definition['spec']['scope'] ?? 'N/A' }}
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            {{ $this->formatAge($definition['metadata']['creationTimestamp']) }}
-                        </td>
-                    </tr>
-                    @empty
-                    <tr>
+                    <template x-for="definition in paginatedDefinitions" :key="definition.metadata.name">
+                        <tr class="hover:bg-gray-50">
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900" x-text="getResource(definition)"></td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500" x-text="getGroup(definition)"></td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500" x-text="getStorageVersion(definition)"></td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500" x-text="getScope(definition)"></td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500" x-text="formatAge(definition.metadata.creationTimestamp)"></td>
+                        </tr>
+                    </template>
+
+                    <!-- Empty state -->
+                    <tr x-show="filteredDefinitions.length === 0">
                         <td colspan="5" class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-center">
-                            No custom resource definitions found
+                            <span x-show="searchTerm">No custom resource definitions found matching your search</span>
+                            <span x-show="!searchTerm">No custom resource definitions found</span>
                         </td>
                     </tr>
-                    @endforelse
                 </tbody>
             </table>
         </div>
-        @endif
 
-        @if($selectedCluster && !$loading)
-            @include('livewire.kubernetes.components.pagination')
+        <!-- Client-side Pagination -->
+        <div x-show="!clientLoading && filteredDefinitions.length > 0" class="flex flex-col sm:flex-row justify-between items-center mt-4 px-6 py-3 bg-white border-t border-gray-200">
+            <div class="text-sm text-gray-700 mb-2 sm:mb-0">
+                Showing
+                <span class="font-medium" x-text="((currentPage - 1) * perPage) + 1"></span>
+                to
+                <span class="font-medium" x-text="Math.min(currentPage * perPage, filteredDefinitions.length)"></span>
+                of
+                <span class="font-medium" x-text="filteredDefinitions.length"></span>
+                results
+            </div>
+
+            <div class="flex items-center space-x-2">
+                <button @click="goToPage(1)" :disabled="currentPage <= 1" class="px-3 py-1 rounded border bg-white text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed" title="Go to first page">First</button>
+                <button @click="goToPage(currentPage - 1)" :disabled="currentPage <= 1" class="px-3 py-1 rounded border bg-white text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed">Previous</button>
+                <template x-for="page in getVisiblePages()" :key="page">
+                    <button @click="goToPage(page)" class="px-3 py-1 rounded border" :class="currentPage === page ? 'bg-red-600 text-white' : 'bg-white text-gray-700 hover:bg-gray-50'" x-text="page"></button>
+                </template>
+                <button @click="goToPage(currentPage + 1)" :disabled="currentPage >= Math.ceil(filteredDefinitions.length / perPage)" class="px-3 py-1 rounded border bg-white text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed">Next</button>
+                <button @click="goToPage(Math.ceil(filteredDefinitions.length / perPage))" :disabled="currentPage >= Math.ceil(filteredDefinitions.length / perPage)" class="px-3 py-1 rounded border bg-white text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed" title="Go to last page">Last</button>
+            </div>
+
+            <div class="hidden sm:flex items-center space-x-2 mt-2 sm:mt-0">
+                <span class="text-sm text-gray-700">Items per page:</span>
+                <select x-model="perPage" @change="currentPage = 1; updatePagination()" class="border-gray-300 rounded-md text-sm focus:ring-red-500 focus:border-red-500">
+                    <option value="10">10</option>
+                    <option value="25">25</option>
+                    <option value="50">50</option>
+                    <option value="100">100</option>
+                </select>
+            </div>
+        </div>
         @endif
     </div>
+
+    <script>
+        function definitionsList() {
+            return {
+                allDefinitions: @json($definitions),
+                filteredDefinitions: [],
+                paginatedDefinitions: [],
+                searchTerm: '',
+                clientLoading: false,
+                currentPage: 1,
+                perPage: 25,
+
+                init() { this.filterDefinitions(); },
+
+                filterDefinitions() {
+                    this.clientLoading = true;
+                    setTimeout(() => {
+                        let filtered = [...this.allDefinitions];
+                        if (this.searchTerm.trim()) {
+                            const searchLower = this.searchTerm.toLowerCase();
+                            filtered = filtered.filter(definition => {
+                                const resource = this.getResource(definition).toLowerCase();
+                                const group = this.getGroup(definition).toLowerCase();
+                                const version = this.getStorageVersion(definition).toLowerCase();
+                                const scope = this.getScope(definition).toLowerCase();
+                                return resource.includes(searchLower) || group.includes(searchLower) ||
+                                       version.includes(searchLower) || scope.includes(searchLower);
+                            });
+                        }
+                        this.filteredDefinitions = filtered;
+                        this.currentPage = 1;
+                        this.updatePagination();
+                        this.clientLoading = false;
+                    }, 100);
+                },
+
+                updatePagination() {
+                    const start = (this.currentPage - 1) * this.perPage;
+                    const end = start + this.perPage;
+                    this.paginatedDefinitions = this.filteredDefinitions.slice(start, end);
+                },
+
+                goToPage(page) {
+                    const maxPage = Math.ceil(this.filteredDefinitions.length / this.perPage);
+                    if (page >= 1 && page <= maxPage) {
+                        this.currentPage = page;
+                        this.updatePagination();
+                    }
+                },
+
+                getVisiblePages() {
+                    const totalPages = Math.ceil(this.filteredDefinitions.length / this.perPage);
+                    const maxVisible = 5;
+                    const halfVisible = Math.floor(maxVisible / 2);
+                    let startPage = Math.max(1, this.currentPage - halfVisible);
+                    let endPage = Math.min(totalPages, startPage + maxVisible - 1);
+                    if (endPage - startPage + 1 < maxVisible) {
+                        startPage = Math.max(1, endPage - maxVisible + 1);
+                    }
+                    const pages = [];
+                    for (let i = startPage; i <= endPage; i++) {
+                        pages.push(i);
+                    }
+                    return pages;
+                },
+
+                getResource(definition) {
+                    return (definition.spec && definition.spec.names && definition.spec.names.kind) || 'N/A';
+                },
+
+                getGroup(definition) {
+                    return (definition.spec && definition.spec.group) || 'N/A';
+                },
+
+                getStorageVersion(definition) {
+                    if (!definition.spec || !definition.spec.versions || !Array.isArray(definition.spec.versions)) {
+                        return 'N/A';
+                    }
+                    const storageVersion = definition.spec.versions.find(v => v.storage);
+                    return storageVersion ? storageVersion.name : (definition.spec.versions[0] ? definition.spec.versions[0].name : 'N/A');
+                },
+
+                getScope(definition) {
+                    return (definition.spec && definition.spec.scope) || 'N/A';
+                },
+
+                formatAge(timestamp) {
+                    if (!timestamp) return 'N/A';
+                    const now = new Date();
+                    const created = new Date(timestamp);
+                    const diffMs = now - created;
+                    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+                    if (diffDays > 0) return diffDays + 'd';
+                    const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+                    if (diffHours > 0) return diffHours + 'h';
+                    const diffMinutes = Math.floor(diffMs / (1000 * 60));
+                    if (diffMinutes > 0) return diffMinutes + 'm';
+                    const diffSeconds = Math.floor(diffMs / 1000);
+                    return diffSeconds + 's';
+                }
+            }
+        }
+    </script>
 </div>
