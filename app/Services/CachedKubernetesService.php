@@ -724,6 +724,94 @@ class CachedKubernetesService
     }
 
     /**
+     * Get certificates with caching
+     */
+    public function getCertificates($forceRefresh = false)
+    {
+        $cacheKey = $this->cachePrefix . 'certificates';
+
+        if ($forceRefresh) {
+            Cache::forget($cacheKey);
+        }
+
+        return Cache::remember($cacheKey, $this->defaultCacheTtl, function () {
+            try {
+                Log::info('Fetching certificates from Kubernetes API');
+                return $this->kubernetesService->getCertificates();
+            } catch (\Exception $e) {
+                Log::error('Failed to fetch certificates: ' . $e->getMessage());
+                throw $e;
+            }
+        });
+    }
+
+    /**
+     * Get certificate requests with caching
+     */
+    public function getCertificateRequests($forceRefresh = false)
+    {
+        $cacheKey = $this->cachePrefix . 'certificaterequests';
+
+        if ($forceRefresh) {
+            Cache::forget($cacheKey);
+        }
+
+        return Cache::remember($cacheKey, $this->defaultCacheTtl, function () {
+            try {
+                Log::info('Fetching certificate requests from Kubernetes API');
+                return $this->kubernetesService->getCertificateRequests();
+            } catch (\Exception $e) {
+                Log::error('Failed to fetch certificate requests: ' . $e->getMessage());
+                throw $e;
+            }
+        });
+    }
+
+    /**
+     * Get issuers with caching
+     */
+    public function getIssuers($forceRefresh = false)
+    {
+        $cacheKey = $this->cachePrefix . 'issuers';
+
+        if ($forceRefresh) {
+            Cache::forget($cacheKey);
+        }
+
+        return Cache::remember($cacheKey, $this->defaultCacheTtl, function () {
+            try {
+                Log::info('Fetching issuers from Kubernetes API');
+                return $this->kubernetesService->getIssuers();
+            } catch (\Exception $e) {
+                Log::error('Failed to fetch issuers: ' . $e->getMessage());
+                throw $e;
+            }
+        });
+    }
+
+    /**
+     * Get cluster issuers with caching
+     */
+    public function getClusterIssuers($forceRefresh = false)
+    {
+        $cacheKey = $this->cachePrefix . 'clusterissuers';
+
+        if ($forceRefresh) {
+            Cache::forget($cacheKey);
+        }
+
+        return Cache::remember($cacheKey, $this->defaultCacheTtl, function () {
+            try {
+                Log::info('Fetching cluster issuers from Kubernetes API');
+                return $this->kubernetesService->getClusterIssuers();
+            } catch (\Exception $e) {
+                Log::error('Failed to fetch cluster issuers: ' . $e->getMessage());
+                throw $e;
+            }
+        });
+    }
+
+    /**
      * Get namespaces with caching
      */
     public function getNamespaces($forceRefresh = false)
@@ -782,6 +870,10 @@ class CachedKubernetesService
             $this->cachePrefix . 'customresourcedefinitions',
             $this->cachePrefix . 'challenges',
             $this->cachePrefix . 'orders',
+            $this->cachePrefix . 'certificates',
+            $this->cachePrefix . 'certificaterequests',
+            $this->cachePrefix . 'issuers',
+            $this->cachePrefix . 'clusterissuers',
             $this->cachePrefix . 'namespaces',
         ];
 
@@ -829,6 +921,10 @@ class CachedKubernetesService
             'customresourcedefinitions' => $this->cachePrefix . 'customresourcedefinitions',
             'challenges' => $this->cachePrefix . 'challenges',
             'orders' => $this->cachePrefix . 'orders',
+            'certificates' => $this->cachePrefix . 'certificates',
+            'certificaterequests' => $this->cachePrefix . 'certificaterequests',
+            'issuers' => $this->cachePrefix . 'issuers',
+            'clusterissuers' => $this->cachePrefix . 'clusterissuers',
             'namespaces' => $this->cachePrefix . 'namespaces',
         ];
 

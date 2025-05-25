@@ -54,8 +54,14 @@ class IssuerList extends Component
     {
         try {
             $kubeconfigPath = env('KUBECONFIG_PATH', storage_path('app/kubeconfigs')) . '/' . $this->selectedCluster;
-            $service = new KubernetesService($kubeconfigPath);
-            $response = $service->getNamespaces();
+
+            try {
+                $service = new \App\Services\CachedKubernetesService($kubeconfigPath);
+                $response = $service->getNamespaces();
+            } catch (\Exception $e) {
+                $service = new KubernetesService($kubeconfigPath);
+                $response = $service->getNamespaces();
+            }
 
             if (isset($response['items'])) {
                 $this->namespaces = collect($response['items'])
@@ -78,8 +84,14 @@ class IssuerList extends Component
 
         try {
             $kubeconfigPath = env('KUBECONFIG_PATH', storage_path('app/kubeconfigs')) . '/' . $this->selectedCluster;
-            $service = new KubernetesService($kubeconfigPath);
-            $response = $service->getIssuers();
+
+            try {
+                $service = new \App\Services\CachedKubernetesService($kubeconfigPath);
+                $response = $service->getIssuers();
+            } catch (\Exception $e) {
+                $service = new KubernetesService($kubeconfigPath);
+                $response = $service->getIssuers();
+            }
 
             if (isset($response['items'])) {
                 $this->issuers = $response['items'];
@@ -90,6 +102,35 @@ class IssuerList extends Component
             $this->error = 'Failed to load issuers: ' . $e->getMessage();
         } finally {
             $this->loading = false;
+        }
+    }
+
+    public function refreshData()
+    {
+        try {
+            $this->selectedCluster = session('selectedCluster') ?? session('selected_cluster');
+
+            if (!$this->selectedCluster) {
+                $this->error = 'Please select a cluster first';
+                return;
+            }
+
+            $kubeconfigPath = env('KUBECONFIG_PATH', storage_path('app/kubeconfigs')) . '/' . $this->selectedCluster;
+            $service = new \App\Services\CachedKubernetesService($kubeconfigPath);
+
+            $service->clearCache();
+            $this->loadNamespaces();
+            $this->loadIssuers();
+
+            $this->dispatch('notify', [
+                'type' => 'success',
+                'message' => 'Issuers data refreshed successfully'
+            ]);
+        } catch (\Exception $e) {
+            $this->dispatch('notify', [
+                'type' => 'error',
+                'message' => 'Failed to refresh data: ' . $e->getMessage()
+            ]);
         }
     }
 

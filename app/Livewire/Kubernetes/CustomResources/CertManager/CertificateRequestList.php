@@ -17,19 +17,19 @@ class CertificateRequestList extends Component
     public $selectedNamespaces = ['all'];
     public $namespaces = [];
     public $showNamespaceFilter = false;
-    
+
     // Pagination properties
     public $perPage = 10;
     public $currentPage = 1;
     public $totalItems = 0;
-    
+
     protected $listeners = ['clusterSelected' => 'handleClusterSelected'];
 
     public function mount()
     {
         // Get the selected cluster from session
         $this->selectedCluster = session('selectedCluster');
-        
+
         if ($this->selectedCluster) {
             $this->loadNamespaces();
             $this->loadCertificateRequests();
@@ -40,18 +40,24 @@ class CertificateRequestList extends Component
     {
         // Save the selected cluster to session
         session(['selectedCluster' => $this->selectedCluster]);
-        
+
         // Load certificate requests for the selected cluster
         $this->loadNamespaces();
         $this->loadCertificateRequests();
     }
-    
+
     public function loadNamespaces()
     {
         try {
             $kubeconfigPath = env('KUBECONFIG_PATH', storage_path('app/kubeconfigs')) . '/' . $this->selectedCluster;
-            $service = new KubernetesService($kubeconfigPath);
-            $response = $service->getNamespaces();
+
+            try {
+                $service = new \App\Services\CachedKubernetesService($kubeconfigPath);
+                $response = $service->getNamespaces();
+            } catch (\Exception $e) {
+                $service = new KubernetesService($kubeconfigPath);
+                $response = $service->getNamespaces();
+            }
 
             if (isset($response['items'])) {
                 $this->namespaces = collect($response['items'])
@@ -74,8 +80,14 @@ class CertificateRequestList extends Component
 
         try {
             $kubeconfigPath = env('KUBECONFIG_PATH', storage_path('app/kubeconfigs')) . '/' . $this->selectedCluster;
-            $service = new KubernetesService($kubeconfigPath);
-            $response = $service->getCertificateRequests();
+
+            try {
+                $service = new \App\Services\CachedKubernetesService($kubeconfigPath);
+                $response = $service->getCertificateRequests();
+            } catch (\Exception $e) {
+                $service = new KubernetesService($kubeconfigPath);
+                $response = $service->getCertificateRequests();
+            }
 
             if (isset($response['items'])) {
                 $this->certificateRequests = $response['items'];
@@ -88,7 +100,36 @@ class CertificateRequestList extends Component
             $this->loading = false;
         }
     }
-    
+
+    public function refreshData()
+    {
+        try {
+            $this->selectedCluster = session('selectedCluster') ?? session('selected_cluster');
+
+            if (!$this->selectedCluster) {
+                $this->error = 'Please select a cluster first';
+                return;
+            }
+
+            $kubeconfigPath = env('KUBECONFIG_PATH', storage_path('app/kubeconfigs')) . '/' . $this->selectedCluster;
+            $service = new \App\Services\CachedKubernetesService($kubeconfigPath);
+
+            $service->clearCache();
+            $this->loadNamespaces();
+            $this->loadCertificateRequests();
+
+            $this->dispatch('notify', [
+                'type' => 'success',
+                'message' => 'Certificate requests data refreshed successfully'
+            ]);
+        } catch (\Exception $e) {
+            $this->dispatch('notify', [
+                'type' => 'error',
+                'message' => 'Failed to refresh data: ' . $e->getMessage()
+            ]);
+        }
+    }
+
     public function toggleNamespaceFilter()
     {
         $this->showNamespaceFilter = !$this->showNamespaceFilter;
@@ -142,8 +183,8 @@ class CertificateRequestList extends Component
                 $name = strtolower($certificateRequest['metadata']['name'] ?? '');
                 $namespace = strtolower($certificateRequest['metadata']['namespace'] ?? 'default');
                 $issuer = strtolower($certificateRequest['spec']['issuerRef']['name'] ?? '');
-                
-                return str_contains($name, $searchTerm) || 
+
+                return str_contains($name, $searchTerm) ||
                        str_contains($namespace, $searchTerm) ||
                        str_contains($issuer, $searchTerm);
             });
@@ -151,7 +192,7 @@ class CertificateRequestList extends Component
 
         // Calculate total for pagination
         $this->totalItems = $certificateRequests->count();
-        
+
         // Reset current page if it's out of bounds
         $maxPage = max(1, ceil($this->totalItems / $this->perPage));
         if ($this->currentPage > $maxPage) {
@@ -171,7 +212,7 @@ class CertificateRequestList extends Component
         }
 
         foreach ($certificateRequest['status']['conditions'] as $condition) {
-            if (isset($condition['type']) && $condition['type'] === 'Approved' && 
+            if (isset($condition['type']) && $condition['type'] === 'Approved' &&
                 isset($condition['status']) && $condition['status'] === 'True') {
                 return true;
             }
@@ -187,7 +228,7 @@ class CertificateRequestList extends Component
         }
 
         foreach ($certificateRequest['status']['conditions'] as $condition) {
-            if (isset($condition['type']) && $condition['type'] === 'Denied' && 
+            if (isset($condition['type']) && $condition['type'] === 'Denied' &&
                 isset($condition['status']) && $condition['status'] === 'True') {
                 return true;
             }
@@ -203,7 +244,7 @@ class CertificateRequestList extends Component
         }
 
         foreach ($certificateRequest['status']['conditions'] as $condition) {
-            if (isset($condition['type']) && $condition['type'] === 'Ready' && 
+            if (isset($condition['type']) && $condition['type'] === 'Ready' &&
                 isset($condition['status']) && $condition['status'] === 'True') {
                 return true;
             }
@@ -221,21 +262,21 @@ class CertificateRequestList extends Component
         $creationTime = Carbon::parse($timestamp);
         $now = Carbon::now();
         $diffInDays = $creationTime->diffInDays($now);
-        
+
         if ($diffInDays > 0) {
             return $diffInDays . 'd';
         }
-        
+
         $diffInHours = $creationTime->diffInHours($now);
         if ($diffInHours > 0) {
             return $diffInHours . 'h';
         }
-        
+
         $diffInMinutes = $creationTime->diffInMinutes($now);
         if ($diffInMinutes > 0) {
             return $diffInMinutes . 'm';
         }
-        
+
         return $creationTime->diffInSeconds($now) . 's';
     }
 
@@ -253,16 +294,16 @@ class CertificateRequestList extends Component
             $this->currentPage++;
         }
     }
-    
+
     public function goToPage($page)
     {
         // Validate the page number to ensure it's within valid range
         $maxPage = max(1, ceil($this->totalItems / $this->perPage));
         $page = max(1, min($maxPage, (int)$page));
-        
+
         $this->currentPage = $page;
     }
-    
+
     public function handleClusterSelected($clusterName)
     {
         $this->selectedCluster = $clusterName;
@@ -279,10 +320,10 @@ class CertificateRequestList extends Component
         } catch (\Exception $e) {
             // Log the error
             \Illuminate\Support\Facades\Log::error('Error rendering Certificate Requests page: ' . $e->getMessage());
-            
+
             // Reset pagination to first page
             $this->currentPage = 1;
-            
+
             // Return the view with an error message
             return view('livewire.kubernetes.custom-resources.cert-manager.certificate-request-list', [
                 'filteredCertificateRequests' => [],
