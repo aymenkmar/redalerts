@@ -38,7 +38,7 @@
             </div>
 
             <div class="flex items-center space-x-4">
-                <div class="relative" x-data="{ open: false }" @click.away="open = false">
+                <div class="relative" x-data="{ open: false }" @click.away="open = false" x-persist="profileDropdown">
                     <button @click="open = !open" class="flex items-center space-x-2 focus:outline-none">
                         <div class="h-8 w-8 rounded-full bg-red-600 flex items-center justify-center text-white font-semibold">
                             {{ substr(Auth::user()->name, 0, 1) }}
@@ -57,7 +57,7 @@
                          x-transition:leave-start="transform opacity-100 scale-100"
                          x-transition:leave-end="transform opacity-0 scale-95"
                          class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50">
-                        <a href="{{ route('profile') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                        <a href="{{ route('profile') }}" wire:navigate class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
                             Profile
                         </a>
                         <form method="POST" action="{{ route('logout') }}">
@@ -84,7 +84,7 @@
             <!-- Feature Cards Grid -->
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 <!-- Kubernetes Clusters Card -->
-                <a href="{{ route('dashboard-kubernetes') }}" class="feature-card bg-white rounded-lg shadow-md overflow-hidden">
+                <a href="{{ route('dashboard-kubernetes') }}" wire:navigate class="feature-card bg-white rounded-lg shadow-md overflow-hidden">
                     <div class="p-6">
                         <div class="flex items-center mb-4">
                             <div class="icon-container bg-red-600 p-3 rounded-lg mr-4">
@@ -131,7 +131,7 @@
 
             <!-- Admin Dashboard Link -->
             <div class="mt-8 text-center">
-                <a href="{{ route('dashboard') }}" class="inline-flex items-center px-6 py-3 bg-red-600 hover:bg-red-700 text-white font-medium rounded-lg transition duration-200">
+                <a href="{{ route('dashboard') }}" wire:navigate class="inline-flex items-center px-6 py-3 bg-red-600 hover:bg-red-700 text-white font-medium rounded-lg transition duration-200">
                     <svg class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
                     </svg>

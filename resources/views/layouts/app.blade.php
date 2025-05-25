@@ -153,7 +153,7 @@
                 <div class="py-4 px-8 flex justify-between items-center">
                     <h2 class="text-xl font-semibold text-gray-800">{{ $header ?? 'Dashboard' }}</h2>
                     <div class="flex items-center space-x-4">
-                        <div class="relative" x-data="{ open: false }" @click.away="open = false">
+                        <div class="relative" x-data="{ open: false }" @click.away="open = false" x-persist="profileDropdown">
                             <button @click="open = !open" class="flex items-center space-x-2 focus:outline-none">
                                 <div class="h-8 w-8 rounded-full bg-red-600 flex items-center justify-center text-white font-semibold">
                                     {{ substr(Auth::user()->name, 0, 1) }}
@@ -172,7 +172,7 @@
                                  x-transition:leave-start="transform opacity-100 scale-100"
                                  x-transition:leave-end="transform opacity-0 scale-95"
                                  class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50">
-                                <a href="{{ route('profile') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                <a href="{{ route('profile') }}" wire:navigate class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
                                     Profile
                                 </a>
                                 <form method="POST" action="{{ route('logout') }}">
@@ -194,5 +194,25 @@
     </div>
 
     @livewireScripts
+
+    <script>
+        // Handle navigation events to close profile dropdown
+        document.addEventListener('livewire:navigating', () => {
+            // Close profile dropdown during navigation
+            const profileDropdown = document.querySelector('[x-persist="profileDropdown"]');
+            if (profileDropdown && profileDropdown.__x) {
+                profileDropdown.__x.$data.open = false;
+            }
+        });
+
+        // Ensure dropdown state is properly reset after navigation
+        document.addEventListener('livewire:navigated', () => {
+            // Force close any open dropdowns after navigation
+            const profileDropdown = document.querySelector('[x-persist="profileDropdown"]');
+            if (profileDropdown && profileDropdown.__x) {
+                profileDropdown.__x.$data.open = false;
+            }
+        });
+    </script>
 </body>
 </html>
