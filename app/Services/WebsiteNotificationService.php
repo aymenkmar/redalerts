@@ -10,6 +10,7 @@ use App\Mail\WebsiteUpNotification;
 use App\Mail\WebsiteStillDownNotification;
 use App\Mail\DomainExpiryWarningNotification;
 use App\Mail\SslExpiryWarningNotification;
+use App\Services\NotificationService;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Log;
 use Carbon\Carbon;
@@ -38,6 +39,10 @@ class WebsiteNotificationService
                 'last_notification_sent_at' => now(),
                 'notification_count' => 1,
             ]);
+
+            // Create notification in database
+            $notificationService = new NotificationService();
+            $notificationService->createWebsiteDownNotification($incident);
 
             Log::info("Downtime notification sent for website: {$website->name} ({$websiteUrl->url})");
 
@@ -68,6 +73,10 @@ class WebsiteNotificationService
             }
 
             $incident->update(['recovery_notification_sent' => true]);
+
+            // Create notification in database
+            $notificationService = new NotificationService();
+            $notificationService->createWebsiteUpNotification($incident);
 
             Log::info("Recovery notification sent for website: {$website->name} ({$websiteUrl->url})");
 
@@ -131,6 +140,10 @@ class WebsiteNotificationService
                 'last_notification_sent_at' => now(),
                 'notification_count' => $incident->notification_count + 1,
             ]);
+
+            // Create notification in database
+            $notificationService = new NotificationService();
+            $notificationService->createWebsiteStillDownNotification($incident);
 
             Log::info("Still down notification sent for website: {$website->name} ({$websiteUrl->url}) - Count: {$incident->notification_count}");
 
@@ -219,6 +232,10 @@ class WebsiteNotificationService
                 'ssl_warning_notification_sent_at' => now(),
                 'ssl_warning_notification_count' => $websiteUrl->ssl_warning_notification_count + 1,
             ]);
+
+            // Create notification in database
+            $notificationService = new NotificationService();
+            $notificationService->createSslExpiryNotification($websiteUrl, $daysUntilExpiry);
 
             Log::info("SSL expiry warning sent for website: {$website->name} ({$websiteUrl->url}) - {$daysUntilExpiry} days left");
 

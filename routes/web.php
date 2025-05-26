@@ -161,4 +161,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/website-monitoring/add', \App\Livewire\WebsiteMonitoring\AddWebsite::class)->name('website-monitoring.add');
     Route::get('/website-monitoring/{website}/edit', \App\Livewire\WebsiteMonitoring\EditWebsite::class)->name('website-monitoring.edit');
     Route::get('/website-monitoring/{website}/history', \App\Livewire\WebsiteMonitoring\WebsiteHistory::class)->name('website-monitoring.history');
+
+    // Notifications Routes
+    Route::get('/notifications', \App\Livewire\NotificationIndex::class)->name('notifications.index');
 });

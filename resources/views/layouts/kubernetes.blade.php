@@ -419,6 +419,9 @@
                     <!-- Cluster Selector Component -->
                     <livewire:kubernetes.cluster-selector />
 
+                    <!-- Notification Dropdown -->
+                    @livewire('notification-dropdown')
+
                     <div class="relative" x-data="{ open: false }" @click.away="open = false" x-persist="profileDropdown">
                         <button @click="open = !open" class="flex items-center space-x-2 focus:outline-none">
                             <div class="h-8 w-8 rounded-full bg-red-600 flex items-center justify-center text-white font-semibold">
