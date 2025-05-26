@@ -12,6 +12,13 @@ class NotificationIndex extends Component
     use WithPagination;
 
     public $filter = 'all'; // all, unread, read
+    public $highlightId = null; // ID of notification to highlight
+
+    public function mount()
+    {
+        // Get highlight parameter from URL
+        $this->highlightId = request()->get('highlight');
+    }
 
     public function markAsRead($notificationId)
     {
@@ -55,6 +62,7 @@ class NotificationIndex extends Component
 
         return view('livewire.notification-index', [
             'notifications' => $notifications,
+            'highlightId' => $this->highlightId,
         ])->layout('layouts.main');
     }
 }

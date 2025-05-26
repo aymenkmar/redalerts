@@ -1,4 +1,17 @@
-<div class="min-h-screen bg-gray-50">
+<div class="min-h-screen bg-gray-50" x-data="{ highlightId: {{ $highlightId ?? 'null' }} }" x-init="
+    if (highlightId) {
+        setTimeout(() => {
+            const element = document.getElementById('notification-' + highlightId);
+            if (element) {
+                element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                element.classList.add('ring-2', 'ring-red-500', 'ring-opacity-50');
+                setTimeout(() => {
+                    element.classList.remove('ring-2', 'ring-red-500', 'ring-opacity-50');
+                }, 3000);
+            }
+        }, 100);
+    }
+">
     <!-- Header -->
     <header class="bg-white shadow-sm border-b border-gray-200">
         <div class="max-w-7xl mx-auto px-6 py-4">
@@ -74,7 +87,8 @@
         <div class="space-y-4">
             @if($notifications->count() > 0)
                 @foreach($notifications as $notification)
-                <div class="bg-white rounded-lg border border-gray-200 p-6 hover:shadow-md transition-shadow duration-200 {{ $notification->is_read ? 'opacity-75' : '' }}"
+                <div id="notification-{{ $notification->id }}"
+                     class="bg-white rounded-lg border border-gray-200 p-6 hover:shadow-md transition-all duration-200 {{ $notification->is_read ? 'opacity-75' : '' }} {{ $highlightId == $notification->id ? 'bg-red-50 border-red-200' : '' }}"
                      wire:click="markAsRead({{ $notification->id }})">
                     <div class="flex items-start space-x-4">
                         <!-- Icon -->

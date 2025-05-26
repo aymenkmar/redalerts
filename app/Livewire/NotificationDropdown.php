@@ -22,7 +22,7 @@ class NotificationDropdown extends Component
         if (Auth::check()) {
             $notificationService = new NotificationService();
             $this->unreadCount = $notificationService->getUnreadCount(Auth::id());
-            $this->notifications = $notificationService->getRecentNotifications(Auth::id(), 10);
+            $this->notifications = $notificationService->getRecentNotifications(Auth::id(), 20); // Load more for scrolling
         }
     }
 
@@ -41,6 +41,18 @@ class NotificationDropdown extends Component
             $notificationService = new NotificationService();
             $notificationService->markAsRead($notificationId, Auth::id());
             $this->loadNotifications();
+        }
+    }
+
+    public function goToNotification($notificationId)
+    {
+        if (Auth::check()) {
+            // Mark as read first
+            $notificationService = new NotificationService();
+            $notificationService->markAsRead($notificationId, Auth::id());
+
+            // Redirect to notifications page with the specific notification highlighted
+            return $this->redirect(route('notifications.index', ['highlight' => $notificationId]));
         }
     }
 

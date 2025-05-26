@@ -1,4 +1,47 @@
 <div class="relative" x-data="{ open: false }" @click.away="open = false" wire:poll.30s="refreshNotifications">
+    <style>
+        /* Custom scrollbar styles - More visible */
+        .notification-scroll {
+            scrollbar-width: auto;
+            scrollbar-color: #ef4444 #f1f5f9;
+        }
+        .notification-scroll::-webkit-scrollbar {
+            width: 12px;
+            background: #f8fafc;
+        }
+        .notification-scroll::-webkit-scrollbar-track {
+            background: #f1f5f9;
+            border-radius: 6px;
+            margin: 4px;
+        }
+        .notification-scroll::-webkit-scrollbar-thumb {
+            background: #ef4444;
+            border-radius: 6px;
+            border: 2px solid #f8fafc;
+            min-height: 30px;
+        }
+        .notification-scroll::-webkit-scrollbar-thumb:hover {
+            background: #dc2626;
+        }
+        .notification-scroll::-webkit-scrollbar-thumb:active {
+            background: #b91c1c;
+        }
+        /* Gradient overlay to indicate more content */
+        .notification-container {
+            position: relative;
+        }
+        .notification-container::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 12px;
+            height: 15px;
+            background: linear-gradient(transparent, rgba(255,255,255,0.9));
+            pointer-events: none;
+            z-index: 1;
+        }
+    </style>
     <!-- Notification Bell Button -->
     <button @click="open = !open; $wire.toggleDropdown()"
             class="relative p-2 text-gray-600 hover:text-gray-800 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 rounded-lg transition-colors duration-200">
@@ -24,7 +67,7 @@
          x-transition:leave="transition ease-in duration-75"
          x-transition:leave-start="transform opacity-100 scale-100"
          x-transition:leave-end="transform opacity-0 scale-95"
-         class="absolute right-0 mt-2 w-96 bg-white rounded-lg shadow-lg border border-gray-200 z-50 max-h-96 overflow-hidden">
+         class="absolute right-0 mt-2 w-96 bg-white rounded-lg shadow-lg border border-gray-200 z-50 overflow-hidden">
 
         <!-- Header -->
         <div class="px-4 py-3 border-b border-gray-200 bg-gray-50 rounded-t-lg">
@@ -48,11 +91,12 @@
         </div>
 
         <!-- Notifications List -->
-        <div class="max-h-80 overflow-y-auto">
-            @if(count($notifications) > 0)
-                @foreach($notifications as $notification)
+        <div class="notification-container">
+            <div class="notification-scroll" style="max-height: 200px; overflow-y: scroll; overflow-x: hidden; border: 1px solid #e5e7eb; border-left: none; border-right: none;">
+                @if(count($notifications) > 0)
+                @foreach($notifications as $index => $notification)
                 <div class="px-4 py-3 border-b border-gray-100 hover:bg-gray-50 cursor-pointer transition-colors duration-150 {{ $notification->is_read ? 'opacity-75' : '' }}"
-                     wire:click="markAsRead({{ $notification->id }})">
+                     wire:click="goToNotification({{ $notification->id }})">
                     <div class="flex items-start space-x-3">
                         <!-- Icon -->
                         <div class="flex-shrink-0 mt-1">
@@ -93,9 +137,15 @@
                         <div class="flex-1 min-w-0">
                             <div class="flex items-center justify-between">
                                 <p class="text-sm font-medium text-gray-900 truncate">{{ $notification->title }}</p>
-                                @if(!$notification->is_read)
-                                <div class="w-2 h-2 bg-red-500 rounded-full flex-shrink-0"></div>
-                                @endif
+                                <div class="flex items-center space-x-2">
+                                    @if(!$notification->is_read)
+                                    <div class="w-2 h-2 bg-red-500 rounded-full flex-shrink-0"></div>
+                                    @endif
+                                    <!-- Click indicator -->
+                                    <svg class="h-3 w-3 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                                    </svg>
+                                </div>
                             </div>
                             <p class="text-sm text-gray-600 mt-1" style="display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">{{ $notification->message }}</p>
                             <p class="text-xs text-gray-500 mt-1">{{ $notification->time_ago }}</p>
@@ -112,15 +162,23 @@
                     <p class="mt-1 text-sm text-gray-500">You're all caught up!</p>
                 </div>
             @endif
+            </div>
         </div>
 
         <!-- Footer -->
         @if(count($notifications) > 0)
         <div class="px-4 py-3 border-t border-gray-200 bg-gray-50 rounded-b-lg">
-            <a href="{{ route('notifications.index') }}" wire:navigate
-               class="text-sm text-red-600 hover:text-red-800 font-medium">
-                View all notifications
-            </a>
+            <div class="flex items-center justify-between">
+                <a href="{{ route('notifications.index') }}" wire:navigate
+                   class="text-sm text-red-600 hover:text-red-800 font-medium">
+                    View all notifications
+                </a>
+                @if(count($notifications) > 5)
+                <span class="text-xs text-gray-500">
+                    Scroll for more ({{ count($notifications) }} total)
+                </span>
+                @endif
+            </div>
         </div>
         @endif
     </div>
