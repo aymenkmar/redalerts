@@ -23,6 +23,10 @@ class WebsiteUrl extends Model
         'last_checked_at',
         'last_status_change',
         'last_error',
+        'domain_warning_notification_sent_at',
+        'ssl_warning_notification_sent_at',
+        'domain_warning_notification_count',
+        'ssl_warning_notification_count',
     ];
 
     protected $casts = [
@@ -31,6 +35,10 @@ class WebsiteUrl extends Model
         'monitor_ssl' => 'boolean',
         'last_checked_at' => 'datetime',
         'last_status_change' => 'datetime',
+        'domain_warning_notification_sent_at' => 'datetime',
+        'ssl_warning_notification_sent_at' => 'datetime',
+        'domain_warning_notification_count' => 'integer',
+        'ssl_warning_notification_count' => 'integer',
     ];
 
     /**

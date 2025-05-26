@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\WebsiteUrl;
 use App\Models\WebsiteMonitoringLog;
+use App\Services\WebsiteNotificationService;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\RequestException;
 use Carbon\Carbon;
@@ -273,6 +274,11 @@ class WebsiteMonitoringService
 
             WebsiteMonitoringLog::create($logData);
 
+            // Check if SSL expiry notification should be sent (< 30 days)
+            if ($daysUntilExpiryDisplay <= 30 && !$expiryDate->isPast()) {
+                $this->checkSslExpiryNotification($websiteUrl, $daysUntilExpiryDisplay);
+            }
+
             fclose($socket);
 
             return [
@@ -299,6 +305,46 @@ class WebsiteMonitoringService
                 'status' => 'error',
                 'error' => $e->getMessage(),
             ];
+        }
+    }
+
+    /**
+     * Check if SSL expiry notification should be sent.
+     */
+    private function checkSslExpiryNotification(WebsiteUrl $websiteUrl, int $daysUntilExpiry): void
+    {
+        $now = now();
+        $lastNotificationSent = $websiteUrl->ssl_warning_notification_sent_at;
+
+        // Send notification if:
+        // 1. Never sent before, OR
+        // 2. Last notification was sent more than 24 hours ago
+        $shouldSend = !$lastNotificationSent ||
+                     $lastNotificationSent->diffInHours($now) >= 24;
+
+        if ($shouldSend) {
+            $notificationService = new WebsiteNotificationService();
+            $notificationService->sendSslExpiryWarning($websiteUrl, $daysUntilExpiry);
+        }
+    }
+
+    /**
+     * Check if domain expiry notification should be sent.
+     */
+    private function checkDomainExpiryNotification(WebsiteUrl $websiteUrl, int $daysUntilExpiry): void
+    {
+        $now = now();
+        $lastNotificationSent = $websiteUrl->domain_warning_notification_sent_at;
+
+        // Send notification if:
+        // 1. Never sent before, OR
+        // 2. Last notification was sent more than 24 hours ago
+        $shouldSend = !$lastNotificationSent ||
+                     $lastNotificationSent->diffInHours($now) >= 24;
+
+        if ($shouldSend) {
+            $notificationService = new WebsiteNotificationService();
+            $notificationService->sendDomainExpiryWarning($websiteUrl, $daysUntilExpiry);
         }
     }
 

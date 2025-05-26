@@ -19,6 +19,8 @@ class WebsiteDowntimeIncident extends Model
         'error_message',
         'notification_sent',
         'recovery_notification_sent',
+        'last_notification_sent_at',
+        'notification_count',
     ];
 
     protected $casts = [
@@ -26,6 +28,8 @@ class WebsiteDowntimeIncident extends Model
         'ended_at' => 'datetime',
         'notification_sent' => 'boolean',
         'recovery_notification_sent' => 'boolean',
+        'last_notification_sent_at' => 'datetime',
+        'notification_count' => 'integer',
     ];
 
     /**
