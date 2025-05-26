@@ -1,0 +1,11 @@
+# Website Monitoring Cron Jobs
+# Add these lines to your crontab using: crontab -e
+
+# Monitor website status every minute
+* * * * * cd /home/redalerts/html/redalertsv2 && php artisan websites:monitor-status >> /var/log/website-status-monitor.log 2>&1
+
+# Monitor domain and SSL validation every 24 hours (at 2:00 AM)
+0 2 * * * cd /home/redalerts/html/redalertsv2 && php artisan websites:monitor-domain-ssl >> /var/log/website-domain-ssl-monitor.log 2>&1
+
+# Clean up old monitoring logs (keep last 30 days) - runs daily at 3:00 AM
+0 3 * * * cd /home/redalerts/html/redalertsv2 && php artisan db:query "DELETE FROM website_monitoring_logs WHERE checked_at < NOW() - INTERVAL 30 DAY" >> /var/log/website-cleanup.log 2>&1
