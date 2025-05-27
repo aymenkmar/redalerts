@@ -156,7 +156,7 @@
                         <!-- Notification Dropdown -->
                         @livewire('notification-dropdown')
 
-                        <div class="relative" x-data="{ open: false }" @click.away="open = false" x-persist="profileDropdown">
+                        <div class="relative" x-data="{ open: false }" @click.away="open = false">
                             <button @click="open = !open" class="flex items-center space-x-2 focus:outline-none">
                                 <div class="h-8 w-8 rounded-full bg-red-600 flex items-center justify-center text-white font-semibold">
                                     {{ substr(Auth::user()->name, 0, 1) }}
@@ -167,7 +167,7 @@
                                 </svg>
                             </button>
 
-                            <div x-show="open"
+                            <div x-show="open" x-cloak
                                  x-transition:enter="transition ease-out duration-100"
                                  x-transition:enter-start="transform opacity-0 scale-95"
                                  x-transition:enter-end="transform opacity-100 scale-100"
@@ -199,22 +199,36 @@
     @livewireScripts
 
     <script>
+        // Ensure all dropdowns are closed on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            // Force close any Alpine dropdowns on page load
+            setTimeout(() => {
+                document.querySelectorAll('[x-data]').forEach(element => {
+                    if (element.__x && element.__x.$data.open !== undefined) {
+                        element.__x.$data.open = false;
+                    }
+                });
+            }, 100);
+        });
+
         // Handle navigation events to close profile dropdown
         document.addEventListener('livewire:navigating', () => {
-            // Close profile dropdown during navigation
-            const profileDropdown = document.querySelector('[x-persist="profileDropdown"]');
-            if (profileDropdown && profileDropdown.__x) {
-                profileDropdown.__x.$data.open = false;
-            }
+            // Close all Alpine dropdowns during navigation
+            document.querySelectorAll('[x-data]').forEach(element => {
+                if (element.__x && element.__x.$data.open !== undefined) {
+                    element.__x.$data.open = false;
+                }
+            });
         });
 
         // Ensure dropdown state is properly reset after navigation
         document.addEventListener('livewire:navigated', () => {
             // Force close any open dropdowns after navigation
-            const profileDropdown = document.querySelector('[x-persist="profileDropdown"]');
-            if (profileDropdown && profileDropdown.__x) {
-                profileDropdown.__x.$data.open = false;
-            }
+            document.querySelectorAll('[x-data]').forEach(element => {
+                if (element.__x && element.__x.$data.open !== undefined) {
+                    element.__x.$data.open = false;
+                }
+            });
         });
     </script>
 </body>

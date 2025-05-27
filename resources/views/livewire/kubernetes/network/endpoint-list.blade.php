@@ -87,7 +87,7 @@
                 </span>
             </button>
 
-            <div x-show="showNamespaceFilter"
+            <div x-show="showNamespaceFilter" x-cloak
                  @click.away="showNamespaceFilter = false"
                  x-transition:enter="transition ease-out duration-100"
                  x-transition:enter-start="transform opacity-0 scale-95"
