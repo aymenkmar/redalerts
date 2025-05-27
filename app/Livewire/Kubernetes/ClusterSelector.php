@@ -3,18 +3,29 @@
 namespace App\Livewire\Kubernetes;
 
 use Livewire\Component;
+use Livewire\WithFileUploads;
 use App\Models\Cluster;
 use Illuminate\Support\Facades\Session;
 
 class ClusterSelector extends Component
 {
+    use WithFileUploads;
+
     public $clusters = [];
     public $selectedCluster = null;
     public $showDropdown = false;
     public $showUploadModal = false;
+    public $showEditModal = false;
+    public $showDeleteModal = false;
+    public $showReplaceModal = false;
+    public $editingCluster = null;
+    public $newClusterName = '';
+    public $replacementFile = null;
+    public $clusterToDelete = null;
 
     protected $listeners = [
         'clusterUploaded' => 'handleClusterUploaded',
+        'clusterManaged' => 'handleClusterManaged',
         'notify' => 'handleNotification'
     ];
 
@@ -63,6 +74,7 @@ class ClusterSelector extends Component
 
                 if ($cluster) {
                     $clusterData[] = [
+                        'id' => $cluster->id,
                         'name' => $clusterName,
                         'upload_time' => $cluster->upload_time
                     ];
@@ -74,6 +86,7 @@ class ClusterSelector extends Component
                     ]);
 
                     $clusterData[] = [
+                        'id' => $cluster->id,
                         'name' => $clusterName,
                         'upload_time' => $cluster->upload_time
                     ];
@@ -117,9 +130,70 @@ class ClusterSelector extends Component
         $this->dispatch('refreshAfterUpload');
     }
 
+    public function handleClusterManaged()
+    {
+        $this->loadClusters();
+        $this->closeEditModal();
+        $this->closeReplaceModal();
+        $this->closeDeleteModal();
+    }
+
     public function handleNotification($data)
     {
         $this->dispatch('showNotification', $data);
+    }
+
+    public function openEditModal($clusterId)
+    {
+        $cluster = collect($this->clusters)->firstWhere('id', $clusterId);
+        if ($cluster) {
+            $this->editingCluster = $cluster;
+            $this->newClusterName = $cluster['name'];
+            $this->showEditModal = true;
+            $this->showDropdown = false;
+        }
+    }
+
+    public function closeEditModal()
+    {
+        $this->showEditModal = false;
+        $this->editingCluster = null;
+        $this->newClusterName = '';
+        $this->resetValidation();
+    }
+
+    public function openReplaceModal($clusterId)
+    {
+        $cluster = collect($this->clusters)->firstWhere('id', $clusterId);
+        if ($cluster) {
+            $this->editingCluster = $cluster;
+            $this->showReplaceModal = true;
+            $this->showDropdown = false;
+        }
+    }
+
+    public function closeReplaceModal()
+    {
+        $this->showReplaceModal = false;
+        $this->editingCluster = null;
+        $this->replacementFile = null;
+        $this->resetValidation();
+    }
+
+    public function openDeleteModal($clusterId)
+    {
+        $cluster = collect($this->clusters)->firstWhere('id', $clusterId);
+        if ($cluster) {
+            $this->clusterToDelete = $cluster;
+            $this->showDeleteModal = true;
+            $this->showDropdown = false;
+        }
+    }
+
+    public function closeDeleteModal()
+    {
+        $this->showDeleteModal = false;
+        $this->clusterToDelete = null;
     }
 
     public function render()

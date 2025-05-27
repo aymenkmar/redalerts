@@ -32,6 +32,11 @@ Route::middleware('auth')->group(function () {
     Route::post('/kubernetes/upload-modal', [\App\Http\Controllers\KubernetesController::class, 'showUploadModal'])->name('kubernetes.upload-modal');
     Route::post('/kubernetes/close-modal', [\App\Http\Controllers\KubernetesController::class, 'closeUploadModal'])->name('kubernetes.close-modal');
 
+    // Kubernetes Cluster Management
+    Route::post('/kubernetes/cluster/edit/{id}', [\App\Http\Controllers\KubernetesController::class, 'editCluster'])->name('kubernetes.cluster.edit');
+    Route::post('/kubernetes/cluster/upload/{id}', [\App\Http\Controllers\KubernetesController::class, 'replaceKubeconfig'])->name('kubernetes.cluster.upload');
+    Route::delete('/kubernetes/cluster/{id}', [\App\Http\Controllers\KubernetesController::class, 'deleteCluster'])->name('kubernetes.cluster.delete');
+
     // Kubernetes Nodes
     Route::get('/kubernetes/nodes', \App\Livewire\Kubernetes\NodeList::class)->name('kubernetes.nodes');
 

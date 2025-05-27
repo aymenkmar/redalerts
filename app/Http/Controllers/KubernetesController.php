@@ -588,5 +588,133 @@ class KubernetesController extends Controller
         // Redirect back to the previous page
         return redirect()->back();
     }
+
+    /**
+     * Edit cluster name.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @param  int  $id
+     * @return \Illuminate\Http\RedirectResponse
+     */
+    public function editCluster(Request $request, $id)
+    {
+        $request->validate([
+            'name' => 'required|string|max:255|regex:/^[a-zA-Z0-9_-]+$/'
+        ]);
+
+        try {
+            $cluster = Cluster::findOrFail($id);
+            $oldName = $cluster->name;
+            $newName = $request->input('name');
+
+            // Check if new name already exists
+            if ($newName !== $oldName && Cluster::where('name', $newName)->exists()) {
+                return redirect()->back()->with('error', 'A cluster with this name already exists.');
+            }
+
+            // Get kubeconfig paths
+            $kubeconfigPath = env('KUBECONFIG_PATH', storage_path('app/kubeconfigs'));
+            $oldFilePath = $kubeconfigPath . '/' . $oldName;
+            $newFilePath = $kubeconfigPath . '/' . $newName;
+
+            // Rename the kubeconfig file if it exists
+            if (file_exists($oldFilePath)) {
+                if (!rename($oldFilePath, $newFilePath)) {
+                    return redirect()->back()->with('error', 'Failed to rename kubeconfig file.');
+                }
+            }
+
+            // Update cluster name in database
+            $cluster->update(['name' => $newName]);
+
+            // Update session if this was the selected cluster
+            if (session('selectedCluster') === $oldName) {
+                session(['selectedCluster' => $newName]);
+            }
+
+            return redirect()->back()->with('success', 'Cluster name updated successfully.');
+
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Failed to update cluster: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Replace kubeconfig file for existing cluster.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @param  int  $id
+     * @return \Illuminate\Http\RedirectResponse
+     */
+    public function replaceKubeconfig(Request $request, $id)
+    {
+        $request->validate([
+            'kubeconfig' => 'required|file'
+        ]);
+
+        try {
+            $cluster = Cluster::findOrFail($id);
+            $file = $request->file('kubeconfig');
+
+            // Get kubeconfig path
+            $kubeconfigPath = env('KUBECONFIG_PATH', storage_path('app/kubeconfigs'));
+            $filePath = $kubeconfigPath . '/' . $cluster->name;
+
+            // Ensure directory exists
+            if (!file_exists($kubeconfigPath)) {
+                mkdir($kubeconfigPath, 0755, true);
+            }
+
+            // Save the new kubeconfig file
+            $content = file_get_contents($file->getRealPath());
+            file_put_contents($filePath, $content);
+
+            // Update upload time in database
+            $cluster->update(['upload_time' => now()]);
+
+            return redirect()->back()->with('success', 'Kubeconfig file updated successfully.');
+
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Failed to update kubeconfig: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Delete cluster and its kubeconfig file.
+     *
+     * @param  int  $id
+     * @return \Illuminate\Http\RedirectResponse
+     */
+    public function deleteCluster($id)
+    {
+        try {
+            $cluster = Cluster::findOrFail($id);
+            $clusterName = $cluster->name;
+
+            // Get kubeconfig path
+            $kubeconfigPath = env('KUBECONFIG_PATH', storage_path('app/kubeconfigs'));
+            $filePath = $kubeconfigPath . '/' . $clusterName;
+
+            // Delete kubeconfig file if it exists
+            if (file_exists($filePath)) {
+                if (!unlink($filePath)) {
+                    return redirect()->back()->with('error', 'Failed to delete kubeconfig file.');
+                }
+            }
+
+            // Delete cluster from database
+            $cluster->delete();
+
+            // Clear session if this was the selected cluster
+            if (session('selectedCluster') === $clusterName) {
+                session()->forget('selectedCluster');
+            }
+
+            return redirect()->back()->with('success', 'Cluster deleted successfully.');
+
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Failed to delete cluster: ' . $e->getMessage());
+        }
+    }
 }
 
