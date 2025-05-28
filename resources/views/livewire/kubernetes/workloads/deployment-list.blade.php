@@ -155,6 +155,11 @@
                 <thead class="bg-gray-50">
                     <tr>
                         <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
+                        <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-16">
+                            <svg class="w-4 h-4 mx-auto text-yellow-500" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+                            </svg>
+                        </th>
                         <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Namespace</th>
                         <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Pods</th>
                         <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Replicas</th>
@@ -166,6 +171,13 @@
                     <template x-for="deployment in paginatedDeployments" :key="deployment.metadata.name + deployment.metadata.namespace">
                         <tr class="hover:bg-gray-50">
                             <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900" x-text="deployment.metadata.name"></td>
+                            <td class="px-6 py-4 whitespace-nowrap text-center">
+                                <div x-show="hasDeploymentWarnings(deployment)" class="flex justify-center" :title="getDeploymentWarnings(deployment)">
+                                    <svg class="w-4 h-4 text-yellow-500" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+                                    </svg>
+                                </div>
+                            </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500" x-text="deployment.metadata.namespace || 'default'"></td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500" x-text="getPodsStatus(deployment)"></td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500" x-text="(deployment.spec && deployment.spec.replicas) || 0"></td>
@@ -182,7 +194,7 @@
 
                     <!-- Empty state -->
                     <tr x-show="filteredDeployments.length === 0">
-                        <td colspan="6" class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-center">
+                        <td colspan="7" class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-center">
                             <span x-show="searchTerm || !selectedNamespaces.includes('all')">No deployments found matching your filters</span>
                             <span x-show="!searchTerm && selectedNamespaces.includes('all')">No deployments found</span>
                         </td>
@@ -374,6 +386,66 @@
                     return status === 'Running' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800';
                 },
 
+                getDeploymentWarnings(deployment) {
+                    const warnings = [];
+
+                    // Check if deployment has insufficient replicas
+                    const available = (deployment.status?.availableReplicas) || 0;
+                    const desired = (deployment.status?.replicas) || 0;
+                    const ready = (deployment.status?.readyReplicas) || 0;
+
+                    if (available < desired) {
+                        warnings.push(`${available}/${desired} replicas available`);
+                    }
+
+                    if (ready < desired) {
+                        warnings.push(`${ready}/${desired} replicas ready`);
+                    }
+
+                    // Check deployment conditions
+                    if (deployment.status?.conditions) {
+                        deployment.status.conditions.forEach(condition => {
+                            if (condition.status === 'False' && ['Available', 'Progressing'].includes(condition.type)) {
+                                warnings.push(`${condition.type}: ${condition.reason || 'False'}`);
+                            }
+                        });
+                    }
+
+                    // Check if deployment is paused
+                    if (deployment.spec?.paused) {
+                        warnings.push('Deployment is paused');
+                    }
+
+                    return warnings.join(', ') || 'No warnings';
+                },
+
+                hasDeploymentWarnings(deployment) {
+                    // Check for replica issues
+                    const available = (deployment.status?.availableReplicas) || 0;
+                    const desired = (deployment.status?.replicas) || 0;
+                    const ready = (deployment.status?.readyReplicas) || 0;
+
+                    if (available < desired || ready < desired) {
+                        return true;
+                    }
+
+                    // Check deployment conditions
+                    if (deployment.status?.conditions) {
+                        for (const condition of deployment.status.conditions) {
+                            if (condition.status === 'False' && ['Available', 'Progressing'].includes(condition.type)) {
+                                return true;
+                            }
+                        }
+                    }
+
+                    // Check if deployment is paused
+                    if (deployment.spec?.paused) {
+                        return true;
+                    }
+
+                    return false;
+                },
+
                 formatAge(timestamp) {
                     if (!timestamp) return 'N/A';
 
@@ -381,16 +453,40 @@
                     const created = new Date(timestamp);
                     const diffMs = now - created;
 
-                    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-                    if (diffDays > 0) return diffDays + 'd';
-
-                    const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
-                    if (diffHours > 0) return diffHours + 'h';
-
-                    const diffMinutes = Math.floor(diffMs / (1000 * 60));
-                    if (diffMinutes > 0) return diffMinutes + 'm';
-
+                    // Calculate total difference in various units
                     const diffSeconds = Math.floor(diffMs / 1000);
+                    const diffMinutes = Math.floor(diffMs / (1000 * 60));
+                    const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+                    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+
+                    // Calculate years and remaining days (Lens IDE format: 2y83d)
+                    const years = Math.floor(diffDays / 365);
+                    const remainingDays = diffDays % 365;
+
+                    if (years > 0) {
+                        if (remainingDays > 0) {
+                            return years + 'y' + remainingDays + 'd';
+                        } else {
+                            return years + 'y';
+                        }
+                    }
+
+                    // For less than a year, show days
+                    if (diffDays >= 1) {
+                        return diffDays + 'd';
+                    }
+
+                    // For less than a day, show hours
+                    if (diffHours >= 1) {
+                        return diffHours + 'h';
+                    }
+
+                    // For less than an hour, show minutes
+                    if (diffMinutes >= 1) {
+                        return diffMinutes + 'm';
+                    }
+
+                    // For less than a minute, show seconds
                     return diffSeconds + 's';
                 }
             }

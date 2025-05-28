@@ -155,6 +155,11 @@
                 <thead class="bg-gray-50">
                     <tr>
                         <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
+                        <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-16">
+                            <svg class="w-4 h-4 mx-auto text-yellow-500" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+                            </svg>
+                        </th>
                         <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Namespace</th>
                         <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Schedule</th>
                         <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Active</th>
@@ -167,6 +172,13 @@
                     <template x-for="cronJob in paginatedCronJobs" :key="cronJob.metadata.name + cronJob.metadata.namespace">
                         <tr class="hover:bg-gray-50">
                             <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900" x-text="cronJob.metadata.name"></td>
+                            <td class="px-6 py-4 whitespace-nowrap text-center">
+                                <div x-show="hasCronJobWarnings(cronJob)" class="flex justify-center" :title="getCronJobWarnings(cronJob)">
+                                    <svg class="w-4 h-4 text-yellow-500" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+                                    </svg>
+                                </div>
+                            </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500" x-text="cronJob.metadata.namespace || 'default'"></td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500" x-text="(cronJob.spec && cronJob.spec.schedule) || 'N/A'"></td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500" x-text="getActiveJobs(cronJob)"></td>
@@ -178,7 +190,7 @@
 
                     <!-- Empty state -->
                     <tr x-show="filteredCronJobs.length === 0">
-                        <td colspan="7" class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-center">
+                        <td colspan="8" class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-center">
                             <span x-show="searchTerm || !selectedNamespaces.includes('all')">No cron jobs found matching your filters</span>
                             <span x-show="!searchTerm && selectedNamespaces.includes('all')">No cron jobs found</span>
                         </td>
@@ -370,6 +382,116 @@
                     return 'Never';
                 },
 
+                getCronJobWarnings(cronJob) {
+                    const warnings = [];
+
+                    // Check if cron job is suspended
+                    if (cronJob.spec?.suspend === true) {
+                        warnings.push('CronJob is suspended');
+                    }
+
+                    // Check for failed jobs in history
+                    if (cronJob.status?.lastSuccessfulTime && cronJob.status?.lastScheduleTime) {
+                        const lastSuccess = new Date(cronJob.status.lastSuccessfulTime);
+                        const lastSchedule = new Date(cronJob.status.lastScheduleTime);
+
+                        if (lastSchedule > lastSuccess) {
+                            warnings.push('Last scheduled job may have failed');
+                        }
+                    }
+
+                    // Check if cron job hasn't run recently (more than 24 hours for daily jobs)
+                    if (cronJob.status?.lastScheduleTime) {
+                        const lastSchedule = new Date(cronJob.status.lastScheduleTime);
+                        const now = new Date();
+                        const diffHours = Math.floor((now - lastSchedule) / (1000 * 60 * 60));
+
+                        // Check if it's been more than 25 hours since last run (allowing for some delay)
+                        if (diffHours > 25) {
+                            warnings.push(`Last run was ${diffHours} hours ago`);
+                        }
+                    } else if (cronJob.metadata?.creationTimestamp) {
+                        // If never run but created more than 1 hour ago
+                        const created = new Date(cronJob.metadata.creationTimestamp);
+                        const now = new Date();
+                        const diffHours = Math.floor((now - created) / (1000 * 60 * 60));
+
+                        if (diffHours > 1) {
+                            warnings.push('CronJob has never run');
+                        }
+                    }
+
+                    // Check for too many active jobs
+                    const activeJobs = this.getActiveJobs(cronJob);
+                    if (activeJobs > 3) {
+                        warnings.push(`${activeJobs} active jobs (possible backlog)`);
+                    }
+
+                    // Check for invalid cron schedule (basic validation)
+                    const schedule = cronJob.spec?.schedule;
+                    if (schedule && schedule !== 'N/A') {
+                        const parts = schedule.split(' ');
+                        if (parts.length !== 5) {
+                            warnings.push('Invalid cron schedule format');
+                        }
+                    }
+
+                    return warnings.join(', ') || 'No warnings';
+                },
+
+                hasCronJobWarnings(cronJob) {
+                    // Check if cron job is suspended
+                    if (cronJob.spec?.suspend === true) {
+                        return true;
+                    }
+
+                    // Check for failed jobs in history
+                    if (cronJob.status?.lastSuccessfulTime && cronJob.status?.lastScheduleTime) {
+                        const lastSuccess = new Date(cronJob.status.lastSuccessfulTime);
+                        const lastSchedule = new Date(cronJob.status.lastScheduleTime);
+
+                        if (lastSchedule > lastSuccess) {
+                            return true;
+                        }
+                    }
+
+                    // Check if cron job hasn't run recently
+                    if (cronJob.status?.lastScheduleTime) {
+                        const lastSchedule = new Date(cronJob.status.lastScheduleTime);
+                        const now = new Date();
+                        const diffHours = Math.floor((now - lastSchedule) / (1000 * 60 * 60));
+
+                        if (diffHours > 25) {
+                            return true;
+                        }
+                    } else if (cronJob.metadata?.creationTimestamp) {
+                        const created = new Date(cronJob.metadata.creationTimestamp);
+                        const now = new Date();
+                        const diffHours = Math.floor((now - created) / (1000 * 60 * 60));
+
+                        if (diffHours > 1) {
+                            return true;
+                        }
+                    }
+
+                    // Check for too many active jobs
+                    const activeJobs = this.getActiveJobs(cronJob);
+                    if (activeJobs > 3) {
+                        return true;
+                    }
+
+                    // Check for invalid cron schedule
+                    const schedule = cronJob.spec?.schedule;
+                    if (schedule && schedule !== 'N/A') {
+                        const parts = schedule.split(' ');
+                        if (parts.length !== 5) {
+                            return true;
+                        }
+                    }
+
+                    return false;
+                },
+
                 formatAge(timestamp) {
                     if (!timestamp) return 'N/A';
 
@@ -377,16 +499,40 @@
                     const created = new Date(timestamp);
                     const diffMs = now - created;
 
-                    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-                    if (diffDays > 0) return diffDays + 'd';
-
-                    const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
-                    if (diffHours > 0) return diffHours + 'h';
-
-                    const diffMinutes = Math.floor(diffMs / (1000 * 60));
-                    if (diffMinutes > 0) return diffMinutes + 'm';
-
+                    // Calculate total difference in various units
                     const diffSeconds = Math.floor(diffMs / 1000);
+                    const diffMinutes = Math.floor(diffMs / (1000 * 60));
+                    const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+                    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+
+                    // Calculate years and remaining days (Lens IDE format: 2y83d)
+                    const years = Math.floor(diffDays / 365);
+                    const remainingDays = diffDays % 365;
+
+                    if (years > 0) {
+                        if (remainingDays > 0) {
+                            return years + 'y' + remainingDays + 'd';
+                        } else {
+                            return years + 'y';
+                        }
+                    }
+
+                    // For less than a year, show days
+                    if (diffDays >= 1) {
+                        return diffDays + 'd';
+                    }
+
+                    // For less than a day, show hours
+                    if (diffHours >= 1) {
+                        return diffHours + 'h';
+                    }
+
+                    // For less than an hour, show minutes
+                    if (diffMinutes >= 1) {
+                        return diffMinutes + 'm';
+                    }
+
+                    // For less than a minute, show seconds
                     return diffSeconds + 's';
                 }
             }

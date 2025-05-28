@@ -123,23 +123,42 @@ class DeploymentList extends Component
 
         $creationTime = Carbon::parse($timestamp);
         $now = Carbon::now();
+
+        // Calculate total difference in various units
+        $diffInSeconds = $creationTime->diffInSeconds($now);
+        $diffInMinutes = $creationTime->diffInMinutes($now);
+        $diffInHours = $creationTime->diffInHours($now);
         $diffInDays = $creationTime->diffInDays($now);
 
-        if ($diffInDays > 0) {
+        // Calculate years and remaining days (Lens IDE format: 2y83d)
+        $years = intval($diffInDays / 365);
+        $remainingDays = $diffInDays % 365;
+
+        if ($years > 0) {
+            if ($remainingDays > 0) {
+                return $years . 'y' . $remainingDays . 'd';
+            } else {
+                return $years . 'y';
+            }
+        }
+
+        // For less than a year, show days
+        if ($diffInDays >= 1) {
             return $diffInDays . 'd';
         }
 
-        $diffInHours = $creationTime->diffInHours($now);
-        if ($diffInHours > 0) {
+        // For less than a day, show hours
+        if ($diffInHours >= 1) {
             return $diffInHours . 'h';
         }
 
-        $diffInMinutes = $creationTime->diffInMinutes($now);
-        if ($diffInMinutes > 0) {
+        // For less than an hour, show minutes
+        if ($diffInMinutes >= 1) {
             return $diffInMinutes . 'm';
         }
 
-        return $creationTime->diffInSeconds($now) . 's';
+        // For less than a minute, show seconds
+        return $diffInSeconds . 's';
     }
 
     public function render()

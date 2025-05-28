@@ -155,6 +155,11 @@
                 <thead class="bg-gray-50">
                     <tr>
                         <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
+                        <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-16">
+                            <svg class="w-4 h-4 mx-auto text-yellow-500" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+                            </svg>
+                        </th>
                         <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Namespace</th>
                         <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Desired</th>
                         <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Current</th>
@@ -166,6 +171,13 @@
                     <template x-for="replicaSet in paginatedReplicaSets" :key="replicaSet.metadata.name + replicaSet.metadata.namespace">
                         <tr class="hover:bg-gray-50">
                             <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900" x-text="replicaSet.metadata.name"></td>
+                            <td class="px-6 py-4 whitespace-nowrap text-center">
+                                <div x-show="hasReplicaSetWarnings(replicaSet)" class="flex justify-center" :title="getReplicaSetWarnings(replicaSet)">
+                                    <svg class="w-4 h-4 text-yellow-500" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+                                    </svg>
+                                </div>
+                            </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500" x-text="replicaSet.metadata.namespace || 'default'"></td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500" x-text="(replicaSet.spec && replicaSet.spec.replicas) || 0"></td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500" x-text="(replicaSet.status && replicaSet.status.replicas) || 0"></td>
@@ -176,7 +188,7 @@
 
                     <!-- Empty state -->
                     <tr x-show="filteredReplicaSets.length === 0">
-                        <td colspan="6" class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-center">
+                        <td colspan="7" class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-center">
                             <span x-show="searchTerm || !selectedNamespaces.includes('all')">No replica sets found matching your filters</span>
                             <span x-show="!searchTerm && selectedNamespaces.includes('all')">No replica sets found</span>
                         </td>
@@ -349,6 +361,62 @@
                     return pages;
                 },
 
+                getReplicaSetWarnings(replicaSet) {
+                    const warnings = [];
+
+                    // Check if replica set has insufficient replicas
+                    const desired = (replicaSet.spec?.replicas) || 0;
+                    const current = (replicaSet.status?.replicas) || 0;
+                    const ready = (replicaSet.status?.readyReplicas) || 0;
+                    const available = (replicaSet.status?.availableReplicas) || 0;
+
+                    if (current < desired) {
+                        warnings.push(`${current}/${desired} replicas current`);
+                    }
+
+                    if (ready < desired) {
+                        warnings.push(`${ready}/${desired} replicas ready`);
+                    }
+
+                    if (available < desired) {
+                        warnings.push(`${available}/${desired} replicas available`);
+                    }
+
+                    // Check replica set conditions
+                    if (replicaSet.status?.conditions) {
+                        replicaSet.status.conditions.forEach(condition => {
+                            if (condition.status === 'False' && ['ReplicaFailure'].includes(condition.type)) {
+                                warnings.push(`${condition.type}: ${condition.reason || 'False'}`);
+                            }
+                        });
+                    }
+
+                    return warnings.join(', ') || 'No warnings';
+                },
+
+                hasReplicaSetWarnings(replicaSet) {
+                    // Check for replica issues
+                    const desired = (replicaSet.spec?.replicas) || 0;
+                    const current = (replicaSet.status?.replicas) || 0;
+                    const ready = (replicaSet.status?.readyReplicas) || 0;
+                    const available = (replicaSet.status?.availableReplicas) || 0;
+
+                    if (current < desired || ready < desired || available < desired) {
+                        return true;
+                    }
+
+                    // Check replica set conditions
+                    if (replicaSet.status?.conditions) {
+                        for (const condition of replicaSet.status.conditions) {
+                            if (condition.status === 'False' && ['ReplicaFailure'].includes(condition.type)) {
+                                return true;
+                            }
+                        }
+                    }
+
+                    return false;
+                },
+
                 formatAge(timestamp) {
                     if (!timestamp) return 'N/A';
 
@@ -356,16 +424,40 @@
                     const created = new Date(timestamp);
                     const diffMs = now - created;
 
-                    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-                    if (diffDays > 0) return diffDays + 'd';
-
-                    const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
-                    if (diffHours > 0) return diffHours + 'h';
-
-                    const diffMinutes = Math.floor(diffMs / (1000 * 60));
-                    if (diffMinutes > 0) return diffMinutes + 'm';
-
+                    // Calculate total difference in various units
                     const diffSeconds = Math.floor(diffMs / 1000);
+                    const diffMinutes = Math.floor(diffMs / (1000 * 60));
+                    const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+                    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+
+                    // Calculate years and remaining days (Lens IDE format: 2y83d)
+                    const years = Math.floor(diffDays / 365);
+                    const remainingDays = diffDays % 365;
+
+                    if (years > 0) {
+                        if (remainingDays > 0) {
+                            return years + 'y' + remainingDays + 'd';
+                        } else {
+                            return years + 'y';
+                        }
+                    }
+
+                    // For less than a year, show days
+                    if (diffDays >= 1) {
+                        return diffDays + 'd';
+                    }
+
+                    // For less than a day, show hours
+                    if (diffHours >= 1) {
+                        return diffHours + 'h';
+                    }
+
+                    // For less than an hour, show minutes
+                    if (diffMinutes >= 1) {
+                        return diffMinutes + 'm';
+                    }
+
+                    // For less than a minute, show seconds
                     return diffSeconds + 's';
                 }
             }

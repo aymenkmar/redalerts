@@ -155,6 +155,11 @@
                 <thead class="bg-gray-50">
                     <tr>
                         <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
+                        <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-16">
+                            <svg class="w-4 h-4 mx-auto text-yellow-500" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+                            </svg>
+                        </th>
                         <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Namespace</th>
                         <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Completion</th>
                         <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Age</th>
@@ -165,6 +170,13 @@
                     <template x-for="job in paginatedJobs" :key="job.metadata.name + job.metadata.namespace">
                         <tr class="hover:bg-gray-50">
                             <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900" x-text="job.metadata.name"></td>
+                            <td class="px-6 py-4 whitespace-nowrap text-center">
+                                <div x-show="hasJobWarnings(job)" class="flex justify-center" :title="getJobWarnings(job)">
+                                    <svg class="w-4 h-4 text-yellow-500" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+                                    </svg>
+                                </div>
+                            </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500" x-text="job.metadata.namespace || 'default'"></td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500" x-text="getCompletionTime(job)"></td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500" x-text="formatAge(job.metadata.creationTimestamp)"></td>
@@ -180,7 +192,7 @@
 
                     <!-- Empty state -->
                     <tr x-show="filteredJobs.length === 0">
-                        <td colspan="5" class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-center">
+                        <td colspan="6" class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-center">
                             <span x-show="searchTerm || !selectedNamespaces.includes('all')">No jobs found matching your filters</span>
                             <span x-show="!searchTerm && selectedNamespaces.includes('all')">No jobs found</span>
                         </td>
@@ -399,6 +411,93 @@
                     }
                 },
 
+                getJobWarnings(job) {
+                    const warnings = [];
+
+                    // Check if job has failed
+                    if (job.status?.conditions) {
+                        job.status.conditions.forEach(condition => {
+                            if (condition.status === 'True' && condition.type === 'Failed') {
+                                warnings.push(`Job failed: ${condition.reason || 'Unknown reason'}`);
+                                if (condition.message) {
+                                    warnings.push(`Message: ${condition.message}`);
+                                }
+                            }
+                        });
+                    }
+
+                    // Check for failed pods
+                    const failed = (job.status?.failed) || 0;
+                    if (failed > 0) {
+                        warnings.push(`${failed} pod(s) failed`);
+                    }
+
+                    // Check for long-running jobs (over 24 hours without completion)
+                    if (job.metadata?.creationTimestamp && !job.status?.completionTime) {
+                        const now = new Date();
+                        const created = new Date(job.metadata.creationTimestamp);
+                        const diffHours = Math.floor((now - created) / (1000 * 60 * 60));
+
+                        if (diffHours > 24) {
+                            warnings.push(`Job running for ${diffHours} hours without completion`);
+                        }
+                    }
+
+                    // Check for deadline exceeded
+                    if (job.spec?.activeDeadlineSeconds && job.status?.startTime) {
+                        const startTime = new Date(job.status.startTime);
+                        const deadline = new Date(startTime.getTime() + (job.spec.activeDeadlineSeconds * 1000));
+                        const now = new Date();
+
+                        if (now > deadline && this.getJobStatus(job) !== 'Completed') {
+                            warnings.push('Job exceeded active deadline');
+                        }
+                    }
+
+                    return warnings.join(', ') || 'No warnings';
+                },
+
+                hasJobWarnings(job) {
+                    // Check if job has failed
+                    if (job.status?.conditions) {
+                        for (const condition of job.status.conditions) {
+                            if (condition.status === 'True' && condition.type === 'Failed') {
+                                return true;
+                            }
+                        }
+                    }
+
+                    // Check for failed pods
+                    const failed = (job.status?.failed) || 0;
+                    if (failed > 0) {
+                        return true;
+                    }
+
+                    // Check for long-running jobs (over 24 hours without completion)
+                    if (job.metadata?.creationTimestamp && !job.status?.completionTime) {
+                        const now = new Date();
+                        const created = new Date(job.metadata.creationTimestamp);
+                        const diffHours = Math.floor((now - created) / (1000 * 60 * 60));
+
+                        if (diffHours > 24) {
+                            return true;
+                        }
+                    }
+
+                    // Check for deadline exceeded
+                    if (job.spec?.activeDeadlineSeconds && job.status?.startTime) {
+                        const startTime = new Date(job.status.startTime);
+                        const deadline = new Date(startTime.getTime() + (job.spec.activeDeadlineSeconds * 1000));
+                        const now = new Date();
+
+                        if (now > deadline && this.getJobStatus(job) !== 'Completed') {
+                            return true;
+                        }
+                    }
+
+                    return false;
+                },
+
                 formatAge(timestamp) {
                     if (!timestamp) return 'N/A';
 
@@ -406,16 +505,40 @@
                     const created = new Date(timestamp);
                     const diffMs = now - created;
 
-                    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-                    if (diffDays > 0) return diffDays + 'd';
-
-                    const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
-                    if (diffHours > 0) return diffHours + 'h';
-
-                    const diffMinutes = Math.floor(diffMs / (1000 * 60));
-                    if (diffMinutes > 0) return diffMinutes + 'm';
-
+                    // Calculate total difference in various units
                     const diffSeconds = Math.floor(diffMs / 1000);
+                    const diffMinutes = Math.floor(diffMs / (1000 * 60));
+                    const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+                    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+
+                    // Calculate years and remaining days (Lens IDE format: 2y83d)
+                    const years = Math.floor(diffDays / 365);
+                    const remainingDays = diffDays % 365;
+
+                    if (years > 0) {
+                        if (remainingDays > 0) {
+                            return years + 'y' + remainingDays + 'd';
+                        } else {
+                            return years + 'y';
+                        }
+                    }
+
+                    // For less than a year, show days
+                    if (diffDays >= 1) {
+                        return diffDays + 'd';
+                    }
+
+                    // For less than a day, show hours
+                    if (diffHours >= 1) {
+                        return diffHours + 'h';
+                    }
+
+                    // For less than an hour, show minutes
+                    if (diffMinutes >= 1) {
+                        return diffMinutes + 'm';
+                    }
+
+                    // For less than a minute, show seconds
                     return diffSeconds + 's';
                 }
             }
