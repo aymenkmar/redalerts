@@ -104,7 +104,13 @@
                 <thead class="bg-gray-50">
                     <tr>
                         <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
-                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Conditions</th>
+                        <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-16">
+                            <svg class="w-4 h-4 mx-auto text-yellow-500" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+                            </svg>
+                        </th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Taint</th>
                         <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Roles</th>
                         <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Version</th>
                         <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Age</th>
@@ -117,10 +123,18 @@
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <span
                                     class="inline-flex px-2 py-1 text-xs font-semibold rounded-full"
-                                    :class="getNodeStatusClass(node)"
-                                    x-text="getNodeStatus(node)">
+                                    :class="getNodeConditionsClass(node)"
+                                    x-text="getNodeConditions(node)">
                                 </span>
                             </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-center">
+                                <div x-show="hasNodeWarnings(node)" class="flex justify-center" :title="getNodeWarnings(node)">
+                                    <svg class="w-4 h-4 text-yellow-500" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+                                    </svg>
+                                </div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500" x-text="getNodeTaints(node)"></td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500" x-text="getNodeRoles(node)"></td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500" x-text="(node.status && node.status.nodeInfo && node.status.nodeInfo.kubeletVersion) || 'unknown'"></td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500" x-text="formatAge(node.metadata.creationTimestamp)"></td>
@@ -129,7 +143,7 @@
 
                     <!-- Empty state -->
                     <tr x-show="filteredNodes.length === 0">
-                        <td colspan="5" class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-center">
+                        <td colspan="7" class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-center">
                             <span x-show="searchTerm">No nodes found matching your search</span>
                             <span x-show="!searchTerm">No nodes found</span>
                         </td>
@@ -246,12 +260,16 @@
                             filtered = filtered.filter(node => {
                                 const name = (node.metadata.name || '').toLowerCase();
                                 const roles = this.getNodeRoles(node).toLowerCase();
-                                const status = this.getNodeStatus(node).toLowerCase();
+                                const conditions = this.getNodeConditions(node).toLowerCase();
+                                const warnings = this.getNodeWarnings(node).toLowerCase();
+                                const taints = this.getNodeTaints(node).toLowerCase();
                                 const version = ((node.status?.nodeInfo?.kubeletVersion) || '').toLowerCase();
 
                                 return name.includes(searchLower) ||
                                        roles.includes(searchLower) ||
-                                       status.includes(searchLower) ||
+                                       conditions.includes(searchLower) ||
+                                       warnings.includes(searchLower) ||
+                                       taints.includes(searchLower) ||
                                        version.includes(searchLower);
                             });
                         }
@@ -296,24 +314,102 @@
                     return pages;
                 },
 
-                getNodeStatus(node) {
-                    const readyCondition = (node.status?.conditions || [])
-                        .find(condition => condition.type === 'Ready');
-                    return readyCondition && readyCondition.status === 'True' ? 'Ready' : 'Not Ready';
+                getNodeConditions(node) {
+                    const conditions = node.status?.conditions || [];
+                    const readyCondition = conditions.find(c => c.type === 'Ready');
+
+                    if (readyCondition?.status === 'True') {
+                        return 'Ready';
+                    }
+
+                    // Check for other problematic conditions
+                    const problemConditions = conditions.filter(c =>
+                        c.status === 'True' && ['MemoryPressure', 'DiskPressure', 'PIDPressure', 'NetworkUnavailable'].includes(c.type)
+                    );
+
+                    if (problemConditions.length > 0) {
+                        return problemConditions.map(c => c.type).join(', ');
+                    }
+
+                    return readyCondition ? 'Not Ready' : 'Unknown';
                 },
 
-                getNodeStatusClass(node) {
-                    const status = this.getNodeStatus(node);
-                    return status === 'Ready' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800';
+                getNodeConditionsClass(node) {
+                    const conditions = this.getNodeConditions(node);
+                    if (conditions === 'Ready') {
+                        return 'bg-green-100 text-green-800';
+                    } else if (conditions.includes('Pressure') || conditions.includes('Unavailable')) {
+                        return 'bg-yellow-100 text-yellow-800';
+                    } else {
+                        return 'bg-red-100 text-red-800';
+                    }
+                },
+
+                getNodeWarnings(node) {
+                    const conditions = node.status?.conditions || [];
+                    const warnings = [];
+
+                    // Check for warning conditions
+                    const warningConditions = conditions.filter(c =>
+                        c.status === 'True' && ['MemoryPressure', 'DiskPressure', 'PIDPressure'].includes(c.type)
+                    );
+
+                    if (warningConditions.length > 0) {
+                        warnings.push(...warningConditions.map(c => c.type));
+                    }
+
+                    // Check for unschedulable nodes
+                    if (node.spec?.unschedulable) {
+                        warnings.push('Unschedulable');
+                    }
+
+                    return warnings.length > 0 ? warnings.join(', ') : '-';
+                },
+
+                hasNodeWarnings(node) {
+                    const warnings = this.getNodeWarnings(node);
+                    return warnings !== '-';
+                },
+
+                getNodeTaints(node) {
+                    const taints = node.spec?.taints || [];
+                    return taints.length > 0 ? taints.length.toString() : '0';
                 },
 
                 getNodeRoles(node) {
                     const labels = node.metadata?.labels || {};
-                    const roles = Object.keys(labels)
-                        .filter(key => key.startsWith('node-role.kubernetes.io/'))
-                        .map(key => key.replace('node-role.kubernetes.io/', ''))
-                        .join(', ');
-                    return roles || 'worker';
+                    const roles = [];
+
+                    // Check for standard node-role.kubernetes.io/ labels
+                    Object.keys(labels).forEach(key => {
+                        if (key.startsWith('node-role.kubernetes.io/')) {
+                            const role = key.replace('node-role.kubernetes.io/', '');
+                            roles.push(role);
+                        }
+                    });
+
+                    // Check for legacy master labels (older Kubernetes versions)
+                    if (labels['kubernetes.io/role'] === 'master') {
+                        roles.push('master');
+                    }
+
+                    // Check for control-plane labels (newer Kubernetes versions)
+                    if (labels['node-role.kubernetes.io/control-plane'] !== undefined) {
+                        if (!roles.includes('control-plane')) {
+                            roles.push('control-plane');
+                        }
+                    }
+
+                    // Check for master labels (some distributions)
+                    if (labels['node-role.kubernetes.io/master'] !== undefined) {
+                        if (!roles.includes('master')) {
+                            roles.push('master');
+                        }
+                    }
+
+                    // Remove duplicates and join
+                    const uniqueRoles = [...new Set(roles)];
+                    return uniqueRoles.length > 0 ? uniqueRoles.join(', ') : 'worker';
                 },
 
                 formatAge(timestamp) {
@@ -323,16 +419,40 @@
                     const created = new Date(timestamp);
                     const diffMs = now - created;
 
-                    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-                    if (diffDays > 0) return diffDays + 'd';
-
-                    const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
-                    if (diffHours > 0) return diffHours + 'h';
-
-                    const diffMinutes = Math.floor(diffMs / (1000 * 60));
-                    if (diffMinutes > 0) return diffMinutes + 'm';
-
+                    // Calculate total difference in various units
                     const diffSeconds = Math.floor(diffMs / 1000);
+                    const diffMinutes = Math.floor(diffMs / (1000 * 60));
+                    const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+                    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+
+                    // Calculate years and remaining days (Lens IDE format: 2y83d)
+                    const years = Math.floor(diffDays / 365);
+                    const remainingDays = diffDays % 365;
+
+                    if (years > 0) {
+                        if (remainingDays > 0) {
+                            return years + 'y' + remainingDays + 'd';
+                        } else {
+                            return years + 'y';
+                        }
+                    }
+
+                    // For less than a year, show days
+                    if (diffDays >= 1) {
+                        return diffDays + 'd';
+                    }
+
+                    // For less than a day, show hours
+                    if (diffHours >= 1) {
+                        return diffHours + 'h';
+                    }
+
+                    // For less than an hour, show minutes
+                    if (diffMinutes >= 1) {
+                        return diffMinutes + 'm';
+                    }
+
+                    // For less than a minute, show seconds
                     return diffSeconds + 's';
                 }
             }

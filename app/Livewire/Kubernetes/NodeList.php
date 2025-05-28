@@ -116,47 +116,127 @@ class NodeList extends Component
 
         $creationTime = Carbon::parse($timestamp);
         $now = Carbon::now();
+
+        // Calculate total difference in various units
+        $diffInSeconds = $creationTime->diffInSeconds($now);
+        $diffInMinutes = $creationTime->diffInMinutes($now);
+        $diffInHours = $creationTime->diffInHours($now);
         $diffInDays = $creationTime->diffInDays($now);
 
-        // For Lens IDE style formatting
+        // Calculate years and remaining days (Lens IDE format: 2y83d)
+        $years = intval($diffInDays / 365);
+        $remainingDays = $diffInDays % 365;
+
+        if ($years > 0) {
+            if ($remainingDays > 0) {
+                return $years . 'y' . $remainingDays . 'd';
+            } else {
+                return $years . 'y';
+            }
+        }
+
+        // For less than a year, show days
         if ($diffInDays >= 1) {
             return $diffInDays . 'd';
         }
 
-        $diffInHours = $creationTime->diffInHours($now);
+        // For less than a day, show hours
         if ($diffInHours >= 1) {
             return $diffInHours . 'h';
         }
 
-        $diffInMinutes = $creationTime->diffInMinutes($now);
+        // For less than an hour, show minutes
         if ($diffInMinutes >= 1) {
             return $diffInMinutes . 'm';
         }
 
-        return $creationTime->diffInSeconds($now) . 's';
+        // For less than a minute, show seconds
+        return $diffInSeconds . 's';
     }
 
-    public function getNodeStatus($node)
+    public function getNodeConditions($node)
     {
-        $readyCondition = collect($node['status']['conditions'] ?? [])
-            ->firstWhere('type', 'Ready');
+        $conditions = collect($node['status']['conditions'] ?? []);
+        $readyCondition = $conditions->firstWhere('type', 'Ready');
 
-        return $readyCondition && $readyCondition['status'] === 'True' ? 'Ready' : 'Not Ready';
+        if ($readyCondition && $readyCondition['status'] === 'True') {
+            return 'Ready';
+        }
+
+        // Check for problematic conditions
+        $problemConditions = $conditions->filter(function ($condition) {
+            return $condition['status'] === 'True' &&
+                   in_array($condition['type'], ['MemoryPressure', 'DiskPressure', 'PIDPressure', 'NetworkUnavailable']);
+        });
+
+        if ($problemConditions->isNotEmpty()) {
+            return $problemConditions->pluck('type')->join(', ');
+        }
+
+        return $readyCondition ? 'Not Ready' : 'Unknown';
+    }
+
+    public function getNodeWarnings($node)
+    {
+        $conditions = collect($node['status']['conditions'] ?? []);
+        $warnings = [];
+
+        // Check for warning conditions
+        $warningConditions = $conditions->filter(function ($condition) {
+            return $condition['status'] === 'True' &&
+                   in_array($condition['type'], ['MemoryPressure', 'DiskPressure', 'PIDPressure']);
+        });
+
+        if ($warningConditions->isNotEmpty()) {
+            $warnings = array_merge($warnings, $warningConditions->pluck('type')->toArray());
+        }
+
+        // Check for unschedulable nodes
+        if (isset($node['spec']['unschedulable']) && $node['spec']['unschedulable']) {
+            $warnings[] = 'Unschedulable';
+        }
+
+        return count($warnings) > 0 ? implode(', ', $warnings) : '-';
+    }
+
+    public function getNodeTaints($node)
+    {
+        $taints = $node['spec']['taints'] ?? [];
+        return count($taints);
     }
 
     public function getNodeRoles($node)
     {
-        $roles = collect($node['metadata']['labels'] ?? [])
-            ->filter(function ($value, $key) {
-                return str_starts_with($key, 'node-role.kubernetes.io/');
-            })
-            ->keys()
-            ->map(function ($key) {
-                return str_replace('node-role.kubernetes.io/', '', $key);
-            })
-            ->join(', ');
+        $labels = $node['metadata']['labels'] ?? [];
+        $roles = [];
 
-        return $roles ?: 'worker';
+        // Check for standard node-role.kubernetes.io/ labels
+        foreach ($labels as $key => $value) {
+            if (str_starts_with($key, 'node-role.kubernetes.io/')) {
+                $role = str_replace('node-role.kubernetes.io/', '', $key);
+                $roles[] = $role;
+            }
+        }
+
+        // Check for legacy master labels (older Kubernetes versions)
+        if (isset($labels['kubernetes.io/role']) && $labels['kubernetes.io/role'] === 'master') {
+            $roles[] = 'master';
+        }
+
+        // Check for control-plane labels (newer Kubernetes versions)
+        if (isset($labels['node-role.kubernetes.io/control-plane'])) {
+            $roles[] = 'control-plane';
+        }
+
+        // Check for master labels (some distributions)
+        if (isset($labels['node-role.kubernetes.io/master'])) {
+            $roles[] = 'master';
+        }
+
+        // Remove duplicates and join
+        $roles = array_unique($roles);
+
+        return count($roles) > 0 ? implode(', ', $roles) : 'worker';
     }
 
     public function render()
