@@ -155,6 +155,11 @@
                 <thead class="bg-gray-50">
                     <tr>
                         <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
+                        <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-16">
+                            <svg class="w-4 h-4 mx-auto text-yellow-500" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+                            </svg>
+                        </th>
                         <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Namespace</th>
                         <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Containers</th>
                         <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">CPU</th>
@@ -171,8 +176,17 @@
                     <template x-for="pod in paginatedPods" :key="pod.metadata.name + pod.metadata.namespace">
                         <tr class="hover:bg-gray-50">
                             <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900" x-text="pod.metadata.name"></td>
+                            <td class="px-6 py-4 whitespace-nowrap text-center">
+                                <div x-show="hasPodWarnings(pod)" class="flex justify-center" :title="getPodWarnings(pod)">
+                                    <svg class="w-4 h-4 text-yellow-500" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+                                    </svg>
+                                </div>
+                            </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500" x-text="pod.metadata.namespace || 'default'"></td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500" x-text="(pod.spec.containers || []).length"></td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="flex items-center space-x-1" x-html="getContainerStatusIndicators(pod)"></div>
+                            </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">N/A</td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">N/A</td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500" x-text="getRestartCount(pod)"></td>
@@ -192,7 +206,7 @@
 
                     <!-- Empty state -->
                     <tr x-show="filteredPods.length === 0">
-                        <td colspan="11" class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-center">
+                        <td colspan="12" class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-center">
                             <span x-show="searchTerm || !selectedNamespaces.includes('all')">No pods found matching your filters</span>
                             <span x-show="!searchTerm && selectedNamespaces.includes('all')">No pods found</span>
                         </td>
@@ -274,7 +288,6 @@
             </div>
         </div>
         @endif
-    </div>
 
     <script>
         function podsList() {
@@ -378,6 +391,121 @@
                     );
                 },
 
+                getPodWarnings(pod) {
+                    const warnings = [];
+
+                    // Check container statuses for warnings
+                    if (pod.status?.containerStatuses) {
+                        pod.status.containerStatuses.forEach(container => {
+                            if (container.state?.waiting) {
+                                warnings.push(`${container.name}: ${container.state.waiting.reason}`);
+                            }
+                            if (container.state?.terminated && container.state.terminated.exitCode !== 0) {
+                                warnings.push(`${container.name}: ${container.state.terminated.reason}`);
+                            }
+                            if (container.restartCount > 0) {
+                                warnings.push(`${container.name}: ${container.restartCount} restarts`);
+                            }
+                        });
+                    }
+
+                    // Check pod conditions
+                    if (pod.status?.conditions) {
+                        pod.status.conditions.forEach(condition => {
+                            if (condition.status === 'False' && ['Ready', 'PodScheduled'].includes(condition.type)) {
+                                warnings.push(`${condition.type}: ${condition.reason || 'False'}`);
+                            }
+                        });
+                    }
+
+                    return warnings.join(', ') || 'No warnings';
+                },
+
+                hasPodWarnings(pod) {
+                    // Check for container issues
+                    if (pod.status?.containerStatuses) {
+                        for (const container of pod.status.containerStatuses) {
+                            if (container.state?.waiting ||
+                                (container.state?.terminated && container.state.terminated.exitCode !== 0) ||
+                                container.restartCount > 0) {
+                                return true;
+                            }
+                        }
+                    }
+
+                    // Check pod conditions
+                    if (pod.status?.conditions) {
+                        for (const condition of pod.status.conditions) {
+                            if (condition.status === 'False' && ['Ready', 'PodScheduled'].includes(condition.type)) {
+                                return true;
+                            }
+                        }
+                    }
+
+                    return false;
+                },
+
+                getContainerStatusIndicators(pod) {
+                    const containers = pod.status?.containerStatuses || [];
+                    const initContainers = pod.status?.initContainerStatuses || [];
+
+                    let html = '';
+
+                    // Show init containers first (if any)
+                    initContainers.forEach((container, index) => {
+                        const color = this.getContainerColor(container, true);
+                        const tooltip = this.getContainerTooltip(container, true);
+                        html += `<div class="w-3 h-3 rounded-sm ${color}" title="${tooltip}"></div>`;
+                    });
+
+                    // Show main containers
+                    containers.forEach((container, index) => {
+                        const color = this.getContainerColor(container, false);
+                        const tooltip = this.getContainerTooltip(container, false);
+                        html += `<div class="w-3 h-3 rounded-sm ${color}" title="${tooltip}"></div>`;
+                    });
+
+                    // If no containers, show count from spec
+                    if (containers.length === 0 && initContainers.length === 0) {
+                        const specContainers = pod.spec?.containers || [];
+                        specContainers.forEach((container, index) => {
+                            html += `<div class="w-3 h-3 rounded-sm bg-gray-400" title="${container.name}: Unknown status"></div>`;
+                        });
+                    }
+
+                    return html;
+                },
+
+                getContainerColor(container, isInit = false) {
+                    if (container.state?.running) {
+                        return 'bg-green-500'; // Running - green
+                    } else if (container.state?.waiting) {
+                        return 'bg-yellow-500'; // Waiting - yellow
+                    } else if (container.state?.terminated) {
+                        if (container.state.terminated.exitCode === 0) {
+                            return isInit ? 'bg-blue-500' : 'bg-green-500'; // Completed successfully
+                        } else {
+                            return 'bg-red-500'; // Failed - red
+                        }
+                    }
+                    return 'bg-gray-400'; // Unknown
+                },
+
+                getContainerTooltip(container, isInit = false) {
+                    const prefix = isInit ? 'Init: ' : '';
+
+                    if (container.state?.running) {
+                        return `${prefix}${container.name}: Running (started: ${container.state.running.startedAt})`;
+                    } else if (container.state?.waiting) {
+                        return `${prefix}${container.name}: ${container.state.waiting.reason} - ${container.state.waiting.message || 'Waiting'}`;
+                    } else if (container.state?.terminated) {
+                        const reason = container.state.terminated.reason || 'Terminated';
+                        const exitCode = container.state.terminated.exitCode;
+                        return `${prefix}${container.name}: ${reason} (exit code: ${exitCode})`;
+                    }
+                    return `${prefix}${container.name}: Unknown status`;
+                },
+
                 getStatusClass(status) {
                     const statusClasses = {
                         'Running': 'bg-green-100 text-green-800',
@@ -396,16 +524,40 @@
                     const created = new Date(timestamp);
                     const diffMs = now - created;
 
-                    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-                    if (diffDays > 0) return diffDays + 'd';
-
-                    const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
-                    if (diffHours > 0) return diffHours + 'h';
-
-                    const diffMinutes = Math.floor(diffMs / (1000 * 60));
-                    if (diffMinutes > 0) return diffMinutes + 'm';
-
+                    // Calculate total difference in various units
                     const diffSeconds = Math.floor(diffMs / 1000);
+                    const diffMinutes = Math.floor(diffMs / (1000 * 60));
+                    const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+                    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+
+                    // Calculate years and remaining days (Lens IDE format: 2y83d)
+                    const years = Math.floor(diffDays / 365);
+                    const remainingDays = diffDays % 365;
+
+                    if (years > 0) {
+                        if (remainingDays > 0) {
+                            return years + 'y' + remainingDays + 'd';
+                        } else {
+                            return years + 'y';
+                        }
+                    }
+
+                    // For less than a year, show days
+                    if (diffDays >= 1) {
+                        return diffDays + 'd';
+                    }
+
+                    // For less than a day, show hours
+                    if (diffHours >= 1) {
+                        return diffHours + 'h';
+                    }
+
+                    // For less than an hour, show minutes
+                    if (diffMinutes >= 1) {
+                        return diffMinutes + 'm';
+                    }
+
+                    // For less than a minute, show seconds
                     return diffSeconds + 's';
                 }
             }
