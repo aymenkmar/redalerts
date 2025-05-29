@@ -155,30 +155,52 @@
                 <thead class="bg-gray-50">
                     <tr>
                         <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
+                        <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-16">
+                            <svg class="w-4 h-4 mx-auto text-yellow-500" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+                            </svg>
+                        </th>
                         <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Namespace</th>
                         <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
                         <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Cluster IP</th>
-                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">External IP</th>
                         <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ports</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">External IP</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Selector</th>
                         <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Age</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
                     </tr>
                 </thead>
                 <tbody class="bg-white divide-y divide-gray-200">
                     <template x-for="service in paginatedServices" :key="service.metadata.name + service.metadata.namespace">
                         <tr class="hover:bg-gray-50">
                             <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900" x-text="service.metadata.name"></td>
+                            <td class="px-6 py-4 whitespace-nowrap text-center">
+                                <div x-show="hasServiceWarning(service)" class="inline-flex">
+                                    <svg class="w-4 h-4 text-yellow-500" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+                                    </svg>
+                                </div>
+                            </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500" x-text="service.metadata.namespace || 'default'"></td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500" x-text="(service.spec && service.spec.type) || 'ClusterIP'"></td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500" x-text="(service.spec && service.spec.clusterIP) || 'None'"></td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500" x-text="getExternalIP(service)"></td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500" x-text="getPorts(service)"></td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500" x-text="getExternalIP(service)"></td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500" x-text="getSelector(service)"></td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500" x-text="formatAge(service.metadata.creationTimestamp)"></td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <span
+                                    class="inline-flex px-2 py-1 text-xs font-semibold rounded-full"
+                                    :class="getServiceStatusClass(service)"
+                                    x-text="getServiceStatus(service)">
+                                </span>
+                            </td>
                         </tr>
                     </template>
 
                     <!-- Empty state -->
                     <tr x-show="filteredServices.length === 0">
-                        <td colspan="7" class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-center">
+                        <td colspan="10" class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-center">
                             <span x-show="searchTerm || !selectedNamespaces.includes('all')">No services found matching your filters</span>
                             <span x-show="!searchTerm && selectedNamespaces.includes('all')">No services found</span>
                         </td>
@@ -253,7 +275,9 @@
                                 const type = ((service.spec && service.spec.type) || 'ClusterIP').toLowerCase();
                                 const clusterIP = ((service.spec && service.spec.clusterIP) || 'None').toLowerCase();
                                 const ports = this.getPorts(service).toLowerCase();
-                                return name.includes(searchLower) || namespace.includes(searchLower) || type.includes(searchLower) || clusterIP.includes(searchLower) || ports.includes(searchLower);
+                                const selector = this.getSelector(service).toLowerCase();
+                                const status = this.getServiceStatus(service).toLowerCase();
+                                return name.includes(searchLower) || namespace.includes(searchLower) || type.includes(searchLower) || clusterIP.includes(searchLower) || ports.includes(searchLower) || selector.includes(searchLower) || status.includes(searchLower);
                             });
                         }
                         this.filteredServices = filtered;
@@ -332,6 +356,110 @@
                     if (diffMinutes > 0) return diffMinutes + 'm';
                     const diffSeconds = Math.floor(diffMs / 1000);
                     return diffSeconds + 's';
+                },
+
+                getSelector(service) {
+                    if (service.spec && service.spec.selector && typeof service.spec.selector === 'object') {
+                        const selectors = Object.entries(service.spec.selector)
+                            .map(([key, value]) => `${key}=${value}`)
+                            .join(', ');
+                        return selectors || '—';
+                    }
+                    return '—';
+                },
+
+                getServiceStatus(service) {
+                    // Check service type and determine status
+                    const serviceType = (service.spec && service.spec.type) || 'ClusterIP';
+
+                    switch (serviceType) {
+                        case 'LoadBalancer':
+                            if (service.status && service.status.loadBalancer && service.status.loadBalancer.ingress) {
+                                return 'Active';
+                            }
+                            return 'Pending';
+
+                        case 'NodePort':
+                        case 'ClusterIP':
+                            // Check if service has endpoints
+                            if (service.spec && service.spec.selector) {
+                                return 'Active';
+                            }
+                            return 'Active'; // ClusterIP services are generally active if they exist
+
+                        case 'ExternalName':
+                            if (service.spec && service.spec.externalName) {
+                                return 'Active';
+                            }
+                            return 'Inactive';
+
+                        default:
+                            return 'Unknown';
+                    }
+                },
+
+                getServiceStatusClass(service) {
+                    const status = this.getServiceStatus(service);
+                    switch (status) {
+                        case 'Active':
+                            return 'bg-green-100 text-green-800';
+                        case 'Pending':
+                            return 'bg-yellow-100 text-yellow-800';
+                        case 'Inactive':
+                            return 'bg-red-100 text-red-800';
+                        default:
+                            return 'bg-gray-100 text-gray-800';
+                    }
+                },
+
+                hasServiceWarning(service) {
+                    // Check for service warnings
+                    if (!service.spec) {
+                        return true; // No spec defined
+                    }
+
+                    // Check for missing selector on ClusterIP/NodePort services
+                    const serviceType = service.spec.type || 'ClusterIP';
+                    if ((serviceType === 'ClusterIP' || serviceType === 'NodePort') &&
+                        (!service.spec.selector || Object.keys(service.spec.selector).length === 0)) {
+                        return true; // No selector for services that need one
+                    }
+
+                    // Check for missing ports
+                    if (!service.spec.ports || service.spec.ports.length === 0) {
+                        return true; // No ports defined
+                    }
+
+                    // Check for LoadBalancer without external IP for extended period
+                    if (serviceType === 'LoadBalancer') {
+                        if (!service.status || !service.status.loadBalancer || !service.status.loadBalancer.ingress) {
+                            return true; // LoadBalancer without external IP
+                        }
+                    }
+
+                    // Check for ExternalName without externalName
+                    if (serviceType === 'ExternalName' && !service.spec.externalName) {
+                        return true; // ExternalName service without externalName
+                    }
+
+                    // Check for port conflicts or invalid configurations
+                    if (service.spec.ports) {
+                        for (const port of service.spec.ports) {
+                            // Check for missing port number
+                            if (!port.port) {
+                                return true;
+                            }
+
+                            // Check for NodePort services with invalid nodePort range
+                            if (serviceType === 'NodePort' && port.nodePort) {
+                                if (port.nodePort < 30000 || port.nodePort > 32767) {
+                                    return true; // Invalid NodePort range
+                                }
+                            }
+                        }
+                    }
+
+                    return false;
                 }
             }
         }
