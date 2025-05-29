@@ -186,7 +186,7 @@
                 searchTerm: '',
                 clientLoading: false,
                 currentPage: 1,
-                perPage: 25,
+                perPage: 10,
 
                 init() { this.filterIngressClasses(); },
 
