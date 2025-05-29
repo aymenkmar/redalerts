@@ -104,30 +104,36 @@
                 <thead class="bg-gray-50">
                     <tr>
                         <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
+                        <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-16">★</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Namespace</th>
                         <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Controller</th>
-                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Default</th>
-                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Age</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">API Group</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Scope</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kind</th>
                     </tr>
                 </thead>
                 <tbody class="bg-white divide-y divide-gray-200">
                     <template x-for="ingressClass in paginatedIngressClasses" :key="ingressClass.metadata.name">
                         <tr class="hover:bg-gray-50">
                             <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900" x-text="ingressClass.metadata.name"></td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500" x-text="(ingressClass.spec && ingressClass.spec.controller) || 'N/A'"></td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                <span
-                                    class="inline-flex px-2 py-1 text-xs font-semibold rounded-full"
-                                    :class="isDefaultClass(ingressClass) ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'"
-                                    x-text="isDefaultClass(ingressClass) ? 'Yes' : 'No'">
-                                </span>
+                            <td class="px-6 py-4 whitespace-nowrap text-center">
+                                <div x-show="isDefaultClass(ingressClass)" class="flex justify-center">
+                                    <svg class="w-4 h-4 text-yellow-500" fill="currentColor" viewBox="0 0 20 20">
+                                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
+                                    </svg>
+                                </div>
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500" x-text="formatAge(ingressClass.metadata.creationTimestamp)"></td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500" x-text="getNamespace(ingressClass)"></td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500" x-text="getController(ingressClass)"></td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500" x-text="getApiGroup(ingressClass)"></td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500" x-text="getScope(ingressClass)"></td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500" x-text="getKind(ingressClass)"></td>
                         </tr>
                     </template>
 
                     <!-- Empty state -->
                     <tr x-show="filteredIngressClasses.length === 0">
-                        <td colspan="4" class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-center">
+                        <td colspan="7" class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-center">
                             <span x-show="searchTerm">No ingress classes found matching your search</span>
                             <span x-show="!searchTerm">No ingress classes found</span>
                         </td>
@@ -192,9 +198,14 @@
                             const searchLower = this.searchTerm.toLowerCase();
                             filtered = filtered.filter(ingressClass => {
                                 const name = (ingressClass.metadata.name || '').toLowerCase();
-                                const controller = ((ingressClass.spec && ingressClass.spec.controller) || 'N/A').toLowerCase();
-                                const isDefault = this.isDefaultClass(ingressClass) ? 'yes' : 'no';
-                                return name.includes(searchLower) || controller.includes(searchLower) || isDefault.includes(searchLower);
+                                const namespace = this.getNamespace(ingressClass).toLowerCase();
+                                const controller = this.getController(ingressClass).toLowerCase();
+                                const apiGroup = this.getApiGroup(ingressClass).toLowerCase();
+                                const scope = this.getScope(ingressClass).toLowerCase();
+                                const kind = this.getKind(ingressClass).toLowerCase();
+                                return name.includes(searchLower) || namespace.includes(searchLower) ||
+                                       controller.includes(searchLower) || apiGroup.includes(searchLower) ||
+                                       scope.includes(searchLower) || kind.includes(searchLower);
                             });
                         }
                         this.filteredIngressClasses = filtered;
@@ -240,19 +251,31 @@
                            ingressClass.metadata.annotations['ingressclass.kubernetes.io/is-default-class'] === 'true';
                 },
 
-                formatAge(timestamp) {
-                    if (!timestamp) return 'N/A';
-                    const now = new Date();
-                    const created = new Date(timestamp);
-                    const diffMs = now - created;
-                    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-                    if (diffDays > 0) return diffDays + 'd';
-                    const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
-                    if (diffHours > 0) return diffHours + 'h';
-                    const diffMinutes = Math.floor(diffMs / (1000 * 60));
-                    if (diffMinutes > 0) return diffMinutes + 'm';
-                    const diffSeconds = Math.floor(diffMs / 1000);
-                    return diffSeconds + 's';
+                getNamespace(ingressClass) {
+                    // Ingress Classes are cluster-scoped, so they don't have a namespace
+                    return '—';
+                },
+
+                getController(ingressClass) {
+                    return (ingressClass.spec && ingressClass.spec.controller) || '—';
+                },
+
+                getApiGroup(ingressClass) {
+                    if (ingressClass.apiVersion) {
+                        const parts = ingressClass.apiVersion.split('/');
+                        return parts.length > 1 ? parts[0] : '—';
+                    }
+                    return '—';
+                },
+
+                getScope(ingressClass) {
+                    // Empty in Lens IDE for Ingress Classes
+                    return '';
+                },
+
+                getKind(ingressClass) {
+                    // Empty in Lens IDE for Ingress Classes
+                    return '';
                 }
             }
         }

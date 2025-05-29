@@ -155,10 +155,10 @@
                 <thead class="bg-gray-50">
                     <tr>
                         <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
+                        <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-16">⚠</th>
                         <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Namespace</th>
-                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Hosts</th>
-                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Address</th>
-                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ports</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Rules</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">LoadBalancers</th>
                         <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Age</th>
                     </tr>
                 </thead>
@@ -166,10 +166,16 @@
                     <template x-for="ingress in paginatedIngresses" :key="ingress.metadata.name + ingress.metadata.namespace">
                         <tr class="hover:bg-gray-50">
                             <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900" x-text="ingress.metadata.name"></td>
+                            <td class="px-6 py-4 whitespace-nowrap text-center">
+                                <div x-show="hasIngressWarnings(ingress)" class="flex justify-center" :title="getIngressWarnings(ingress)">
+                                    <svg class="w-4 h-4 text-yellow-500" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+                                    </svg>
+                                </div>
+                            </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500" x-text="ingress.metadata.namespace || 'default'"></td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500" x-text="getIngressHosts(ingress)"></td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500" x-text="getIngressAddresses(ingress)"></td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500" x-text="getIngressPorts(ingress)"></td>
+                            <td class="px-6 py-4 text-sm text-gray-500" x-html="getIngressRules(ingress)"></td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500" x-text="getIngressLoadBalancers(ingress)"></td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500" x-text="formatAge(ingress.metadata.creationTimestamp)"></td>
                         </tr>
                     </template>
@@ -248,10 +254,9 @@
                             filtered = filtered.filter(ingress => {
                                 const name = (ingress.metadata.name || '').toLowerCase();
                                 const namespace = (ingress.metadata.namespace || 'default').toLowerCase();
-                                const hosts = this.getIngressHosts(ingress).toLowerCase();
-                                const addresses = this.getIngressAddresses(ingress).toLowerCase();
-                                const ports = this.getIngressPorts(ingress).toLowerCase();
-                                return name.includes(searchLower) || namespace.includes(searchLower) || hosts.includes(searchLower) || addresses.includes(searchLower) || ports.includes(searchLower);
+                                const rules = this.getIngressRulesText(ingress).toLowerCase();
+                                const loadBalancers = this.getIngressLoadBalancers(ingress).toLowerCase();
+                                return name.includes(searchLower) || namespace.includes(searchLower) || rules.includes(searchLower) || loadBalancers.includes(searchLower);
                             });
                         }
                         this.filteredIngresses = filtered;
@@ -291,20 +296,49 @@
                     return pages;
                 },
 
-                getIngressHosts(ingress) {
+                getIngressRules(ingress) {
                     if (ingress.spec && ingress.spec.rules) {
-                        const hosts = [];
+                        const rules = [];
                         ingress.spec.rules.forEach(rule => {
                             if (rule.host) {
-                                hosts.push(rule.host);
+                                // Format like Lens IDE: host with paths
+                                if (rule.http && rule.http.paths && rule.http.paths.length > 0) {
+                                    rule.http.paths.forEach(path => {
+                                        const pathStr = path.path || '/';
+                                        rules.push(`${rule.host}${pathStr}`);
+                                    });
+                                } else {
+                                    rules.push(rule.host);
+                                }
                             }
                         });
-                        return hosts.length > 0 ? hosts.join(', ') : '—';
+                        return rules.length > 0 ? rules.map(rule => `<div>${rule}</div>`).join('') : '—';
                     }
                     return '—';
                 },
 
-                getIngressAddresses(ingress) {
+                getIngressRulesText(ingress) {
+                    if (ingress.spec && ingress.spec.rules) {
+                        const rules = [];
+                        ingress.spec.rules.forEach(rule => {
+                            if (rule.host) {
+                                // Format like Lens IDE: host with paths
+                                if (rule.http && rule.http.paths && rule.http.paths.length > 0) {
+                                    rule.http.paths.forEach(path => {
+                                        const pathStr = path.path || '/';
+                                        rules.push(`${rule.host}${pathStr}`);
+                                    });
+                                } else {
+                                    rules.push(rule.host);
+                                }
+                            }
+                        });
+                        return rules.length > 0 ? rules.join(' ') : '—';
+                    }
+                    return '—';
+                },
+
+                getIngressLoadBalancers(ingress) {
                     if (ingress.status && ingress.status.loadBalancer && ingress.status.loadBalancer.ingress) {
                         const addresses = [];
                         ingress.status.loadBalancer.ingress.forEach(item => {
@@ -317,13 +351,6 @@
                         return addresses.length > 0 ? addresses.join(', ') : '—';
                     }
                     return '—';
-                },
-
-                getIngressPorts(ingress) {
-                    if (ingress.spec && ingress.spec.tls) {
-                        return '443';
-                    }
-                    return '80';
                 },
 
                 formatAge(timestamp) {
@@ -339,6 +366,92 @@
                     if (diffMinutes > 0) return diffMinutes + 'm';
                     const diffSeconds = Math.floor(diffMs / 1000);
                     return diffSeconds + 's';
+                },
+
+                getIngressWarnings(ingress) {
+                    const warnings = [];
+
+                    // Check if ingress has no rules
+                    if (!ingress.spec || !ingress.spec.rules || ingress.spec.rules.length === 0) {
+                        warnings.push('No rules defined');
+                    }
+
+                    // Check if ingress has no backend services
+                    if (ingress.spec && ingress.spec.rules) {
+                        let hasBackends = false;
+                        ingress.spec.rules.forEach(rule => {
+                            if (rule.http && rule.http.paths && rule.http.paths.length > 0) {
+                                rule.http.paths.forEach(path => {
+                                    if (path.backend) {
+                                        hasBackends = true;
+                                    }
+                                });
+                            }
+                        });
+                        if (!hasBackends) {
+                            warnings.push('No backend services configured');
+                        }
+                    }
+
+                    // Check if LoadBalancer ingress has no external IP/hostname
+                    if (ingress.spec && ingress.spec.ingressClassName) {
+                        if (!ingress.status || !ingress.status.loadBalancer || !ingress.status.loadBalancer.ingress) {
+                            warnings.push('LoadBalancer has no external address');
+                        }
+                    }
+
+                    // Check for TLS configuration issues
+                    if (ingress.spec && ingress.spec.tls) {
+                        ingress.spec.tls.forEach(tls => {
+                            if (!tls.secretName) {
+                                warnings.push('TLS configured without secret');
+                            }
+                        });
+                    }
+
+                    return warnings.join(', ') || 'No warnings';
+                },
+
+                hasIngressWarnings(ingress) {
+                    // Check if ingress has no rules
+                    if (!ingress.spec || !ingress.spec.rules || ingress.spec.rules.length === 0) {
+                        return true;
+                    }
+
+                    // Check if ingress has no backend services
+                    if (ingress.spec && ingress.spec.rules) {
+                        let hasBackends = false;
+                        ingress.spec.rules.forEach(rule => {
+                            if (rule.http && rule.http.paths && rule.http.paths.length > 0) {
+                                rule.http.paths.forEach(path => {
+                                    if (path.backend) {
+                                        hasBackends = true;
+                                    }
+                                });
+                            }
+                        });
+                        if (!hasBackends) {
+                            return true;
+                        }
+                    }
+
+                    // Check if LoadBalancer ingress has no external IP/hostname
+                    if (ingress.spec && ingress.spec.ingressClassName) {
+                        if (!ingress.status || !ingress.status.loadBalancer || !ingress.status.loadBalancer.ingress) {
+                            return true;
+                        }
+                    }
+
+                    // Check for TLS configuration issues
+                    if (ingress.spec && ingress.spec.tls) {
+                        for (const tls of ingress.spec.tls) {
+                            if (!tls.secretName) {
+                                return true;
+                            }
+                        }
+                    }
+
+                    return false;
                 }
             }
         }
