@@ -159,7 +159,6 @@
                         <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Replicas</th>
                         <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Desired Replicas</th>
                         <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Selector</th>
-                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Age</th>
                     </tr>
                 </thead>
                 <tbody class="bg-white divide-y divide-gray-200">
@@ -170,13 +169,12 @@
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500" x-text="(replicationController.status && replicationController.status.replicas) || 0"></td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500" x-text="(replicationController.spec && replicationController.spec.replicas) || 0"></td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500" x-text="getSelector(replicationController)"></td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500" x-text="formatAge(replicationController.metadata.creationTimestamp)"></td>
                         </tr>
                     </template>
 
                     <!-- Empty state -->
                     <tr x-show="filteredReplicationControllers.length === 0">
-                        <td colspan="6" class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-center">
+                        <td colspan="5" class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-center">
                             <span x-show="searchTerm || !selectedNamespaces.includes('all')">No replication controllers found matching your filters</span>
                             <span x-show="!searchTerm && selectedNamespaces.includes('all')">No replication controllers found</span>
                         </td>

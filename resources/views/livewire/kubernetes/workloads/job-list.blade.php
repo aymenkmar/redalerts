@@ -155,21 +155,23 @@
                 <thead class="bg-gray-50">
                     <tr>
                         <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Namespace</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Completion</th>
                         <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-16">
                             <svg class="w-4 h-4 mx-auto text-yellow-500" fill="currentColor" viewBox="0 0 20 20">
                                 <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
                             </svg>
                         </th>
-                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Namespace</th>
-                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Completion</th>
                         <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Age</th>
-                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Condition</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Conditions</th>
                     </tr>
                 </thead>
                 <tbody class="bg-white divide-y divide-gray-200">
                     <template x-for="job in paginatedJobs" :key="job.metadata.name + job.metadata.namespace">
                         <tr class="hover:bg-gray-50">
                             <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900" x-text="job.metadata.name"></td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500" x-text="job.metadata.namespace || 'default'"></td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500" x-text="getJobCompletion(job)"></td>
                             <td class="px-6 py-4 whitespace-nowrap text-center">
                                 <div x-show="hasJobWarnings(job)" class="flex justify-center" :title="getJobWarnings(job)">
                                     <svg class="w-4 h-4 text-yellow-500" fill="currentColor" viewBox="0 0 20 20">
@@ -177,16 +179,8 @@
                                     </svg>
                                 </div>
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500" x-text="job.metadata.namespace || 'default'"></td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500" x-text="getCompletionTime(job)"></td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500" x-text="formatAge(job.metadata.creationTimestamp)"></td>
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <span
-                                    class="inline-flex px-2 py-1 text-xs font-semibold rounded-full"
-                                    :class="getJobStatusClass(job)"
-                                    x-text="getJobStatus(job)">
-                                </span>
-                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm" :class="getJobConditionClass(job)" x-text="getJobCondition(job)"></td>
                         </tr>
                     </template>
 
@@ -367,47 +361,41 @@
                     return pages;
                 },
 
-                getCompletionTime(job) {
-                    if (job.status && job.status.completionTime) {
-                        const date = new Date(job.status.completionTime);
-                        return date.toLocaleString();
-                    }
-                    return 'Not completed';
+                getJobCompletion(job) {
+                    const succeeded = job.status?.succeeded || 0;
+                    const completions = job.spec?.completions || 1;
+                    return `${succeeded} / ${completions}`;
                 },
 
-                getJobStatus(job) {
-                    let condition = 'Pending';
-
+                getJobCondition(job) {
                     if (job.status && job.status.conditions) {
                         for (const cond of job.status.conditions) {
                             if (cond.type === 'Complete' && cond.status === 'True') {
-                                condition = 'Completed';
-                                break;
+                                return 'Complete';
                             } else if (cond.type === 'Failed' && cond.status === 'True') {
-                                condition = 'Failed';
-                                break;
+                                return 'Failed';
                             }
                         }
                     }
 
-                    if (condition === 'Pending' && job.status && job.status.active && job.status.active > 0) {
-                        condition = 'Running';
+                    if (job.status && job.status.active && job.status.active > 0) {
+                        return 'Running';
                     }
 
-                    return condition;
+                    return '';
                 },
 
-                getJobStatusClass(job) {
-                    const status = this.getJobStatus(job);
-                    switch (status) {
-                        case 'Completed':
-                            return 'bg-green-100 text-green-800';
+                getJobConditionClass(job) {
+                    const condition = this.getJobCondition(job);
+                    switch (condition) {
+                        case 'Complete':
+                            return 'text-green-600';
                         case 'Failed':
-                            return 'bg-red-100 text-red-800';
+                            return 'text-red-600';
                         case 'Running':
-                            return 'bg-blue-100 text-blue-800';
+                            return 'text-blue-600';
                         default:
-                            return 'bg-yellow-100 text-yellow-800';
+                            return 'text-gray-500';
                     }
                 },
 

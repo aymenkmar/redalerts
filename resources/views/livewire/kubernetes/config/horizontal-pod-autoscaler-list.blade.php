@@ -155,6 +155,11 @@
                 <thead class="bg-gray-50">
                     <tr>
                         <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
+                        <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-16">
+                            <svg class="w-4 h-4 mx-auto text-yellow-500" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+                            </svg>
+                        </th>
                         <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Namespace</th>
                         <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Metrics</th>
                         <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Min Pods</th>
@@ -168,6 +173,13 @@
                     <template x-for="hpa in paginatedHPAs" :key="hpa.metadata.name + hpa.metadata.namespace">
                         <tr class="hover:bg-gray-50">
                             <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900" x-text="hpa.metadata.name"></td>
+                            <td class="px-6 py-4 whitespace-nowrap text-center">
+                                <div x-show="hasHPAWarning(hpa)" class="inline-flex">
+                                    <svg class="w-4 h-4 text-yellow-500" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+                                    </svg>
+                                </div>
+                            </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500" x-text="hpa.metadata.namespace || 'default'"></td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500" x-text="getHPAMetrics(hpa)"></td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500" x-text="(hpa.spec && hpa.spec.minReplicas) || 'N/A'"></td>
@@ -186,7 +198,7 @@
 
                     <!-- Empty state -->
                     <tr x-show="filteredHPAs.length === 0">
-                        <td colspan="8" class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-center">
+                        <td colspan="9" class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-center">
                             <span x-show="searchTerm || !selectedNamespaces.includes('all')">No horizontal pod autoscalers found matching your filters</span>
                             <span x-show="!searchTerm && selectedNamespaces.includes('all')">No horizontal pod autoscalers found</span>
                         </td>
@@ -353,6 +365,78 @@
                     if (diffMinutes > 0) return diffMinutes + 'm';
                     const diffSeconds = Math.floor(diffMs / 1000);
                     return diffSeconds + 's';
+                },
+
+                hasHPAWarning(hpa) {
+                    // Check for HPA warnings
+                    if (!hpa.spec) {
+                        return true; // No spec defined
+                    }
+
+                    // Check for missing target reference
+                    if (!hpa.spec.scaleTargetRef || !hpa.spec.scaleTargetRef.name) {
+                        return true; // No target to scale
+                    }
+
+                    // Check for invalid min/max replica configuration
+                    const minReplicas = hpa.spec.minReplicas || 1;
+                    const maxReplicas = hpa.spec.maxReplicas;
+
+                    if (!maxReplicas) {
+                        return true; // No max replicas defined
+                    }
+
+                    if (minReplicas >= maxReplicas) {
+                        return true; // Min >= Max replicas
+                    }
+
+                    // Check for very restrictive scaling (min = max)
+                    if (maxReplicas - minReplicas < 2) {
+                        return true; // Very limited scaling range
+                    }
+
+                    // Check for missing or invalid metrics
+                    if (!hpa.spec.metrics || !Array.isArray(hpa.spec.metrics) || hpa.spec.metrics.length === 0) {
+                        return true; // No metrics defined
+                    }
+
+                    // Check for problematic metric configurations
+                    for (const metric of hpa.spec.metrics) {
+                        if (!metric.type) {
+                            return true; // Missing metric type
+                        }
+
+                        // Check for CPU utilization metrics with very high thresholds
+                        if (metric.type === 'Resource' && metric.resource) {
+                            if (metric.resource.name === 'cpu' && metric.resource.target) {
+                                const targetValue = metric.resource.target.averageUtilization;
+                                if (targetValue && targetValue > 90) {
+                                    return true; // Very high CPU threshold (>90%)
+                                }
+                            }
+                        }
+                    }
+
+                    // Check status for scaling issues
+                    if (hpa.status) {
+                        // Check for conditions indicating problems
+                        if (hpa.status.conditions) {
+                            for (const condition of hpa.status.conditions) {
+                                if (condition.status === 'False' &&
+                                    (condition.type === 'AbleToScale' || condition.type === 'ScalingActive')) {
+                                    return true; // Scaling issues
+                                }
+                            }
+                        }
+
+                        // Check if current replicas are at max for extended period
+                        if (hpa.status.currentReplicas === maxReplicas &&
+                            hpa.status.desiredReplicas === maxReplicas) {
+                            return true; // Potentially hitting scaling limits
+                        }
+                    }
+
+                    return false;
                 }
             }
         }
