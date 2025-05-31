@@ -159,6 +159,11 @@
                 <thead class="bg-gray-50">
                     <tr>
                         <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
+                        <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-16">
+                            <svg class="w-4 h-4 mx-auto text-yellow-500" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+                            </svg>
+                        </th>
                         <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Namespace</th>
                         <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Age</th>
                     </tr>
@@ -167,6 +172,13 @@
                     <template x-for="role in paginatedRoles" :key="role.metadata.name + role.metadata.namespace">
                         <tr class="hover:bg-gray-50">
                             <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900" x-text="role.metadata.name"></td>
+                            <td class="px-6 py-4 whitespace-nowrap text-center">
+                                <div x-show="hasRoleWarnings(role)" class="flex justify-center" :title="getRoleWarnings(role)">
+                                    <svg class="w-4 h-4 text-yellow-500" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+                                    </svg>
+                                </div>
+                            </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500" x-text="getNamespace(role)"></td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500" x-text="formatAge(role.metadata.creationTimestamp)"></td>
                         </tr>
@@ -174,7 +186,7 @@
 
                     <!-- Empty state -->
                     <tr x-show="filteredRoles.length === 0">
-                        <td colspan="3" class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-center">
+                        <td colspan="4" class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-center">
                             <span x-show="searchTerm || !selectedNamespaces.includes('all')">No roles found matching your filters</span>
                             <span x-show="!searchTerm && selectedNamespaces.includes('all')">No roles found</span>
                         </td>
@@ -246,7 +258,8 @@
                             filtered = filtered.filter(role => {
                                 const name = (role.metadata.name || '').toLowerCase();
                                 const namespace = this.getNamespace(role).toLowerCase();
-                                return name.includes(searchLower) || namespace.includes(searchLower);
+                                const warnings = this.getRoleWarnings(role).toLowerCase();
+                                return name.includes(searchLower) || namespace.includes(searchLower) || warnings.includes(searchLower);
                             });
                         }
                         this.filteredRoles = filtered;
@@ -303,6 +316,44 @@
                     if (diffMinutes > 0) return diffMinutes + 'm';
                     const diffSeconds = Math.floor(diffMs / 1000);
                     return diffSeconds + 's';
+                },
+
+                getRoleWarnings(role) {
+                    const warnings = [];
+
+                    // Check for overly permissive rules
+                    if (role.rules && Array.isArray(role.rules)) {
+                        role.rules.forEach(rule => {
+                            // Check for wildcard permissions
+                            if (rule.verbs && rule.verbs.includes('*')) {
+                                warnings.push('Wildcard Verbs');
+                            }
+                            if (rule.resources && rule.resources.includes('*')) {
+                                warnings.push('Wildcard Resources');
+                            }
+                            if (rule.apiGroups && rule.apiGroups.includes('*')) {
+                                warnings.push('Wildcard API Groups');
+                            }
+
+                            // Check for dangerous permissions
+                            if (rule.verbs && rule.verbs.includes('create') &&
+                                rule.resources && rule.resources.includes('pods/exec')) {
+                                warnings.push('Pod Exec Permission');
+                            }
+                        });
+                    }
+
+                    // Check for empty rules
+                    if (!role.rules || role.rules.length === 0) {
+                        warnings.push('No Rules Defined');
+                    }
+
+                    return warnings.length > 0 ? [...new Set(warnings)].join(', ') : '-';
+                },
+
+                hasRoleWarnings(role) {
+                    const warnings = this.getRoleWarnings(role);
+                    return warnings !== '-';
                 }
             }
         }

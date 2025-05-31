@@ -108,6 +108,11 @@
                 <thead class="bg-gray-50">
                     <tr>
                         <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
+                        <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-16">
+                            <svg class="w-4 h-4 mx-auto text-yellow-500" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+                            </svg>
+                        </th>
                         <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Age</th>
                     </tr>
                 </thead>
@@ -115,13 +120,20 @@
                     <template x-for="clusterRole in paginatedClusterRoles" :key="clusterRole.metadata.name">
                         <tr class="hover:bg-gray-50">
                             <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900" x-text="clusterRole.metadata.name"></td>
+                            <td class="px-6 py-4 whitespace-nowrap text-center">
+                                <div x-show="hasClusterRoleWarnings(clusterRole)" class="flex justify-center" :title="getClusterRoleWarnings(clusterRole)">
+                                    <svg class="w-4 h-4 text-yellow-500" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+                                    </svg>
+                                </div>
+                            </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500" x-text="formatAge(clusterRole.metadata.creationTimestamp)"></td>
                         </tr>
                     </template>
 
                     <!-- Empty state -->
                     <tr x-show="filteredClusterRoles.length === 0">
-                        <td colspan="2" class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-center">
+                        <td colspan="3" class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-center">
                             <span x-show="searchTerm">No cluster roles found matching your search</span>
                             <span x-show="!searchTerm">No cluster roles found</span>
                         </td>
@@ -186,7 +198,8 @@
                             const searchLower = this.searchTerm.toLowerCase();
                             filtered = filtered.filter(clusterRole => {
                                 const name = (clusterRole.metadata.name || '').toLowerCase();
-                                return name.includes(searchLower);
+                                const warnings = this.getClusterRoleWarnings(clusterRole).toLowerCase();
+                                return name.includes(searchLower) || warnings.includes(searchLower);
                             });
                         }
                         this.filteredClusterRoles = filtered;
@@ -239,6 +252,52 @@
                     if (diffMinutes > 0) return diffMinutes + 'm';
                     const diffSeconds = Math.floor(diffMs / 1000);
                     return diffSeconds + 's';
+                },
+
+                getClusterRoleWarnings(clusterRole) {
+                    const warnings = [];
+
+                    // Check for overly permissive cluster-wide rules
+                    if (clusterRole.rules && Array.isArray(clusterRole.rules)) {
+                        clusterRole.rules.forEach(rule => {
+                            // Check for wildcard permissions (more dangerous at cluster level)
+                            if (rule.verbs && rule.verbs.includes('*')) {
+                                warnings.push('Wildcard Verbs');
+                            }
+                            if (rule.resources && rule.resources.includes('*')) {
+                                warnings.push('Wildcard Resources');
+                            }
+                            if (rule.apiGroups && rule.apiGroups.includes('*')) {
+                                warnings.push('Wildcard API Groups');
+                            }
+
+                            // Check for dangerous cluster-wide permissions
+                            if (rule.verbs && rule.verbs.includes('create') &&
+                                rule.resources && rule.resources.includes('clusterroles')) {
+                                warnings.push('Can Create ClusterRoles');
+                            }
+                            if (rule.verbs && rule.verbs.includes('create') &&
+                                rule.resources && rule.resources.includes('clusterrolebindings')) {
+                                warnings.push('Can Create ClusterRoleBindings');
+                            }
+                            if (rule.verbs && rule.verbs.includes('*') &&
+                                rule.resources && rule.resources.includes('*')) {
+                                warnings.push('Cluster Admin Permissions');
+                            }
+                        });
+                    }
+
+                    // Check for empty rules
+                    if (!clusterRole.rules || clusterRole.rules.length === 0) {
+                        warnings.push('No Rules Defined');
+                    }
+
+                    return warnings.length > 0 ? [...new Set(warnings)].join(', ') : '-';
+                },
+
+                hasClusterRoleWarnings(clusterRole) {
+                    const warnings = this.getClusterRoleWarnings(clusterRole);
+                    return warnings !== '-';
                 }
             }
         }
