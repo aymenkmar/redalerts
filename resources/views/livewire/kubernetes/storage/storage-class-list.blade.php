@@ -104,10 +104,14 @@
                 <thead class="bg-gray-50">
                     <tr>
                         <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
+                        <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-16">
+                            <svg class="w-4 h-4 mx-auto text-yellow-500" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+                            </svg>
+                        </th>
                         <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Provisioner</th>
                         <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Reclaim Policy</th>
-                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Default Class</th>
-                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Volume Binding Mode</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Default</th>
                         <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Age</th>
                     </tr>
                 </thead>
@@ -115,6 +119,13 @@
                     <template x-for="storageClass in paginatedStorageClasses" :key="storageClass.metadata.name">
                         <tr class="hover:bg-gray-50">
                             <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900" x-text="storageClass.metadata.name"></td>
+                            <td class="px-6 py-4 whitespace-nowrap text-center">
+                                <div x-show="hasStorageClassWarnings(storageClass)" class="flex justify-center" :title="getStorageClassWarnings(storageClass)">
+                                    <svg class="w-4 h-4 text-yellow-500" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+                                    </svg>
+                                </div>
+                            </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500" x-text="getProvisioner(storageClass)"></td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500" x-text="getReclaimPolicy(storageClass)"></td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
@@ -124,7 +135,6 @@
                                     x-text="isDefaultClass(storageClass) ? 'Yes' : 'No'">
                                 </span>
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500" x-text="getVolumeBindingMode(storageClass)"></td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500" x-text="formatAge(storageClass.metadata.creationTimestamp)"></td>
                         </tr>
                     </template>
@@ -199,10 +209,11 @@
                                 const provisioner = this.getProvisioner(storageClass).toLowerCase();
                                 const reclaimPolicy = this.getReclaimPolicy(storageClass).toLowerCase();
                                 const isDefault = this.isDefaultClass(storageClass) ? 'yes' : 'no';
-                                const volumeBindingMode = this.getVolumeBindingMode(storageClass).toLowerCase();
+                                const warnings = this.getStorageClassWarnings(storageClass).toLowerCase();
+
                                 return name.includes(searchLower) || provisioner.includes(searchLower) ||
                                        reclaimPolicy.includes(searchLower) || isDefault.includes(searchLower) ||
-                                       volumeBindingMode.includes(searchLower);
+                                       warnings.includes(searchLower);
                             });
                         }
                         this.filteredStorageClasses = filtered;
@@ -265,14 +276,79 @@
                     const now = new Date();
                     const created = new Date(timestamp);
                     const diffMs = now - created;
-                    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-                    if (diffDays > 0) return diffDays + 'd';
-                    const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
-                    if (diffHours > 0) return diffHours + 'h';
-                    const diffMinutes = Math.floor(diffMs / (1000 * 60));
-                    if (diffMinutes > 0) return diffMinutes + 'm';
+
+                    // Calculate total difference in various units
                     const diffSeconds = Math.floor(diffMs / 1000);
+                    const diffMinutes = Math.floor(diffMs / (1000 * 60));
+                    const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+                    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+
+                    // Calculate years and remaining days (Lens IDE format: 2y83d)
+                    const years = Math.floor(diffDays / 365);
+                    const remainingDays = diffDays % 365;
+
+                    if (years > 0) {
+                        if (remainingDays > 0) {
+                            return years + 'y' + remainingDays + 'd';
+                        } else {
+                            return years + 'y';
+                        }
+                    }
+
+                    // For less than a year, show days
+                    if (diffDays >= 1) {
+                        return diffDays + 'd';
+                    }
+
+                    // For less than a day, show hours
+                    if (diffHours >= 1) {
+                        return diffHours + 'h';
+                    }
+
+                    // For less than an hour, show minutes
+                    if (diffMinutes >= 1) {
+                        return diffMinutes + 'm';
+                    }
+
+                    // For less than a minute, show seconds
                     return diffSeconds + 's';
+                },
+
+                getStorageClassWarnings(storageClass) {
+                    const warnings = [];
+
+                    // Check for deprecated provisioners
+                    const provisioner = this.getProvisioner(storageClass);
+                    const deprecatedProvisioners = [
+                        'kubernetes.io/aws-ebs',
+                        'kubernetes.io/azure-disk',
+                        'kubernetes.io/gce-pd',
+                        'kubernetes.io/cinder',
+                        'kubernetes.io/vsphere-volume'
+                    ];
+
+                    if (deprecatedProvisioners.includes(provisioner)) {
+                        warnings.push('Deprecated Provisioner');
+                    }
+
+                    // Check for missing reclaim policy (should be explicit)
+                    if (!storageClass.reclaimPolicy) {
+                        warnings.push('No Reclaim Policy');
+                    }
+
+                    // Check for potentially problematic volume binding modes
+                    const volumeBindingMode = this.getVolumeBindingMode(storageClass);
+                    if (volumeBindingMode === 'WaitForFirstConsumer' && !storageClass.allowedTopologies) {
+                        // This might cause issues in multi-zone clusters
+                        warnings.push('WaitForFirstConsumer without topology constraints');
+                    }
+
+                    return warnings.length > 0 ? warnings.join(', ') : '-';
+                },
+
+                hasStorageClassWarnings(storageClass) {
+                    const warnings = this.getStorageClassWarnings(storageClass);
+                    return warnings !== '-';
                 }
             }
         }

@@ -11,6 +11,7 @@ class PersistentVolumeClaimList extends Component
 {
     public $persistentVolumeClaims = [];
     public $namespaces = [];
+    public $pods = [];
     public $loading = true;
     public $error = null;
     public $selectedCluster = null;
@@ -70,6 +71,14 @@ class PersistentVolumeClaimList extends Component
                     ->toArray();
             } else {
                 $this->namespaces = [];
+            }
+
+            // Fetch pods to determine which pods use which PVCs
+            $podsResponse = $service->getPods();
+            if (isset($podsResponse['items'])) {
+                $this->pods = $podsResponse['items'];
+            } else {
+                $this->pods = [];
             }
 
         } catch (\Exception $e) {

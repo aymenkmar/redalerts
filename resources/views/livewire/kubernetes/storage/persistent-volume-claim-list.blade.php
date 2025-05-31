@@ -155,20 +155,35 @@
                 <thead class="bg-gray-50">
                     <tr>
                         <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
+                        <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-16">
+                            <svg class="w-4 h-4 mx-auto text-yellow-500" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+                            </svg>
+                        </th>
                         <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Namespace</th>
-                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Volume</th>
-                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Capacity</th>
-                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Access Modes</th>
-                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Storage Class</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Storage class</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Size</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Pods</th>
                         <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Age</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
                     </tr>
                 </thead>
                 <tbody class="bg-white divide-y divide-gray-200">
                     <template x-for="pvc in paginatedPVCs" :key="pvc.metadata.name + pvc.metadata.namespace">
                         <tr class="hover:bg-gray-50">
                             <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900" x-text="pvc.metadata.name"></td>
+                            <td class="px-6 py-4 whitespace-nowrap text-center">
+                                <div x-show="hasPVCWarnings(pvc)" class="flex justify-center" :title="getPVCWarnings(pvc)">
+                                    <svg class="w-4 h-4 text-yellow-500" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+                                    </svg>
+                                </div>
+                            </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500" x-text="pvc.metadata.namespace || 'default'"></td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500" x-text="getStorageClass(pvc)"></td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500" x-text="getCapacity(pvc)"></td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500" x-text="getPods(pvc)"></td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500" x-text="formatAge(pvc.metadata.creationTimestamp)"></td>
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <span
                                     class="inline-flex px-2 py-1 text-xs font-semibold rounded-full"
@@ -176,11 +191,6 @@
                                     x-text="getStatus(pvc)">
                                 </span>
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500" x-text="getVolumeName(pvc)"></td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500" x-text="getCapacity(pvc)"></td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500" x-text="getAccessModes(pvc)"></td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500" x-text="getStorageClass(pvc)"></td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500" x-text="formatAge(pvc.metadata.creationTimestamp)"></td>
                         </tr>
                     </template>
 
@@ -235,6 +245,7 @@
             return {
                 allPVCs: @json($persistentVolumeClaims),
                 namespaces: @json($namespaces),
+                allPods: @json($pods),
                 filteredPVCs: [],
                 paginatedPVCs: [],
                 searchTerm: '',
@@ -259,14 +270,15 @@
                                 const name = (pvc.metadata.name || '').toLowerCase();
                                 const namespace = (pvc.metadata.namespace || 'default').toLowerCase();
                                 const status = this.getStatus(pvc).toLowerCase();
-                                const volumeName = this.getVolumeName(pvc).toLowerCase();
-                                const capacity = this.getCapacity(pvc).toLowerCase();
-                                const accessModes = this.getAccessModes(pvc).toLowerCase();
                                 const storageClass = this.getStorageClass(pvc).toLowerCase();
+                                const capacity = this.getCapacity(pvc).toLowerCase();
+                                const warnings = this.getPVCWarnings(pvc).toLowerCase();
+                                const pods = this.getPods(pvc).toLowerCase();
+
                                 return name.includes(searchLower) || namespace.includes(searchLower) ||
-                                       status.includes(searchLower) || volumeName.includes(searchLower) ||
-                                       capacity.includes(searchLower) || accessModes.includes(searchLower) ||
-                                       storageClass.includes(searchLower);
+                                       status.includes(searchLower) || storageClass.includes(searchLower) ||
+                                       capacity.includes(searchLower) || warnings.includes(searchLower) ||
+                                       pods.includes(searchLower);
                             });
                         }
                         this.filteredPVCs = filtered;
@@ -350,14 +362,112 @@
                     const now = new Date();
                     const created = new Date(timestamp);
                     const diffMs = now - created;
-                    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-                    if (diffDays > 0) return diffDays + 'd';
-                    const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
-                    if (diffHours > 0) return diffHours + 'h';
-                    const diffMinutes = Math.floor(diffMs / (1000 * 60));
-                    if (diffMinutes > 0) return diffMinutes + 'm';
+
+                    // Calculate total difference in various units
                     const diffSeconds = Math.floor(diffMs / 1000);
+                    const diffMinutes = Math.floor(diffMs / (1000 * 60));
+                    const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+                    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+
+                    // Calculate years and remaining days (Lens IDE format: 2y83d)
+                    const years = Math.floor(diffDays / 365);
+                    const remainingDays = diffDays % 365;
+
+                    if (years > 0) {
+                        if (remainingDays > 0) {
+                            return years + 'y' + remainingDays + 'd';
+                        } else {
+                            return years + 'y';
+                        }
+                    }
+
+                    // For less than a year, show days
+                    if (diffDays >= 1) {
+                        return diffDays + 'd';
+                    }
+
+                    // For less than a day, show hours
+                    if (diffHours >= 1) {
+                        return diffHours + 'h';
+                    }
+
+                    // For less than an hour, show minutes
+                    if (diffMinutes >= 1) {
+                        return diffMinutes + 'm';
+                    }
+
+                    // For less than a minute, show seconds
                     return diffSeconds + 's';
+                },
+
+                getPVCWarnings(pvc) {
+                    const warnings = [];
+                    const status = this.getStatus(pvc);
+
+                    // Check for problematic statuses
+                    if (status === 'Pending') {
+                        // Check if it's been pending for too long (more than 5 minutes)
+                        const now = new Date();
+                        const created = new Date(pvc.metadata.creationTimestamp);
+                        const diffMinutes = Math.floor((now - created) / (1000 * 60));
+
+                        if (diffMinutes > 5) {
+                            warnings.push('Long Pending');
+                        } else {
+                            warnings.push('Pending');
+                        }
+                    } else if (status === 'Lost') {
+                        warnings.push('Volume Lost');
+                    }
+
+                    // Check for conditions indicating problems
+                    if (pvc.status && pvc.status.conditions) {
+                        const problemConditions = pvc.status.conditions.filter(c =>
+                            c.status === 'False' && ['Resizing'].includes(c.type)
+                        );
+
+                        if (problemConditions.length > 0) {
+                            warnings.push(...problemConditions.map(c => c.type + ' Failed'));
+                        }
+                    }
+
+                    return warnings.length > 0 ? warnings.join(', ') : '-';
+                },
+
+                hasPVCWarnings(pvc) {
+                    const warnings = this.getPVCWarnings(pvc);
+                    return warnings !== '-';
+                },
+
+                getPods(pvc) {
+                    const pvcName = pvc.metadata.name;
+                    const pvcNamespace = pvc.metadata.namespace || 'default';
+
+                    // Find pods that use this PVC
+                    const usingPods = this.allPods.filter(pod => {
+                        if ((pod.metadata.namespace || 'default') !== pvcNamespace) {
+                            return false;
+                        }
+
+                        // Check if any volume in the pod references this PVC
+                        const volumes = pod.spec?.volumes || [];
+                        return volumes.some(volume =>
+                            volume.persistentVolumeClaim &&
+                            volume.persistentVolumeClaim.claimName === pvcName
+                        );
+                    });
+
+                    if (usingPods.length === 0) {
+                        return '—';
+                    }
+
+                    // Return pod names, limit to 3 and add "..." if more
+                    const podNames = usingPods.map(pod => pod.metadata.name);
+                    if (podNames.length <= 3) {
+                        return podNames.join(', ');
+                    } else {
+                        return podNames.slice(0, 3).join(', ') + '...';
+                    }
                 }
             }
         }
