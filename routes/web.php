@@ -60,6 +60,22 @@ Route::middleware('auth')->group(function () {
     Route::get('/kubernetes/challenges', \App\Livewire\Kubernetes\CustomResources\ACME\ChallengeList::class)->name('kubernetes.challenges');
     Route::get('/kubernetes/orders', \App\Livewire\Kubernetes\CustomResources\ACME\OrderList::class)->name('kubernetes.orders');
 
+    // Pod Shell Routes
+    Route::prefix('kubernetes/shell')->group(function () {
+        Route::post('/start', [\App\Http\Controllers\PodShellController::class, 'startShell'])->name('kubernetes.shell.start');
+        Route::post('/execute/{sessionId}', [\App\Http\Controllers\PodShellController::class, 'executeCommand'])->name('kubernetes.shell.execute');
+        Route::get('/output/{sessionId}', [\App\Http\Controllers\PodShellController::class, 'getOutput'])->name('kubernetes.shell.output');
+        Route::post('/complete/{sessionId}', [\App\Http\Controllers\PodShellController::class, 'tabComplete'])->name('kubernetes.shell.complete');
+        Route::delete('/terminate/{sessionId}', [\App\Http\Controllers\PodShellController::class, 'terminateShell'])->name('kubernetes.shell.terminate');
+        Route::get('/sessions', [\App\Http\Controllers\PodShellController::class, 'listSessions'])->name('kubernetes.shell.sessions');
+        Route::post('/cleanup', [\App\Http\Controllers\PodShellController::class, 'cleanup'])->name('kubernetes.shell.cleanup');
+    });
+
+    // Test route for shell functionality
+    Route::get('/test-shell', function () {
+        return view('test-shell');
+    })->name('test-shell');
+
     // Cert Manager Resources
     Route::get('/kubernetes/certificates', \App\Livewire\Kubernetes\CustomResources\CertManager\CertificateList::class)->name('kubernetes.certificates');
     Route::get('/kubernetes/certificaterequests', \App\Livewire\Kubernetes\CustomResources\CertManager\CertificateRequestList::class)->name('kubernetes.certificaterequests');

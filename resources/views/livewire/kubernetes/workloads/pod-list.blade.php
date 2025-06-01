@@ -170,6 +170,7 @@
                         <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">QoS</th>
                         <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Age</th>
                         <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                     </tr>
                 </thead>
                 <tbody class="bg-white divide-y divide-gray-200">
@@ -201,12 +202,28 @@
                                     x-text="pod.status ? pod.status.phase : 'Unknown'">
                                 </span>
                             </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                <div class="flex items-center space-x-2">
+                                    <!-- Shell Icon -->
+                                    <button
+                                        @click="openPodShell(pod)"
+                                        :disabled="!isPodRunning(pod)"
+                                        class="p-1 rounded hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                                        :class="isPodRunning(pod) ? 'text-gray-600 hover:text-gray-800' : 'text-gray-400'"
+                                        title="Open Shell"
+                                    >
+                                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                            <path fill-rule="evenodd" d="M2 5a2 2 0 012-2h12a2 2 0 012 2v10a2 2 0 01-2 2H4a2 2 0 01-2-2V5zm3.293 1.293a1 1 0 011.414 0l3 3a1 1 0 010 1.414l-3 3a1 1 0 01-1.414-1.414L7.586 10 5.293 7.707a1 1 0 010-1.414zM11 12a1 1 0 100 2h3a1 1 0 100-2h-3z" clip-rule="evenodd"></path>
+                                        </svg>
+                                    </button>
+                                </div>
+                            </td>
                         </tr>
                     </template>
 
                     <!-- Empty state -->
                     <tr x-show="filteredPods.length === 0">
-                        <td colspan="12" class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-center">
+                        <td colspan="13" class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-center">
                             <span x-show="searchTerm || !selectedNamespaces.includes('all')">No pods found matching your filters</span>
                             <span x-show="!searchTerm && selectedNamespaces.includes('all')">No pods found</span>
                         </td>
@@ -288,6 +305,42 @@
             </div>
         </div>
         @endif
+
+    <!-- Terminal Panel (Hidden by default) - Compact Style -->
+    <div id="terminal-panel" class="hidden fixed bottom-0 left-0 right-0 terminal-vscode z-50" style="height: 450px; margin: 8px; bottom: 0;">
+        <div class="terminal-header flex items-center justify-between" style="padding: 4px 12px; min-height: 32px;">
+            <div class="flex items-center space-x-2">
+                <svg class="w-3 h-3 text-green-400" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M2 5a2 2 0 012-2h12a2 2 0 012 2v10a2 2 0 01-2 2H4a2 2 0 01-2-2V5zm3.293 1.293a1 1 0 011.414 0l3 3a1 1 0 010 1.414l-3 3a1 1 0 01-1.414-1.414L7.586 10 5.293 7.707a1 1 0 010-1.414zM11 12a1 1 0 100 2h3a1 1 0 100-2h-3z" clip-rule="evenodd"></path>
+                </svg>
+                <span id="terminal-title" class="text-xs text-gray-300">Terminal</span>
+            </div>
+            <div class="terminal-controls" style="gap: 4px;">
+                <button
+                    onclick="window.podTerminal?.showHistory()"
+                    class="terminal-btn-compact"
+                    title="Show Command History (or type 'history')"
+                >
+                    📜
+                </button>
+                <button
+                    onclick="window.podTerminal?.clear()"
+                    class="terminal-btn-compact"
+                    title="Clear Terminal"
+                >
+                    Clear
+                </button>
+                <button
+                    onclick="window.podTerminal?.disconnect()"
+                    class="terminal-btn-compact danger"
+                    title="Close Terminal"
+                >
+                    ✕
+                </button>
+            </div>
+        </div>
+        <div id="terminal-container" class="w-full h-full bg-black terminal-scrollable"></div>
+    </div>
 
     <script>
         function podsList() {
@@ -559,8 +612,178 @@
 
                     // For less than a minute, show seconds
                     return diffSeconds + 's';
+                },
+
+                // Pod shell functions
+                isPodRunning(pod) {
+                    return pod.status?.phase === 'Running';
+                },
+
+                async openPodShell(pod) {
+                    if (!this.isPodRunning(pod)) {
+                        alert('Pod must be in Running state to open shell');
+                        return;
+                    }
+
+                    const namespace = pod.metadata.namespace;
+                    const podName = pod.metadata.name;
+
+                    // Get the first container if multiple containers exist
+                    const containers = pod.spec?.containers || [];
+                    const container = containers.length > 0 ? containers[0].name : null;
+
+                    try {
+                        // Update terminal title
+                        const terminalTitle = document.getElementById('terminal-title');
+                        if (terminalTitle) {
+                            terminalTitle.textContent = `${namespace}/${podName}${container ? `/${container}` : ''}`;
+                        }
+
+                        // Connect to pod shell
+                        const success = await window.podTerminal.connect(namespace, podName, container);
+
+                        if (!success) {
+                            alert('Failed to connect to pod shell');
+                        }
+                    } catch (error) {
+                        console.error('Error opening pod shell:', error);
+                        alert('Error opening pod shell: ' + error.message);
+                    }
                 }
             }
         }
     </script>
+
+    <style>
+        /* VS Code Terminal Style */
+        .terminal-vscode {
+            background: #1e1e1e;
+            border: 1px solid #3c3c3c;
+            border-radius: 8px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+
+        .terminal-vscode .terminal-header {
+            background: #2d2d30;
+            border-bottom: 1px solid #3c3c3c;
+            border-radius: 8px 8px 0 0;
+            padding: 8px 16px;
+        }
+
+        .terminal-vscode .terminal-tab {
+            background: #1e1e1e;
+            border: 1px solid #3c3c3c;
+            border-radius: 4px 4px 0 0;
+            padding: 6px 12px;
+            margin-right: 4px;
+            font-size: 12px;
+            color: #cccccc;
+        }
+
+        .terminal-vscode .terminal-controls {
+            display: flex;
+            gap: 8px;
+        }
+
+        .terminal-vscode .terminal-btn {
+            background: #0e639c;
+            border: none;
+            border-radius: 4px;
+            color: white;
+            padding: 4px 8px;
+            font-size: 11px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .terminal-vscode .terminal-btn:hover {
+            background: #1177bb;
+        }
+
+        .terminal-vscode .terminal-btn.danger {
+            background: #d73a49;
+        }
+
+        .terminal-vscode .terminal-btn.danger:hover {
+            background: #e53e3e;
+        }
+
+        /* Compact Terminal Buttons */
+        .terminal-btn-compact {
+            background: #0e639c;
+            border: none;
+            border-radius: 3px;
+            color: white;
+            padding: 2px 6px;
+            font-size: 10px;
+            cursor: pointer;
+            transition: background 0.2s;
+            min-width: auto;
+        }
+
+        .terminal-btn-compact:hover {
+            background: #1177bb;
+        }
+
+        .terminal-btn-compact.danger {
+            background: #d73a49;
+        }
+
+        .terminal-btn-compact.danger:hover {
+            background: #e53e3e;
+        }
+
+        /* Terminal Scrollbar Styling */
+        .terminal-scrollable .xterm-viewport {
+            overflow-y: auto !important;
+            scrollbar-width: thin;
+            scrollbar-color: #4a5568 #2d3748;
+        }
+
+        .terminal-scrollable .xterm-viewport::-webkit-scrollbar {
+            width: 12px;
+        }
+
+        .terminal-scrollable .xterm-viewport::-webkit-scrollbar-track {
+            background: #2d3748;
+            border-radius: 6px;
+        }
+
+        .terminal-scrollable .xterm-viewport::-webkit-scrollbar-thumb {
+            background: #4a5568;
+            border-radius: 6px;
+            border: 2px solid #2d3748;
+        }
+
+        .terminal-scrollable .xterm-viewport::-webkit-scrollbar-thumb:hover {
+            background: #718096;
+        }
+
+        .terminal-scrollable .xterm-viewport::-webkit-scrollbar-thumb:active {
+            background: #a0aec0;
+        }
+
+        /* Ensure terminal content is scrollable */
+        .terminal-scrollable .xterm-screen {
+            overflow-y: visible !important;
+        }
+
+        /* Terminal container styling */
+        .terminal-scrollable {
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* Optimized scrolling performance */
+        .terminal-scrollable .xterm-viewport {
+            scroll-behavior: auto;
+            will-change: scroll-position;
+            transform: translateZ(0);
+        }
+
+        /* Faster mouse wheel scrolling */
+        .terminal-scrollable {
+            scroll-behavior: auto;
+        }
+    </style>
 </div>
