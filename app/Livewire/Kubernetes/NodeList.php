@@ -5,19 +5,30 @@ namespace App\Livewire\Kubernetes;
 use Livewire\Component;
 use Illuminate\Support\Facades\Auth;
 use App\Services\CachedKubernetesService;
+use App\Traits\HasKubernetesTable;
 use Carbon\Carbon;
 
 class NodeList extends Component
 {
+    use HasKubernetesTable;
+
     public $nodes = [];
     public $loading = true;
     public $error = null;
     public $selectedCluster = null;
 
-    protected $queryString = [];
-
     public function mount()
     {
+        // Initialize trait properties
+        $this->searchTerm = '';
+        $this->selectedNamespaces = ['all'];
+        $this->showNamespaceFilter = false;
+        $this->sortField = '';
+        $this->sortDirection = 'asc';
+        $this->perPage = 10;
+        $this->currentPage = 1;
+        $this->totalItems = 0;
+
         // Check if user is authenticated
         if (!Auth::check()) {
             return redirect()->route('login');
@@ -238,6 +249,112 @@ class NodeList extends Component
 
         return count($roles) > 0 ? implode(', ', $roles) : 'worker';
     }
+
+    protected function getTableData()
+    {
+        $filteredNodes = collect($this->nodes);
+
+        // Apply search filter
+        if (!empty($this->searchTerm)) {
+            $filteredNodes = $filteredNodes->filter(function ($node) {
+                $name = $node['metadata']['name'] ?? '';
+                return stripos($name, $this->searchTerm) !== false;
+            });
+        }
+
+        // Apply sorting
+        if (!empty($this->sortField)) {
+            $filteredNodes = $filteredNodes->sortBy(function ($node) {
+                switch ($this->sortField) {
+                    case 'name':
+                        return $node['metadata']['name'] ?? '';
+                    case 'status':
+                        return $this->getNodeStatus($node);
+                    case 'roles':
+                        return $this->getNodeRoles($node);
+                    case 'age':
+                        return $node['metadata']['creationTimestamp'] ?? '';
+                    case 'version':
+                        return $node['status']['nodeInfo']['kubeletVersion'] ?? '';
+                    default:
+                        return '';
+                }
+            }, SORT_REGULAR, $this->sortDirection === 'desc');
+        }
+
+        // Update total count for pagination
+        $this->totalItems = $filteredNodes->count();
+
+        // Apply pagination
+        $paginatedNodes = $filteredNodes->forPage($this->currentPage, $this->perPage);
+
+        return $paginatedNodes->values()->all();
+    }
+
+    protected function getTableColumns()
+    {
+        return [
+            [
+                'field' => 'name',
+                'label' => 'Name',
+                'sortable' => true
+            ],
+            [
+                'field' => 'status',
+                'label' => 'Status',
+                'sortable' => true
+            ],
+            [
+                'field' => 'warnings',
+                'label' => '<svg class="w-4 h-4 mx-auto text-yellow-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path></svg>',
+                'sortable' => false,
+                'is_html' => true
+            ],
+            [
+                'field' => 'roles',
+                'label' => 'Roles',
+                'sortable' => true
+            ],
+            [
+                'field' => 'age',
+                'label' => 'Age',
+                'sortable' => true
+            ],
+            [
+                'field' => 'version',
+                'label' => 'Version',
+                'sortable' => true
+            ]
+        ];
+    }
+
+    private function getNodeStatus($node)
+    {
+        $conditions = $node['status']['conditions'] ?? [];
+
+        foreach ($conditions as $condition) {
+            if ($condition['type'] === 'Ready') {
+                return $condition['status'] === 'True' ? 'Ready' : 'Not Ready';
+            }
+        }
+
+        return 'Unknown';
+    }
+
+    private function hasNodeWarnings($node)
+    {
+        $conditions = $node['status']['conditions'] ?? [];
+
+        foreach ($conditions as $condition) {
+            if ($condition['type'] !== 'Ready' && $condition['status'] === 'True') {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+
 
     public function render()
     {

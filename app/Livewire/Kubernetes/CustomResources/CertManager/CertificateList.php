@@ -5,34 +5,42 @@ namespace App\Livewire\Kubernetes\CustomResources\CertManager;
 use Livewire\Component;
 use Illuminate\Support\Facades\Auth;
 use App\Services\KubernetesService;
-use Carbon\Carbon;
+use App\Traits\HasKubernetesTable;
 
 class CertificateList extends Component
 {
+    use HasKubernetesTable;
+
     public $certificates = [];
+    public $namespaces = [];
     public $loading = true;
     public $error = null;
     public $selectedCluster = null;
-    public $searchTerm = '';
-    public $selectedNamespaces = ['all'];
-    public $namespaces = [];
-    public $showNamespaceFilter = false;
-
-    // Pagination properties
-    public $perPage = 10;
-    public $currentPage = 1;
-    public $totalItems = 0;
 
     protected $listeners = ['clusterSelected' => 'handleClusterSelected'];
 
     public function mount()
     {
+        // Initialize trait properties
+        $this->searchTerm = '';
+        $this->selectedNamespaces = ['all'];
+        $this->showNamespaceFilter = false;
+        $this->sortField = '';
+        $this->sortDirection = 'asc';
+        $this->perPage = 10;
+        $this->currentPage = 1;
+        $this->totalItems = 0;
+
         // Get the selected cluster from session
         $this->selectedCluster = session('selectedCluster');
 
         if ($this->selectedCluster) {
             $this->loadNamespaces();
             $this->loadCertificates();
+        } else {
+            // Set error message when no cluster is selected
+            $this->error = 'Please select a cluster first';
+            $this->loading = false;
         }
     }
 
@@ -161,115 +169,61 @@ class CertificateList extends Component
         }
     }
 
-    public function getFilteredCertificatesProperty()
+    public function getTableData()
     {
-        if (empty($this->certificates)) {
-            return [];
-        }
-
-        $certificates = collect($this->certificates);
-
-        // Filter by namespace
-        if (!in_array('all', $this->selectedNamespaces)) {
-            $certificates = $certificates->filter(function ($certificate) {
-                return in_array($certificate['metadata']['namespace'] ?? 'default', $this->selectedNamespaces);
-            });
-        }
-
-        // Filter by search term
-        if (!empty($this->searchTerm)) {
-            $searchTerm = strtolower($this->searchTerm);
-            $certificates = $certificates->filter(function ($certificate) use ($searchTerm) {
-                $name = strtolower($certificate['metadata']['name'] ?? '');
-                $namespace = strtolower($certificate['metadata']['namespace'] ?? 'default');
-                $secretName = strtolower($certificate['spec']['secretName'] ?? '');
-
-                return str_contains($name, $searchTerm) ||
-                       str_contains($namespace, $searchTerm) ||
-                       str_contains($secretName, $searchTerm);
-            });
-        }
-
-        // Calculate total for pagination
-        $this->totalItems = $certificates->count();
-
-        // Reset current page if it's out of bounds
-        $maxPage = max(1, ceil($this->totalItems / $this->perPage));
-        if ($this->currentPage > $maxPage) {
-            $this->currentPage = 1;
-        }
-
-        // Apply pagination
-        $paginatedCertificates = $certificates->forPage($this->currentPage, $this->perPage);
-
-        return $paginatedCertificates->values()->all();
+        return $this->certificates;
     }
 
-    public function isReady($certificate)
+    public function getTableColumns()
     {
-        if (!isset($certificate['status']['conditions'])) {
-            return false;
-        }
-
-        foreach ($certificate['status']['conditions'] as $condition) {
-            if (isset($condition['type']) && $condition['type'] === 'Ready' &&
-                isset($condition['status']) && $condition['status'] === 'True') {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    public function formatAge($timestamp)
-    {
-        if (!$timestamp) {
-            return 'N/A';
-        }
-
-        $creationTime = Carbon::parse($timestamp);
-        $now = Carbon::now();
-        $diffInDays = $creationTime->diffInDays($now);
-
-        if ($diffInDays > 0) {
-            return $diffInDays . 'd';
-        }
-
-        $diffInHours = $creationTime->diffInHours($now);
-        if ($diffInHours > 0) {
-            return $diffInHours . 'h';
-        }
-
-        $diffInMinutes = $creationTime->diffInMinutes($now);
-        if ($diffInMinutes > 0) {
-            return $diffInMinutes . 'm';
-        }
-
-        return $creationTime->diffInSeconds($now) . 's';
-    }
-
-    public function previousPage()
-    {
-        if ($this->currentPage > 1) {
-            $this->currentPage--;
-        }
-    }
-
-    public function nextPage()
-    {
-        $maxPage = max(1, ceil($this->totalItems / $this->perPage));
-        if ($this->currentPage < $maxPage) {
-            $this->currentPage++;
-        }
-    }
-
-    public function goToPage($page)
-    {
-        // Validate the page number to ensure it's within valid range
-        $maxPage = max(1, ceil($this->totalItems / $this->perPage));
-        $page = max(1, min($maxPage, (int)$page));
-
-        $this->currentPage = $page;
+        return [
+            [
+                'field' => 'name',
+                'label' => 'Name',
+                'sortable' => true
+            ],
+            [
+                'field' => 'namespace',
+                'label' => 'Namespace',
+                'sortable' => true
+            ],
+            [
+                'field' => 'warnings',
+                'label' => '<svg class="w-4 h-4 mx-auto text-yellow-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path></svg>',
+                'sortable' => false,
+                'is_html' => true
+            ],
+            [
+                'field' => 'ready',
+                'label' => 'Ready',
+                'sortable' => true
+            ],
+            [
+                'field' => 'secret',
+                'label' => 'Secret',
+                'sortable' => true
+            ],
+            [
+                'field' => 'issuer',
+                'label' => 'Issuer',
+                'sortable' => true
+            ],
+            [
+                'field' => 'domains',
+                'label' => 'Domains',
+                'sortable' => false
+            ],
+            [
+                'field' => 'expiry',
+                'label' => 'Expires',
+                'sortable' => true
+            ],
+            [
+                'field' => 'age',
+                'label' => 'Age',
+                'sortable' => true
+            ]
+        ];
     }
 
     public function handleClusterSelected($clusterName)

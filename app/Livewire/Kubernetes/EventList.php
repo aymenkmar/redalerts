@@ -5,28 +5,32 @@ namespace App\Livewire\Kubernetes;
 use Livewire\Component;
 use Illuminate\Support\Facades\Auth;
 use App\Services\KubernetesService;
-use Carbon\Carbon;
+use App\Traits\HasKubernetesTable;
 
 class EventList extends Component
 {
+    use HasKubernetesTable;
+
     public $events = [];
+    public $namespaces = [];
     public $loading = true;
     public $error = null;
     public $selectedCluster = null;
-    public $searchTerm = '';
-    public $selectedNamespaces = ['all'];
-    public $namespaces = [];
-    public $showNamespaceFilter = false;
-
-    // Pagination properties
-    public $perPage = 10;
-    public $currentPage = 1;
-    public $totalItems = 0;
 
     protected $listeners = ['clusterSelected' => 'handleClusterSelected'];
 
     public function mount()
     {
+        // Initialize trait properties
+        $this->searchTerm = '';
+        $this->selectedNamespaces = ['all'];
+        $this->showNamespaceFilter = false;
+        $this->sortField = '';
+        $this->sortDirection = 'asc';
+        $this->perPage = 10;
+        $this->currentPage = 1;
+        $this->totalItems = 0;
+
         // Get the selected cluster from session
         $this->selectedCluster = session('selectedCluster');
 
@@ -128,151 +132,61 @@ class EventList extends Component
         }
     }
 
-    public function toggleNamespaceFilter()
+    public function getTableData()
     {
-        $this->showNamespaceFilter = !$this->showNamespaceFilter;
+        return $this->events;
     }
 
-    public function toggleNamespace($namespace)
+    public function getTableColumns()
     {
-        if ($namespace === 'all') {
-            $this->selectedNamespaces = ['all'];
-        } else {
-            // Remove 'all' if it's in the array
-            $this->selectedNamespaces = array_filter($this->selectedNamespaces, function ($ns) {
-                return $ns !== 'all';
-            });
-
-            // Toggle the selected namespace
-            if (in_array($namespace, $this->selectedNamespaces)) {
-                $this->selectedNamespaces = array_filter($this->selectedNamespaces, function ($ns) use ($namespace) {
-                    return $ns !== $namespace;
-                });
-
-                // If no namespaces are selected, select 'all'
-                if (empty($this->selectedNamespaces)) {
-                    $this->selectedNamespaces = ['all'];
-                }
-            } else {
-                $this->selectedNamespaces[] = $namespace;
-            }
-        }
-    }
-
-    public function getFilteredEventsProperty()
-    {
-        if (empty($this->events)) {
-            return [];
-        }
-
-        $events = collect($this->events);
-
-        // Filter by namespace
-        if (!in_array('all', $this->selectedNamespaces)) {
-            $events = $events->filter(function ($event) {
-                return in_array($event['metadata']['namespace'] ?? 'default', $this->selectedNamespaces);
-            });
-        }
-
-        // Filter by search term
-        if (!empty($this->searchTerm)) {
-            $searchTerm = strtolower($this->searchTerm);
-            $events = $events->filter(function ($event) use ($searchTerm) {
-                $namespace = strtolower($event['metadata']['namespace'] ?? 'default');
-                $involvedObject = strtolower($event['involvedObject']['name'] ?? '');
-
-                return str_contains($namespace, $searchTerm) || str_contains($involvedObject, $searchTerm);
-            });
-        }
-
-        // Calculate total for pagination
-        $this->totalItems = $events->count();
-
-        // Reset current page if it's out of bounds
-        $maxPage = max(1, ceil($this->totalItems / $this->perPage));
-        if ($this->currentPage > $maxPage) {
-            $this->currentPage = 1;
-        }
-
-        // Apply pagination
-        $paginatedEvents = $events->forPage($this->currentPage, $this->perPage);
-
-        return $paginatedEvents->values()->all();
-    }
-
-    public function formatTimeAgo($timestamp)
-    {
-        if (!$timestamp) {
-            return 'N/A';
-        }
-
-        $creationTime = Carbon::parse($timestamp);
-        $now = Carbon::now();
-        $diffInDays = $creationTime->diffInDays($now);
-
-        if ($diffInDays > 0) {
-            return $diffInDays . 'd';
-        }
-
-        $diffInHours = $creationTime->diffInHours($now);
-        if ($diffInHours > 0) {
-            return $diffInHours . 'h';
-        }
-
-        $diffInMinutes = $creationTime->diffInMinutes($now);
-        if ($diffInMinutes > 0) {
-            return $diffInMinutes . 'm';
-        }
-
-        return $creationTime->diffInSeconds($now) . 's';
-    }
-
-    public function getInvolvedObject($event)
-    {
-        if (!isset($event['involvedObject'])) {
-            return 'N/A';
-        }
-
-        $kind = $event['involvedObject']['kind'] ?? '';
-        $name = $event['involvedObject']['name'] ?? '';
-
-        return $kind . '/' . $name;
-    }
-
-    public function getSource($event)
-    {
-        if (!isset($event['source'])) {
-            return 'N/A';
-        }
-
-        $component = $event['source']['component'] ?? '';
-        $host = $event['source']['host'] ?? '';
-
-        return $component . ($host ? ' (' . $host . ')' : '');
-    }
-
-    public function previousPage()
-    {
-        if ($this->currentPage > 1) {
-            $this->currentPage--;
-        }
-    }
-
-    public function nextPage()
-    {
-        $maxPage = max(1, ceil($this->totalItems / $this->perPage));
-        if ($this->currentPage < $maxPage) {
-            $this->currentPage++;
-        }
-    }
-
-    public function goToPage($page)
-    {
-        // Validate the page number to ensure it's within valid range
-        $maxPage = max(1, ceil($this->totalItems / $this->perPage));
-        $page = max(1, min($maxPage, (int)$page));
-
-        $this->currentPage = $page;
+        return [
+            [
+                'field' => 'namespace',
+                'label' => 'Namespace',
+                'sortable' => true
+            ],
+            [
+                'field' => 'warnings',
+                'label' => '<svg class="w-4 h-4 mx-auto text-yellow-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path></svg>',
+                'sortable' => false,
+                'is_html' => true
+            ],
+            [
+                'field' => 'type',
+                'label' => 'Type',
+                'sortable' => true
+            ],
+            [
+                'field' => 'reason',
+                'label' => 'Reason',
+                'sortable' => true
+            ],
+            [
+                'field' => 'object',
+                'label' => 'Object',
+                'sortable' => true
+            ],
+            [
+                'field' => 'source',
+                'label' => 'Source',
+                'sortable' => false
+            ],
+            [
+                'field' => 'message',
+                'label' => 'Message',
+                'sortable' => false
+            ],
+            [
+                'field' => 'count',
+                'label' => 'Count',
+                'sortable' => true
+            ],
+            [
+                'field' => 'age',
+                'label' => 'Age',
+                'sortable' => true
+            ]
+        ];
     }
 
     public function handleClusterSelected($clusterName)

@@ -5,25 +5,32 @@ namespace App\Livewire\Kubernetes\AccessControl;
 use Livewire\Component;
 use Illuminate\Support\Facades\Auth;
 use App\Services\KubernetesService;
-use Carbon\Carbon;
+use App\Traits\HasKubernetesTable;
 
 class ClusterRoleList extends Component
 {
+    use HasKubernetesTable;
+
     public $clusterRoles = [];
+    public $namespaces = [];
     public $loading = true;
     public $error = null;
     public $selectedCluster = null;
-    public $searchTerm = '';
-
-    // Pagination properties
-    public $perPage = 10;
-    public $currentPage = 1;
-    public $totalItems = 0;
 
     protected $listeners = ['clusterSelected' => 'handleClusterSelected'];
 
     public function mount()
     {
+        // Initialize trait properties
+        $this->searchTerm = '';
+        $this->selectedNamespaces = ['all'];
+        $this->showNamespaceFilter = false;
+        $this->sortField = '';
+        $this->sortDirection = 'asc';
+        $this->perPage = 10;
+        $this->currentPage = 1;
+        $this->totalItems = 0;
+
         // Get the selected cluster from session
         $this->selectedCluster = session('selectedCluster');
 
@@ -101,88 +108,56 @@ class ClusterRoleList extends Component
         }
     }
 
-    public function getFilteredClusterRolesProperty()
+    public function getTableData()
     {
-        if (empty($this->clusterRoles)) {
-            return [];
-        }
-
-        $clusterRoles = collect($this->clusterRoles);
-
-        // Filter by search term
-        if (!empty($this->searchTerm)) {
-            $searchTerm = strtolower($this->searchTerm);
-            $clusterRoles = $clusterRoles->filter(function ($clusterRole) use ($searchTerm) {
-                $name = strtolower($clusterRole['metadata']['name'] ?? '');
-
-                return str_contains($name, $searchTerm);
-            });
-        }
-
-        // Calculate total for pagination
-        $this->totalItems = $clusterRoles->count();
-
-        // Reset current page if it's out of bounds
-        $maxPage = max(1, ceil($this->totalItems / $this->perPage));
-        if ($this->currentPage > $maxPage) {
-            $this->currentPage = 1;
-        }
-
-        // Apply pagination
-        $paginatedClusterRoles = $clusterRoles->forPage($this->currentPage, $this->perPage);
-
-        return $paginatedClusterRoles->values()->all();
+        return $this->clusterRoles;
     }
 
-    public function formatAge($timestamp)
+    public function getTableColumns()
     {
-        if (!$timestamp) {
-            return 'N/A';
-        }
-
-        $creationTime = Carbon::parse($timestamp);
-        $now = Carbon::now();
-        $diffInDays = $creationTime->diffInDays($now);
-
-        if ($diffInDays > 0) {
-            return $diffInDays . 'd';
-        }
-
-        $diffInHours = $creationTime->diffInHours($now);
-        if ($diffInHours > 0) {
-            return $diffInHours . 'h';
-        }
-
-        $diffInMinutes = $creationTime->diffInMinutes($now);
-        if ($diffInMinutes > 0) {
-            return $diffInMinutes . 'm';
-        }
-
-        return $creationTime->diffInSeconds($now) . 's';
-    }
-
-    public function previousPage()
-    {
-        if ($this->currentPage > 1) {
-            $this->currentPage--;
-        }
-    }
-
-    public function nextPage()
-    {
-        $maxPage = max(1, ceil($this->totalItems / $this->perPage));
-        if ($this->currentPage < $maxPage) {
-            $this->currentPage++;
-        }
-    }
-
-    public function goToPage($page)
-    {
-        // Validate the page number to ensure it's within valid range
-        $maxPage = max(1, ceil($this->totalItems / $this->perPage));
-        $page = max(1, min($maxPage, (int)$page));
-
-        $this->currentPage = $page;
+        return [
+            [
+                'field' => 'name',
+                'label' => 'Name',
+                'sortable' => true
+            ],
+            [
+                'field' => 'warnings',
+                'label' => '<svg class="w-4 h-4 mx-auto text-yellow-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path></svg>',
+                'sortable' => false,
+                'is_html' => true
+            ],
+            [
+                'field' => 'rules_count',
+                'label' => 'Rules',
+                'sortable' => true
+            ],
+            [
+                'field' => 'api_groups',
+                'label' => 'API Groups',
+                'sortable' => false
+            ],
+            [
+                'field' => 'resources',
+                'label' => 'Resources',
+                'sortable' => false
+            ],
+            [
+                'field' => 'verbs',
+                'label' => 'Verbs',
+                'sortable' => false
+            ],
+            [
+                'field' => 'aggregation_rule',
+                'label' => 'Aggregation',
+                'sortable' => false
+            ],
+            [
+                'field' => 'age',
+                'label' => 'Age',
+                'sortable' => true
+            ]
+        ];
     }
 
     public function handleClusterSelected($clusterName)

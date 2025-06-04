@@ -5,20 +5,30 @@ namespace App\Livewire\Kubernetes\Workloads;
 use Livewire\Component;
 use Illuminate\Support\Facades\Auth;
 use App\Services\CachedKubernetesService;
-use Carbon\Carbon;
+use App\Traits\HasKubernetesTable;
 
 class StatefulSetList extends Component
 {
+    use HasKubernetesTable;
+
     public $statefulSets = [];
     public $namespaces = [];
     public $loading = true;
     public $error = null;
     public $selectedCluster = null;
 
-    protected $queryString = [];
-
     public function mount()
     {
+        // Initialize trait properties
+        $this->searchTerm = '';
+        $this->selectedNamespaces = ['all'];
+        $this->showNamespaceFilter = false;
+        $this->sortField = '';
+        $this->sortDirection = 'asc';
+        $this->perPage = 10;
+        $this->currentPage = 1;
+        $this->totalItems = 0;
+
         // Check if user is authenticated
         if (!Auth::check()) {
             return redirect()->route('login');
@@ -115,50 +125,46 @@ class StatefulSetList extends Component
         }
     }
 
-    public function formatAge($timestamp)
+    public function getTableData()
     {
-        if (!$timestamp) {
-            return 'N/A';
-        }
+        return $this->statefulSets;
+    }
 
-        $creationTime = Carbon::parse($timestamp);
-        $now = Carbon::now();
-
-        // Calculate total difference in various units
-        $diffInSeconds = $creationTime->diffInSeconds($now);
-        $diffInMinutes = $creationTime->diffInMinutes($now);
-        $diffInHours = $creationTime->diffInHours($now);
-        $diffInDays = $creationTime->diffInDays($now);
-
-        // Calculate years and remaining days (Lens IDE format: 2y83d)
-        $years = intval($diffInDays / 365);
-        $remainingDays = $diffInDays % 365;
-
-        if ($years > 0) {
-            if ($remainingDays > 0) {
-                return $years . 'y' . $remainingDays . 'd';
-            } else {
-                return $years . 'y';
-            }
-        }
-
-        // For less than a year, show days
-        if ($diffInDays >= 1) {
-            return $diffInDays . 'd';
-        }
-
-        // For less than a day, show hours
-        if ($diffInHours >= 1) {
-            return $diffInHours . 'h';
-        }
-
-        // For less than an hour, show minutes
-        if ($diffInMinutes >= 1) {
-            return $diffInMinutes . 'm';
-        }
-
-        // For less than a minute, show seconds
-        return $diffInSeconds . 's';
+    public function getTableColumns()
+    {
+        return [
+            [
+                'field' => 'name',
+                'label' => 'Name',
+                'sortable' => true
+            ],
+            [
+                'field' => 'warnings',
+                'label' => '<svg class="w-4 h-4 mx-auto text-yellow-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path></svg>',
+                'sortable' => false,
+                'is_html' => true
+            ],
+            [
+                'field' => 'namespace',
+                'label' => 'Namespace',
+                'sortable' => true
+            ],
+            [
+                'field' => 'pods',
+                'label' => 'Pods',
+                'sortable' => false
+            ],
+            [
+                'field' => 'replicas',
+                'label' => 'Replicas',
+                'sortable' => true
+            ],
+            [
+                'field' => 'age',
+                'label' => 'Age',
+                'sortable' => true
+            ]
+        ];
     }
 
     public function render()

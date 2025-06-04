@@ -5,30 +5,41 @@ namespace App\Livewire\Kubernetes\CustomResources;
 use Livewire\Component;
 use Illuminate\Support\Facades\Auth;
 use App\Services\KubernetesService;
-use Carbon\Carbon;
+use App\Traits\HasKubernetesTable;
 
 class DefinitionList extends Component
 {
+    use HasKubernetesTable;
+
     public $definitions = [];
+    public $namespaces = [];
     public $loading = true;
     public $error = null;
     public $selectedCluster = null;
-    public $searchTerm = '';
-
-    // Pagination properties
-    public $perPage = 10;
-    public $currentPage = 1;
-    public $totalItems = 0;
 
     protected $listeners = ['clusterSelected' => 'handleClusterSelected'];
 
     public function mount()
     {
+        // Initialize trait properties
+        $this->searchTerm = '';
+        $this->selectedNamespaces = ['all'];
+        $this->showNamespaceFilter = false;
+        $this->sortField = '';
+        $this->sortDirection = 'asc';
+        $this->perPage = 10;
+        $this->currentPage = 1;
+        $this->totalItems = 0;
+
         // Get the selected cluster from session
         $this->selectedCluster = session('selectedCluster');
 
         if ($this->selectedCluster) {
             $this->loadDefinitions();
+        } else {
+            // Set error message when no cluster is selected
+            $this->error = 'Please select a cluster first';
+            $this->loading = false;
         }
     }
 
@@ -97,102 +108,61 @@ class DefinitionList extends Component
         }
     }
 
-    public function getFilteredDefinitionsProperty()
+    public function getTableData()
     {
-        if (empty($this->definitions)) {
-            return [];
-        }
-
-        $definitions = collect($this->definitions);
-
-        // Filter by search term
-        if (!empty($this->searchTerm)) {
-            $searchTerm = strtolower($this->searchTerm);
-            $definitions = $definitions->filter(function ($definition) use ($searchTerm) {
-                $name = strtolower($definition['metadata']['name'] ?? '');
-
-                return str_contains($name, $searchTerm);
-            });
-        }
-
-        // Calculate total for pagination
-        $this->totalItems = $definitions->count();
-
-        // Reset current page if it's out of bounds
-        $maxPage = max(1, ceil($this->totalItems / $this->perPage));
-        if ($this->currentPage > $maxPage) {
-            $this->currentPage = 1;
-        }
-
-        // Apply pagination
-        $paginatedDefinitions = $definitions->forPage($this->currentPage, $this->perPage);
-
-        return $paginatedDefinitions->values()->all();
+        return $this->definitions;
     }
 
-    public function getStorageVersion($definition)
+    public function getTableColumns()
     {
-        if (!isset($definition['spec']['versions']) || empty($definition['spec']['versions'])) {
-            return 'N/A';
-        }
-
-        $storageVersion = collect($definition['spec']['versions'])
-            ->first(function ($version) {
-                return isset($version['storage']) && $version['storage'] === true;
-            });
-
-        return $storageVersion['name'] ?? 'N/A';
-    }
-
-    public function formatAge($timestamp)
-    {
-        if (!$timestamp) {
-            return 'N/A';
-        }
-
-        $creationTime = Carbon::parse($timestamp);
-        $now = Carbon::now();
-        $diffInDays = $creationTime->diffInDays($now);
-
-        if ($diffInDays > 0) {
-            return $diffInDays . 'd';
-        }
-
-        $diffInHours = $creationTime->diffInHours($now);
-        if ($diffInHours > 0) {
-            return $diffInHours . 'h';
-        }
-
-        $diffInMinutes = $creationTime->diffInMinutes($now);
-        if ($diffInMinutes > 0) {
-            return $diffInMinutes . 'm';
-        }
-
-        return $creationTime->diffInSeconds($now) . 's';
-    }
-
-    public function previousPage()
-    {
-        if ($this->currentPage > 1) {
-            $this->currentPage--;
-        }
-    }
-
-    public function nextPage()
-    {
-        $maxPage = max(1, ceil($this->totalItems / $this->perPage));
-        if ($this->currentPage < $maxPage) {
-            $this->currentPage++;
-        }
-    }
-
-    public function goToPage($page)
-    {
-        // Validate the page number to ensure it's within valid range
-        $maxPage = max(1, ceil($this->totalItems / $this->perPage));
-        $page = max(1, min($maxPage, (int)$page));
-
-        $this->currentPage = $page;
+        return [
+            [
+                'field' => 'name',
+                'label' => 'Name',
+                'sortable' => true
+            ],
+            [
+                'field' => 'warnings',
+                'label' => '<svg class="w-4 h-4 mx-auto text-yellow-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path></svg>',
+                'sortable' => false,
+                'is_html' => true
+            ],
+            [
+                'field' => 'resource',
+                'label' => 'Resource',
+                'sortable' => true
+            ],
+            [
+                'field' => 'group',
+                'label' => 'Group',
+                'sortable' => true
+            ],
+            [
+                'field' => 'versions',
+                'label' => 'Versions',
+                'sortable' => false
+            ],
+            [
+                'field' => 'storage_version',
+                'label' => 'Storage Version',
+                'sortable' => true
+            ],
+            [
+                'field' => 'scope',
+                'label' => 'Scope',
+                'sortable' => true
+            ],
+            [
+                'field' => 'categories',
+                'label' => 'Categories',
+                'sortable' => false
+            ],
+            [
+                'field' => 'age',
+                'label' => 'Age',
+                'sortable' => true
+            ]
+        ];
     }
 
     public function handleClusterSelected($clusterName)
