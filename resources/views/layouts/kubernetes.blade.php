@@ -472,7 +472,17 @@
     <script>
         // Ensure all dropdowns are closed on page load
         document.addEventListener('DOMContentLoaded', () => {
-            // Force close any Alpine dropdowns on page load
+            // Force close any Alpine dropdowns on page load immediately
+            document.querySelectorAll('[x-data]').forEach(element => {
+                if (element.__x && element.__x.$data.open !== undefined) {
+                    element.__x.$data.open = false;
+                }
+                if (element.__x && element.__x.$data.showNamespaceFilter !== undefined) {
+                    element.__x.$data.showNamespaceFilter = false;
+                }
+            });
+
+            // Also set a timeout as backup
             setTimeout(() => {
                 document.querySelectorAll('[x-data]').forEach(element => {
                     if (element.__x && element.__x.$data.open !== undefined) {
@@ -482,7 +492,7 @@
                         element.__x.$data.showNamespaceFilter = false;
                     }
                 });
-            }, 100);
+            }, 50);
         });
 
         document.addEventListener('livewire:initialized', () => {

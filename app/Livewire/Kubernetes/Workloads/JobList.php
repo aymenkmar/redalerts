@@ -29,6 +29,9 @@ class JobList extends Component
         $this->currentPage = 1;
         $this->totalItems = 0;
 
+        // Load saved namespace selection
+        $this->loadNamespaceSelection();
+
         // Check if user is authenticated
         if (!Auth::check()) {
             return redirect()->route('login');

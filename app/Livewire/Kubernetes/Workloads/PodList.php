@@ -29,6 +29,9 @@ class PodList extends Component
         $this->currentPage = 1;
         $this->totalItems = 0;
 
+        // Load saved namespace selection
+        $this->loadNamespaceSelection();
+
         // Try both session keys for compatibility
         $this->selectedCluster = session('selectedCluster') ?? session('selected_cluster');
         if ($this->selectedCluster) {

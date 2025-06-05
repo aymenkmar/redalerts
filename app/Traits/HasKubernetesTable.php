@@ -49,6 +49,15 @@ trait HasKubernetesTable
         $this->showNamespaceFilter = !$this->showNamespaceFilter;
     }
 
+    public function loadNamespaceSelection()
+    {
+        // Load namespace selection from session if available
+        $savedNamespaces = session('selectedNamespaces');
+        if ($savedNamespaces && is_array($savedNamespaces)) {
+            $this->selectedNamespaces = $savedNamespaces;
+        }
+    }
+
     public function toggleNamespace($namespace)
     {
         if ($namespace === 'all') {
@@ -56,19 +65,22 @@ trait HasKubernetesTable
         } else {
             // Remove 'all' if it exists
             $this->selectedNamespaces = array_diff($this->selectedNamespaces, ['all']);
-            
+
             if (in_array($namespace, $this->selectedNamespaces)) {
                 $this->selectedNamespaces = array_diff($this->selectedNamespaces, [$namespace]);
             } else {
                 $this->selectedNamespaces[] = $namespace;
             }
-            
+
             // If no namespaces selected, select all
             if (empty($this->selectedNamespaces)) {
                 $this->selectedNamespaces = ['all'];
             }
         }
-        
+
+        // Save to session for persistence across components
+        session(['selectedNamespaces' => $this->selectedNamespaces]);
+
         $this->currentPage = 1;
     }
 
@@ -79,6 +91,10 @@ trait HasKubernetesTable
         } else {
             $this->selectedNamespaces = ['all'];
         }
+
+        // Save to session for persistence across components
+        session(['selectedNamespaces' => $this->selectedNamespaces]);
+
         $this->currentPage = 1;
     }
 

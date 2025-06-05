@@ -67,7 +67,7 @@
          x-transition:leave="transition ease-in duration-75"
          x-transition:leave-start="transform opacity-100 scale-100"
          x-transition:leave-end="transform opacity-0 scale-95"
-         class="absolute right-0 mt-2 w-96 bg-white rounded-lg shadow-lg border border-gray-200 z-50 overflow-hidden">
+         class="absolute right-0 mt-8 w-96 bg-white rounded-lg shadow-lg border border-gray-200 z-50 overflow-hidden">
 
         <!-- Header -->
         <div class="px-4 py-3 border-b border-gray-200 bg-gray-50 rounded-t-lg">

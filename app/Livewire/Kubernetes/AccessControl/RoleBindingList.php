@@ -31,6 +31,9 @@ class RoleBindingList extends Component
         $this->currentPage = 1;
         $this->totalItems = 0;
 
+        // Load saved namespace selection
+        $this->loadNamespaceSelection();
+
         // Get the selected cluster from session
         $this->selectedCluster = session('selectedCluster');
 

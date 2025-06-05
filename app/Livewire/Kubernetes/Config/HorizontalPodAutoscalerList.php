@@ -29,6 +29,9 @@ class HorizontalPodAutoscalerList extends Component
         $this->currentPage = 1;
         $this->totalItems = 0;
 
+        // Load saved namespace selection
+        $this->loadNamespaceSelection();
+
         if (!Auth::check()) {
             return redirect()->route('login');
         }

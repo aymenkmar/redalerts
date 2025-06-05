@@ -101,7 +101,7 @@
 
         <!-- Namespace Filter Dropdown -->
         @if($showNamespaceFilter && count($namespaces) > 0)
-        <div x-show="showNamespaceFilter" x-transition class="bg-white border border-gray-200 rounded-md shadow-lg p-4">
+        <div x-show="showNamespaceFilter" x-transition x-cloak class="bg-white border border-gray-200 rounded-md shadow-lg p-4">
             <div class="flex items-center justify-between mb-3">
                 <h4 class="text-sm font-medium text-gray-900">Filter by Namespace</h4>
                 <button
@@ -334,6 +334,10 @@
 
                 init() {
                     console.log('Initializing table...');
+                    // Ensure namespace filter starts closed
+                    this.showNamespaceFilter = false;
+                    // Load saved namespace selection
+                    this.loadNamespaceSelection();
                     this.loadColumnWidths();
                     this.initColumnResizing();
                     this.filterData();
@@ -615,6 +619,22 @@
                 },
 
                 // Namespace filter methods
+                loadNamespaceSelection() {
+                    const saved = localStorage.getItem('selectedNamespaces');
+                    if (saved) {
+                        try {
+                            this.selectedNamespaces = JSON.parse(saved);
+                        } catch (e) {
+                            console.error('Failed to parse saved namespace selection:', e);
+                            this.selectedNamespaces = ['all'];
+                        }
+                    }
+                },
+
+                saveNamespaceSelection() {
+                    localStorage.setItem('selectedNamespaces', JSON.stringify(this.selectedNamespaces));
+                },
+
                 toggleNamespace(namespace) {
                     if (namespace === 'all') {
                         this.selectedNamespaces = ['all'];
@@ -634,6 +654,8 @@
                         }
                     }
 
+                    // Save selection for persistence
+                    this.saveNamespaceSelection();
                     this.filterData();
                 },
 
@@ -643,6 +665,9 @@
                     } else {
                         this.selectedNamespaces = ['all'];
                     }
+
+                    // Save selection for persistence
+                    this.saveNamespaceSelection();
                     this.filterData();
                 },
 
