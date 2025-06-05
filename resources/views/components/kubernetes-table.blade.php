@@ -14,18 +14,32 @@
     <!-- Header -->
     <div class="flex justify-between items-center mb-6">
         <h1 class="text-2xl font-bold">{{ $title }}</h1>
-        @if($showRefresh)
-        <button
-            wire:click="{{ $refreshMethod }}"
-            class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-            :disabled="loading"
-        >
-            <svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
-            </svg>
-            Refresh
-        </button>
-        @endif
+        <div class="flex space-x-2">
+            <!-- Reset Column Widths Button -->
+            <button
+                @click="resetColumnWidths()"
+                class="inline-flex items-center px-3 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+                title="Reset column widths to default"
+            >
+                <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"></path>
+                </svg>
+                Reset Columns
+            </button>
+
+            @if($showRefresh)
+            <button
+                wire:click="{{ $refreshMethod }}"
+                class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                :disabled="loading"
+            >
+                <svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                </svg>
+                Refresh
+            </button>
+            @endif
+        </div>
     </div>
 
     <!-- Error Message -->
@@ -132,47 +146,76 @@
     <!-- Table -->
     <div x-show="!$wire.loading" class="bg-white shadow overflow-hidden sm:rounded-md">
         <div class="overflow-x-auto">
-            <table class="min-w-full divide-y divide-gray-200">
+            <table class="min-w-full divide-y divide-gray-200 table-fixed">
                 <thead class="bg-gray-50">
                     <tr>
-                        @foreach($columns as $column)
-                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider {{ ($column['field'] === 'warnings') ? 'text-center w-16' : '' }}">
-                            @if($column['sortable'] ?? false)
-                            <button
-                                wire:click="sortBy('{{ $column['field'] }}')"
-                                class="group inline-flex items-center hover:text-gray-900"
-                            >
-                                @if($column['is_html'] ?? false)
-                                    {!! $column['label'] !!}
-                                @else
-                                    {{ $column['label'] }}
-                                @endif
-                                <span class="ml-2 flex-none rounded text-gray-400 group-hover:text-gray-500">
-                                    <span x-show="$wire.sortField === '{{ $column['field'] }}'">
-                                        <span x-show="$wire.sortDirection === 'asc'">
-                                        <svg class="h-4 w-4" fill="currentColor" viewBox="0 0 20 20">
+                        @foreach($columns as $index => $column)
+                        <th scope="col" class="relative px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-r border-gray-200 {{ ($column['field'] === 'warnings') ? 'text-center' : '' }}"
+                            :style="'width: ' + (columnWidths[{{ $index }}] || '150px')"
+                            x-data="{ hovering: false }"
+                            x-init="if (!columnWidths[{{ $index }}]) columnWidths[{{ $index }}] = getDefaultWidth('{{ $column['field'] }}')"
+
+                            <!-- Column Content -->
+                            <div class="flex items-center space-x-1" @mouseenter="hovering = true" @mouseleave="hovering = false">
+                                @if($column['sortable'] ?? false)
+                                <button
+                                    @click="sortBy('{{ $column['field'] }}')"
+                                    class="group inline-flex items-center space-x-1 hover:text-gray-900 focus:outline-none"
+                                >
+                                    <span>
+                                        @if($column['is_html'] ?? false)
+                                            {!! $column['label'] !!}
+                                        @else
+                                            {{ $column['label'] }}
+                                        @endif
+                                    </span>
+                                    <span class="flex flex-col">
+                                        <!-- Up Arrow -->
+                                        <svg
+                                            :class="sortField === '{{ $column['field'] }}' && sortDirection === 'asc' ? 'text-gray-900' : 'text-gray-400'"
+                                            class="w-3 h-3 -mb-1"
+                                            fill="currentColor"
+                                            viewBox="0 0 20 20"
+                                        >
                                             <path fill-rule="evenodd" d="M14.707 12.707a1 1 0 01-1.414 0L10 9.414l-3.293 3.293a1 1 0 01-1.414-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 010 1.414z" clip-rule="evenodd" />
                                         </svg>
-                                        </span>
-                                        <span x-show="$wire.sortDirection === 'desc'">
-                                        <svg class="h-4 w-4" fill="currentColor" viewBox="0 0 20 20">
+                                        <!-- Down Arrow -->
+                                        <svg
+                                            :class="sortField === '{{ $column['field'] }}' && sortDirection === 'desc' ? 'text-gray-900' : 'text-gray-400'"
+                                            class="w-3 h-3"
+                                            fill="currentColor"
+                                            viewBox="0 0 20 20"
+                                        >
                                             <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
                                         </svg>
-                                        </span>
                                     </span>
-                                    <span x-show="$wire.sortField !== '{{ $column['field'] }}'" class="opacity-0 group-hover:opacity-100">
-                                    <svg class="h-4 w-4" fill="currentColor" viewBox="0 0 20 20">
-                                        <path fill-rule="evenodd" d="M10 3a1 1 0 01.707.293l3 3a1 1 0 01-1.414 1.414L10 5.414 7.707 7.707a1 1 0 01-1.414-1.414l3-3A1 1 0 0110 3zm-3.707 9.293a1 1 0 011.414 0L10 14.586l2.293-2.293a1 1 0 011.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clip-rule="evenodd" />
-                                    </svg>
-                                    </span>
-                                </span>
-                            </button>
-                            @else
-                                @if($column['is_html'] ?? false)
-                                    {!! $column['label'] !!}
+                                </button>
                                 @else
-                                    {{ $column['label'] }}
+                                    <span>
+                                        @if($column['is_html'] ?? false)
+                                            {!! $column['label'] !!}
+                                        @else
+                                            {{ $column['label'] }}
+                                        @endif
+                                    </span>
                                 @endif
+                            </div>
+
+                            @if($index < count($columns) - 1)
+                            <!-- Column Resize Handle -->
+                            <div class="absolute right-0 top-0 bottom-0 w-2 cursor-col-resize group flex items-center justify-center"
+                                 @mousedown="startResize($event, {{ $index }})"
+                                 :class="isResizing && resizingColumn === {{ $index }} ? 'bg-blue-500' : ''"
+                                 title="Glisser pour redimensionner la colonne">
+
+                                <!-- Resize Handle Visual -->
+                                <div class="w-1 h-8 bg-gray-300 group-hover:bg-blue-400 transition-colors duration-150 rounded-sm"
+                                     :class="isResizing && resizingColumn === {{ $index }} ? 'bg-blue-500' : ''">
+                                </div>
+
+                                <!-- Invisible wider hit area -->
+                                <div class="absolute inset-0 w-4 -ml-1"></div>
+                            </div>
                             @endif
                         </th>
                         @endforeach
@@ -274,12 +317,156 @@
                 selectedNamespaces: ['all'],
                 showNamespaceFilter: false,
 
+                // Sorting
+                sortField: '',
+                sortDirection: 'asc',
+
+                // Column Resizing
+                columnWidths: {},
+                isResizing: false,
+                resizingColumn: null,
+                startX: 0,
+                startWidth: 0,
+
                 // Pagination
                 currentPage: 1,
                 perPage: 10,
 
                 init() {
+                    console.log('Initializing table...');
+                    this.loadColumnWidths();
+                    this.initColumnResizing();
                     this.filterData();
+                    console.log('Column widths after init:', this.columnWidths);
+                },
+
+                getDefaultWidth(field) {
+                    switch (field) {
+                        case 'warnings':
+                            return '60px';
+                        case 'name':
+                            return '200px';
+                        case 'namespace':
+                            return '150px';
+                        case 'age':
+                            return '100px';
+                        case 'ready':
+                        case 'status':
+                            return '120px';
+                        case 'type':
+                        case 'scope':
+                            return '130px';
+                        case 'server':
+                        case 'email':
+                            return '180px';
+                        default:
+                            return '150px';
+                    }
+                },
+
+                initColumnResizing() {
+                    // Initialize default column widths if not already set
+                    const columns = @json($columns);
+                    columns.forEach((column, index) => {
+                        if (!this.columnWidths[index]) {
+                            this.columnWidths[index] = this.getDefaultWidth(column.field);
+                        }
+                    });
+
+                    // Add global mouse event listeners for resizing
+                    document.addEventListener('mousemove', (e) => this.handleResize(e));
+                    document.addEventListener('mouseup', () => this.stopResize());
+
+                    // Prevent text selection during resize
+                    document.addEventListener('selectstart', (e) => {
+                        if (this.isResizing) {
+                            e.preventDefault();
+                        }
+                    });
+                },
+
+                startResize(event, columnIndex) {
+                    console.log('Starting resize for column:', columnIndex);
+                    event.preventDefault();
+                    event.stopPropagation();
+
+                    this.isResizing = true;
+                    this.resizingColumn = columnIndex;
+                    this.startX = event.clientX;
+
+                    // Get current width - ensure we have a valid width
+                    const currentWidth = this.columnWidths[columnIndex];
+                    this.startWidth = parseInt(currentWidth) || 150;
+
+                    console.log('Current width:', currentWidth, 'Start width:', this.startWidth);
+
+                    // Add visual feedback
+                    document.body.style.cursor = 'col-resize';
+                    document.body.style.userSelect = 'none';
+                    document.body.classList.add('resizing-column');
+
+                    // Add temporary styles
+                    const style = document.createElement('style');
+                    style.id = 'resize-styles';
+                    style.textContent = `
+                        .resizing-column * {
+                            cursor: col-resize !important;
+                            user-select: none !important;
+                        }
+                    `;
+                    document.head.appendChild(style);
+                },
+
+                handleResize(event) {
+                    if (!this.isResizing || this.resizingColumn === null) return;
+
+                    event.preventDefault();
+
+                    const deltaX = event.clientX - this.startX;
+                    const newWidth = Math.max(60, this.startWidth + deltaX); // Minimum width of 60px
+
+                    console.log('Resizing column:', this.resizingColumn, 'New width:', newWidth + 'px');
+                    this.columnWidths[this.resizingColumn] = newWidth + 'px';
+                },
+
+                stopResize() {
+                    if (!this.isResizing) return;
+
+                    this.isResizing = false;
+                    this.resizingColumn = null;
+
+                    // Remove visual feedback
+                    document.body.style.cursor = '';
+                    document.body.style.userSelect = '';
+                    document.body.classList.remove('resizing-column');
+
+                    // Remove temporary styles
+                    const style = document.getElementById('resize-styles');
+                    if (style) {
+                        style.remove();
+                    }
+
+                    // Save column widths to localStorage
+                    this.saveColumnWidths();
+                },
+
+                saveColumnWidths() {
+                    const tableName = '{{ $title ?? "kubernetes-table" }}';
+                    localStorage.setItem(`columnWidths_${tableName}`, JSON.stringify(this.columnWidths));
+                },
+
+                loadColumnWidths() {
+                    const tableName = '{{ $title ?? "kubernetes-table" }}';
+                    const saved = localStorage.getItem(`columnWidths_${tableName}`);
+                    if (saved) {
+                        this.columnWidths = { ...this.columnWidths, ...JSON.parse(saved) };
+                    }
+                },
+
+                resetColumnWidths() {
+                    this.columnWidths = {};
+                    this.initColumnResizing();
+                    this.saveColumnWidths();
                 },
 
                 filterData() {
@@ -306,9 +493,92 @@
                         });
                     }
 
+                    // Apply sorting
+                    if (this.sortField) {
+                        filtered = this.sortData(filtered);
+                    }
+
                     this.filteredData = filtered;
                     this.currentPage = 1;
                     this.updatePagination();
+                },
+
+                sortBy(field) {
+                    if (this.sortField === field) {
+                        // Toggle direction if same field
+                        this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
+                    } else {
+                        // New field, default to ascending
+                        this.sortField = field;
+                        this.sortDirection = 'asc';
+                    }
+                    this.filterData();
+                },
+
+                sortData(data) {
+                    return data.sort((a, b) => {
+                        let aValue = this.getSortValue(a, this.sortField);
+                        let bValue = this.getSortValue(b, this.sortField);
+
+                        // Handle null/undefined values
+                        if (aValue === null || aValue === undefined) aValue = '';
+                        if (bValue === null || bValue === undefined) bValue = '';
+
+                        // Convert to strings for comparison
+                        aValue = String(aValue).toLowerCase();
+                        bValue = String(bValue).toLowerCase();
+
+                        let result = 0;
+                        if (aValue < bValue) result = -1;
+                        if (aValue > bValue) result = 1;
+
+                        return this.sortDirection === 'desc' ? -result : result;
+                    });
+                },
+
+                getSortValue(item, field) {
+                    switch (field) {
+                        case 'name':
+                            return item.metadata?.name || '';
+                        case 'namespace':
+                            return item.metadata?.namespace || 'default';
+                        case 'age':
+                            return item.metadata?.creationTimestamp || '';
+                        case 'ready':
+                            // For boolean fields, convert to sortable string
+                            if (typeof this.getNodeStatus === 'function') {
+                                return this.getNodeStatus(item) === 'Ready' ? 'a' : 'z';
+                            }
+                            if (typeof this.getPodStatus === 'function') {
+                                return this.getPodStatus(item) === 'Running' ? 'a' : 'z';
+                            }
+                            return '';
+                        case 'status':
+                            if (typeof this.getNodeStatus === 'function') {
+                                return this.getNodeStatus(item);
+                            }
+                            if (typeof this.getPodStatus === 'function') {
+                                return this.getPodStatus(item);
+                            }
+                            return '';
+                        case 'roles':
+                            if (typeof this.getNodeRoles === 'function') {
+                                return this.getNodeRoles(item);
+                            }
+                            return '';
+                        case 'containers':
+                            if (typeof this.getPodReadyContainers === 'function') {
+                                return this.getPodReadyContainers(item);
+                            }
+                            return '';
+                        case 'restarts':
+                            if (typeof this.getPodRestarts === 'function') {
+                                return this.getPodRestarts(item);
+                            }
+                            return 0;
+                        default:
+                            return item.metadata?.name || '';
+                    }
                 },
 
                 updatePagination() {
