@@ -125,9 +125,9 @@
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h14M5 12a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v4a2 2 0 01-2 2M5 12a2 2 0 00-2 2v4a2 2 0 002 2h14a2 2 0 002-2v-4a2 2 0 00-2-2m-2-4h.01M17 16h.01" />
                                 </svg>
                             </div>
-                            <h2 class="text-xl font-bold text-gray-800">OVH Server Expiration</h2>
+                            <h2 class="text-xl font-bold text-gray-800">Services Expiration</h2>
                         </div>
-                        <p class="text-gray-600 text-sm">Monitor OVH server expiration dates and renewal status.</p>
+                        <p class="text-gray-600 text-sm">Monitor Services expiration dates and renewal status.</p>
                     </div>
                 </a>
             </div>

@@ -93,10 +93,10 @@
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4" />
                                     </svg>
                                 </div>
-                                <h3 class="text-lg font-medium text-gray-900">OVH Server Expiration</h3>
+                                <h3 class="text-lg font-medium text-gray-900">Services Expiration</h3>
                             </div>
                             <p class="text-sm text-gray-500">
-                                Track OVH server expiration dates, renewal status, and receive alerts before your servers expire.
+                                Track Services expiration dates, renewal status, and receive alerts before your servers expire.
                             </p>
                         </div>
                     </div>
