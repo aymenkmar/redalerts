@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\SSOController;
 
 // Landing page
 Route::get('/', \App\Livewire\LandingPage::class);
@@ -10,6 +11,13 @@ Route::get('/', \App\Livewire\LandingPage::class);
 Route::get('/login', \App\Livewire\LoginPage::class)->name('login');
 Route::post('/login', [AuthController::class, 'login']);
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+
+// SSO routes
+Route::get('/auth/azure', [SSOController::class, 'redirectToAzure'])->name('azure.login');
+Route::get('/login/callback', [SSOController::class, 'handleAzureCallback'])->name('azure.callback');
+Route::post('/auth/check-sso', [SSOController::class, 'canUseSSO'])->name('check.sso');
+
+
 
 // Protected routes
 Route::middleware('auth')->group(function () {
