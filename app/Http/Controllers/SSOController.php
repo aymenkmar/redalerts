@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Laravel\Socialite\Facades\Socialite;
 use App\Models\User;
+use App\Models\SsoSetting;
 use Illuminate\Support\Facades\Log;
 
 class SSOController extends Controller
@@ -15,17 +16,7 @@ class SSOController extends Controller
      */
     private function isEmailAllowedForSSO(string $email): bool
     {
-        $allowedEmails = config('sso.allowed_emails', []);
-        $allowedDomains = config('sso.allowed_domains', []);
-
-        // Check exact email matches
-        if (in_array($email, $allowedEmails)) {
-            return true;
-        }
-
-        // Check domain matches
-        $domain = substr(strrchr($email, "@"), 1);
-        return in_array($domain, $allowedDomains);
+        return SsoSetting::isEmailAllowed($email);
     }
 
     /**

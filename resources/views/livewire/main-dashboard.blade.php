@@ -63,6 +63,9 @@
                         <a href="{{ route('profile') }}" wire:navigate class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
                             Profile
                         </a>
+                        <a href="{{ route('sso-management') }}" wire:navigate class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                            SSO Management
+                        </a>
                         <form method="POST" action="{{ route('logout') }}">
                             @csrf
                             <button type="submit" class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
@@ -130,6 +133,8 @@
                         <p class="text-gray-600 text-sm">Monitor service expiration dates, renewal status, and manage various hosting services and subscriptions.</p>
                     </div>
                 </a>
+
+
             </div>
 
             <!-- Admin Dashboard Link -->

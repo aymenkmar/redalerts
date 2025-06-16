@@ -22,6 +22,9 @@ return [
     */
     'allowed_emails' => [
         'aymen.kmar@satoripop.com',
+        'john.doe@satoripop.com',
+        'jane.smith@satoripop.com',
+        'admin@company.com',
         // Add more specific emails here
     ],
 

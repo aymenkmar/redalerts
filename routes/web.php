@@ -201,4 +201,7 @@ Route::middleware('auth')->group(function () {
 
     // Notifications Routes
     Route::get('/notifications', \App\Livewire\NotificationIndex::class)->name('notifications.index');
+
+    // SSO Management Routes
+    Route::get('/sso-management', \App\Livewire\SsoManagement::class)->name('sso-management');
 });
