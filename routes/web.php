@@ -183,6 +183,14 @@ Route::middleware('auth')->group(function () {
     Route::get('/website-monitoring/{website}/edit', \App\Livewire\WebsiteMonitoring\EditWebsite::class)->name('website-monitoring.edit');
     Route::get('/website-monitoring/{website}/history', \App\Livewire\WebsiteMonitoring\WebsiteHistory::class)->name('website-monitoring.history');
 
+    // OVH Monitoring Routes
+    Route::prefix('ovh-monitoring')->name('ovh-monitoring.')->group(function () {
+        Route::get('/', \App\Livewire\OvhMonitoring\OvhOverview::class)->name('overview');
+        Route::get('/vps', \App\Livewire\OvhMonitoring\OvhVpsList::class)->name('vps');
+        Route::get('/dedicated-servers', \App\Livewire\OvhMonitoring\OvhDedicatedServersList::class)->name('dedicated-servers');
+        Route::get('/domains', \App\Livewire\OvhMonitoring\OvhDomainsList::class)->name('domains');
+    });
+
     // Notifications Routes
     Route::get('/notifications', \App\Livewire\NotificationIndex::class)->name('notifications.index');
 });

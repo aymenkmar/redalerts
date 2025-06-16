@@ -18,3 +18,14 @@ Schedule::command('websites:monitor-domain-ssl')
     ->dailyAt('02:00')
     ->withoutOverlapping()
     ->runInBackground();
+
+// OVH Monitoring Scheduled Tasks
+Schedule::command('ovh:sync-services')
+    ->dailyAt('01:00')
+    ->withoutOverlapping()
+    ->runInBackground();
+
+Schedule::command('ovh:check-expirations')
+    ->dailyAt('09:00')
+    ->withoutOverlapping()
+    ->runInBackground();

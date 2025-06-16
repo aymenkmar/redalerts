@@ -116,18 +116,18 @@
                     </div>
                 </a>
 
-                <!-- OVH Server Expiration Card -->
-                <a href="#" class="feature-card bg-white rounded-lg shadow-md overflow-hidden">
+                <!-- Services Monitoring Card -->
+                <a href="{{ route('ovh-monitoring.overview') }}" wire:navigate class="feature-card bg-white rounded-lg shadow-md overflow-hidden">
                     <div class="p-6">
                         <div class="flex items-center mb-4">
-                            <div class="icon-container bg-gray-600 p-3 rounded-lg mr-4">
+                            <div class="icon-container bg-red-600 p-3 rounded-lg mr-4">
                                 <svg class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h14M5 12a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v4a2 2 0 01-2 2M5 12a2 2 0 00-2 2v4a2 2 0 002 2h14a2 2 0 002-2v-4a2 2 0 00-2-2m-2-4h.01M17 16h.01" />
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
                                 </svg>
                             </div>
-                            <h2 class="text-xl font-bold text-gray-800">Services Expiration</h2>
+                            <h2 class="text-xl font-bold text-gray-800">Services Monitoring</h2>
                         </div>
-                        <p class="text-gray-600 text-sm">Monitor Services expiration dates and renewal status.</p>
+                        <p class="text-gray-600 text-sm">Monitor service expiration dates, renewal status, and manage various hosting services and subscriptions.</p>
                     </div>
                 </a>
             </div>

@@ -1,0 +1,204 @@
+<div class="min-h-screen bg-gray-50">
+    <!-- Sticky Header/Navbar -->
+    <header class="sticky top-0 z-50 bg-white shadow-sm border-b border-gray-200">
+        <div class="max-w-7xl mx-auto px-6 py-4">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-4">
+                    <a href="{{ route('main-dashboard') }}" wire:navigate class="text-red-600 hover:text-red-700">
+                        <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                        </svg>
+                    </a>
+                    <h1 class="text-2xl font-bold text-gray-800">OVH Services Overview</h1>
+                </div>
+
+                <!-- Profile Dropdown -->
+                <div class="flex items-center space-x-4">
+                    <!-- Notification Dropdown -->
+                    @livewire('notification-dropdown')
+
+                    <div class="relative" x-data="{ open: false }" @click.away="open = false">
+                        <button @click="open = !open" class="flex items-center space-x-2 focus:outline-none">
+                            <div class="h-8 w-8 rounded-full bg-red-600 flex items-center justify-center text-white font-semibold">
+                                {{ substr(Auth::user()->name, 0, 1) }}
+                            </div>
+                            <span class="text-gray-700 font-medium">{{ Auth::user()->name }}</span>
+                            <svg class="h-4 w-4 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                            </svg>
+                        </button>
+
+                        <div x-show="open"
+                             x-transition:enter="transition ease-out duration-100"
+                             x-transition:enter-start="transform opacity-0 scale-95"
+                             x-transition:enter-end="transform opacity-100 scale-100"
+                             x-transition:leave="transition ease-in duration-75"
+                             x-transition:leave-start="transform opacity-100 scale-100"
+                             x-transition:leave-end="transform opacity-0 scale-95"
+                             class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50">
+                            <a href="{{ route('profile') }}" wire:navigate class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                Profile
+                            </a>
+                            <form method="POST" action="{{ route('logout') }}">
+                                @csrf
+                                <button type="submit" class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                    Logout
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <div class="max-w-6xl mx-auto px-6 py-8">
+        <!-- Page Description -->
+        <div class="mb-8 text-center">
+            <p class="text-lg text-gray-600">Monitor and manage your OVH services including VPS, dedicated servers, and domains.</p>
+            <p class="text-sm text-gray-500 mt-2">Select a service type below to view detailed information and expiration dates.</p>
+        </div>
+
+        <!-- Service Cards Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <!-- VPS Services Card -->
+            <a href="{{ route('ovh-monitoring.vps') }}" wire:navigate class="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow duration-200 overflow-hidden">
+                <div class="p-6">
+                    <div class="flex items-center mb-4">
+                        <div class="bg-blue-600 p-3 rounded-lg mr-4">
+                            <svg class="h-8 w-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z" />
+                            </svg>
+                        </div>
+                        <div>
+                            <h3 class="text-xl font-bold text-gray-800">VPS Services</h3>
+                            <p class="text-sm text-gray-500">Virtual Private Servers</p>
+                        </div>
+                    </div>
+
+                    <!-- Statistics -->
+                    <div class="space-y-2">
+                        <div class="flex justify-between items-center">
+                            <span class="text-gray-600">Total Services:</span>
+                            <span class="font-semibold text-gray-800">{{ $vpsCount }}</span>
+                        </div>
+                        @if($vpsExpiring > 0)
+                            <div class="flex justify-between items-center">
+                                <span class="text-yellow-600">Expiring Soon:</span>
+                                <span class="font-semibold text-yellow-600">{{ $vpsExpiring }}</span>
+                            </div>
+                        @endif
+                        @if($vpsExpired > 0)
+                            <div class="flex justify-between items-center">
+                                <span class="text-red-600">Expired:</span>
+                                <span class="font-semibold text-red-600">{{ $vpsExpired }}</span>
+                            </div>
+                        @endif
+                    </div>
+
+                    <div class="mt-4 text-blue-600 text-sm font-medium">
+                        View VPS Services →
+                    </div>
+                </div>
+            </a>
+
+            <!-- Dedicated Servers Card -->
+            <a href="{{ route('ovh-monitoring.dedicated-servers') }}" wire:navigate class="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow duration-200 overflow-hidden">
+                <div class="p-6">
+                    <div class="flex items-center mb-4">
+                        <div class="bg-purple-600 p-3 rounded-lg mr-4">
+                            <svg class="h-8 w-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h14M5 12a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v4a2 2 0 01-2 2M5 12a2 2 0 00-2 2v4a2 2 0 002 2h14a2 2 0 002-2v-4a2 2 0 00-2-2m-2-4h.01M17 16h.01" />
+                            </svg>
+                        </div>
+                        <div>
+                            <h3 class="text-xl font-bold text-gray-800">Dedicated Servers</h3>
+                            <p class="text-sm text-gray-500">Physical Dedicated Servers</p>
+                        </div>
+                    </div>
+
+                    <!-- Statistics -->
+                    <div class="space-y-2">
+                        <div class="flex justify-between items-center">
+                            <span class="text-gray-600">Total Services:</span>
+                            <span class="font-semibold text-gray-800">{{ $dedicatedCount }}</span>
+                        </div>
+                        @if($dedicatedExpiring > 0)
+                            <div class="flex justify-between items-center">
+                                <span class="text-yellow-600">Expiring Soon:</span>
+                                <span class="font-semibold text-yellow-600">{{ $dedicatedExpiring }}</span>
+                            </div>
+                        @endif
+                        @if($dedicatedExpired > 0)
+                            <div class="flex justify-between items-center">
+                                <span class="text-red-600">Expired:</span>
+                                <span class="font-semibold text-red-600">{{ $dedicatedExpired }}</span>
+                            </div>
+                        @endif
+                    </div>
+
+                    <div class="mt-4 text-purple-600 text-sm font-medium">
+                        View Dedicated Servers →
+                    </div>
+                </div>
+            </a>
+
+            <!-- Domains Card -->
+            <a href="{{ route('ovh-monitoring.domains') }}" wire:navigate class="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow duration-200 overflow-hidden">
+                <div class="p-6">
+                    <div class="flex items-center mb-4">
+                        <div class="bg-green-600 p-3 rounded-lg mr-4">
+                            <svg class="h-8 w-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s-1.343-9 3-9m-9 9a9 9 0 919-9" />
+                            </svg>
+                        </div>
+                        <div>
+                            <h3 class="text-xl font-bold text-gray-800">Domains</h3>
+                            <p class="text-sm text-gray-500">Domain Registrations</p>
+                        </div>
+                    </div>
+
+                    <!-- Statistics -->
+                    <div class="space-y-2">
+                        <div class="flex justify-between items-center">
+                            <span class="text-gray-600">Total Services:</span>
+                            <span class="font-semibold text-gray-800">{{ $domainCount }}</span>
+                        </div>
+                        @if($domainExpiring > 0)
+                            <div class="flex justify-between items-center">
+                                <span class="text-yellow-600">Expiring Soon:</span>
+                                <span class="font-semibold text-yellow-600">{{ $domainExpiring }}</span>
+                            </div>
+                        @endif
+                        @if($domainExpired > 0)
+                            <div class="flex justify-between items-center">
+                                <span class="text-red-600">Expired:</span>
+                                <span class="font-semibold text-red-600">{{ $domainExpired }}</span>
+                            </div>
+                        @endif
+                    </div>
+
+                    <div class="mt-4 text-green-600 text-sm font-medium">
+                        View Domains →
+                    </div>
+                </div>
+            </a>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="mt-8 bg-white rounded-lg shadow-md p-6">
+            <h3 class="text-lg font-semibold text-gray-800 mb-4">Quick Actions</h3>
+            <div class="flex flex-wrap gap-4">
+                <button onclick="window.location.href='{{ route('ovh-monitoring.vps') }}'"
+                        class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition duration-200">
+                    Sync All Services
+                </button>
+                <a href="{{ route('notifications.index') }}" wire:navigate
+                   class="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition duration-200">
+                    View Notifications
+                </a>
+            </div>
+        </div>
+    </div>
+</div>

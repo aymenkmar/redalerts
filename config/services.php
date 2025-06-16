@@ -35,4 +35,11 @@ return [
         ],
     ],
 
+    'ovh' => [
+        'api_key' => env('OVH_API_KEY'),
+        'api_secret' => env('OVH_API_SECRET'),
+        'api_endpoint' => env('OVH_API_ENDPOINT', 'ovh-eu'),
+        'consumer_key' => env('OVH_API_CONSUMER_KEY'),
+    ],
+
 ];
