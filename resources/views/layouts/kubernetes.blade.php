@@ -405,14 +405,17 @@
 
             <!-- Header with Cluster Selector -->
             <header class="bg-white shadow-sm py-3 px-6 flex items-center justify-between sticky top-0 z-50">
-                <div class="flex items-center">
+                <div class="flex items-center space-x-4">
                     <!-- Hamburger button in navbar -->
                     <button @click="sidebarOpen = !sidebarOpen"
-                            class="p-2 rounded-md text-gray-600 hover:text-gray-900 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-red-500 mr-4">
+                            class="p-2 rounded-md text-gray-600 hover:text-gray-900 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-red-500">
                         <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
                         </svg>
                     </button>
+
+                    <!-- Multi-Cluster Tabs -->
+                    <livewire:kubernetes.cluster-tabs />
                 </div>
 
                 <div class="flex items-center space-x-4">
@@ -499,6 +502,17 @@
         });
 
         document.addEventListener('livewire:initialized', () => {
+            // Listen for cluster tabs update events
+            Livewire.on('clusterTabsUpdated', () => {
+                // Find the cluster tabs component and refresh it
+                const clusterTabsComponent = document.querySelector('[wire\\:id]');
+                if (clusterTabsComponent) {
+                    const componentId = clusterTabsComponent.getAttribute('wire:id');
+                    if (componentId) {
+                        Livewire.find(componentId).call('refreshTabs');
+                    }
+                }
+            });
             Livewire.on('showNotification', (data) => {
                 // Create notification element
                 const notification = document.createElement('div');

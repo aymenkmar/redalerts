@@ -560,6 +560,63 @@ class KubernetesController extends Controller
     }
 
     /**
+     * Handle switching between cluster tabs.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\RedirectResponse
+     */
+    public function switchCluster(Request $request)
+    {
+        $clusterName = $request->input('cluster_name');
+        $selectedClusters = session('selectedClusters', []);
+
+        if ($clusterName && in_array($clusterName, $selectedClusters)) {
+            // Update active cluster tab and legacy session
+            session(['activeClusterTab' => $clusterName]);
+            session(['selectedCluster' => $clusterName]);
+        }
+
+        // Redirect back to the previous page
+        return redirect()->back();
+    }
+
+    /**
+     * Handle closing a cluster tab.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\RedirectResponse
+     */
+    public function closeCluster(Request $request)
+    {
+        $clusterName = $request->input('cluster_name');
+        $selectedClusters = session('selectedClusters', []);
+        $activeClusterTab = session('activeClusterTab', null);
+
+        // Remove cluster from selected clusters
+        $selectedClusters = array_values(array_filter($selectedClusters, function($cluster) use ($clusterName) {
+            return $cluster !== $clusterName;
+        }));
+
+        // If this was the active tab, switch to another tab or clear
+        if ($activeClusterTab === $clusterName) {
+            $activeClusterTab = !empty($selectedClusters) ? $selectedClusters[0] : null;
+        }
+
+        // Update session
+        session(['selectedClusters' => $selectedClusters]);
+        session(['activeClusterTab' => $activeClusterTab]);
+        session(['selectedCluster' => $activeClusterTab]);
+
+        // If no clusters left, redirect to dashboard to show cluster selection
+        if (empty($selectedClusters)) {
+            return redirect()->route('dashboard-kubernetes');
+        }
+
+        // Redirect back to the previous page
+        return redirect()->back();
+    }
+
+    /**
      * Show the upload modal.
      *
      * @param  \Illuminate\Http\Request  $request

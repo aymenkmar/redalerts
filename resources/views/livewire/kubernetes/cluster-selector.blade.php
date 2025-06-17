@@ -28,19 +28,24 @@
     </div>
     @endif
 
-    <div class="flex items-center">
-        <span class="text-sm text-gray-500 mr-2">Cluster:</span>
+    <div class="flex items-center space-x-3">
+        @php
+            $selectedClusters = session('selectedClusters', []);
+            $activeClusterTab = session('activeClusterTab', null);
+        @endphp
+
+        <!-- Cluster Management Dropdown -->
+        @if(!empty($selectedClusters))
         <button
             wire:click="toggleDropdown"
-            class="cluster-dropdown-toggle flex items-center space-x-1 focus:outline-none"
+            class="flex items-center space-x-2 px-3 py-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors duration-200"
         >
-            <span class="text-sm font-medium text-red-600">
-                {{ $selectedCluster ?? 'Select a cluster' }}
-            </span>
-            <svg class="w-4 h-4 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <span class="text-sm font-medium">Cluster Management</span>
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
             </svg>
         </button>
+        @endif
     </div>
 
     @if($showDropdown)
@@ -48,21 +53,17 @@
         class="cluster-dropdown-menu absolute right-0 mt-2 w-64 bg-white border border-gray-200 rounded shadow-lg"
         style="z-index: 45;"
     >
+        <div class="px-4 py-2 border-b border-gray-200">
+            <h3 class="text-sm font-medium text-gray-900">Cluster Management</h3>
+        </div>
         <div class="max-h-60 overflow-y-auto">
             @if(count($clusters) > 0)
                 @foreach($clusters as $cluster)
-                <div class="flex items-center justify-between hover:bg-gray-100 {{ $selectedCluster === $cluster['name'] ? 'bg-red-50' : '' }}">
-                    <form action="{{ route('kubernetes.select-cluster') }}" method="POST" class="flex-1">
-                        @csrf
-                        <input type="hidden" name="cluster_name" value="{{ $cluster['name'] }}">
-                        <button
-                            type="submit"
-                            class="w-full text-left px-4 py-2 {{ $selectedCluster === $cluster['name'] ? 'text-red-600 font-medium' : 'text-gray-700' }}"
-                        >
-                            {{ $cluster['name'] }}
-                        </button>
-                    </form>
-                    <div class="flex items-center space-x-1 px-2">
+                <div class="flex items-center justify-between hover:bg-gray-100 px-4 py-2">
+                    <div class="flex-1">
+                        <span class="text-sm text-gray-700">{{ $cluster['name'] }}</span>
+                    </div>
+                    <div class="flex items-center space-x-1">
                         <button
                             wire:click="openEditModal({{ $cluster['id'] }})"
                             class="p-1 text-gray-400 hover:text-blue-600"

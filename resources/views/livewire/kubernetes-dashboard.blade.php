@@ -52,7 +52,7 @@
     </div>
     @endif
 
-    @if(!$selectedCluster)
+    @if(empty($selectedClusters) || !$activeClusterTab)
         <!-- No Cluster Selected -->
         <div class="bg-white rounded shadow-md p-8 text-center mb-8">
             <p class="text-gray-600">Please select a cluster from the dropdown to view metrics.</p>

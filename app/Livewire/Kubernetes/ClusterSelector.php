@@ -4,6 +4,7 @@ namespace App\Livewire\Kubernetes;
 
 use Livewire\Component;
 use Livewire\WithFileUploads;
+use Livewire\Attributes\On;
 use App\Models\Cluster;
 use Illuminate\Support\Facades\Session;
 
@@ -29,9 +30,30 @@ class ClusterSelector extends Component
         'notify' => 'handleNotification'
     ];
 
+    #[On('clusterTabsUpdated')]
+    public function refreshSelector()
+    {
+        // Reload the component state when cluster tabs are updated
+        $this->mount();
+    }
+
     public function mount()
     {
-        $this->selectedCluster = session('selectedCluster', null);
+        // Get multi-cluster session data
+        $selectedClusters = session('selectedClusters', []);
+        $activeClusterTab = session('activeClusterTab', null);
+        $legacyCluster = session('selectedCluster', null);
+
+        // Set the current selected cluster from active tab or legacy session
+        // If we're in "add new cluster" mode (legacyCluster is null but activeClusterTab exists),
+        // show null to display cluster selection interface
+        if ($legacyCluster === null && $activeClusterTab === null && !empty($selectedClusters)) {
+            // We're in "add new cluster" mode
+            $this->selectedCluster = null;
+        } else {
+            $this->selectedCluster = $activeClusterTab ?? $legacyCluster;
+        }
+
         $this->showUploadModal = session('showUploadModal', false);
 
         // Clear the session flag
@@ -99,17 +121,19 @@ class ClusterSelector extends Component
         }
     }
 
-    public function selectCluster($clusterName)
+
+
+    public function addNewCluster()
     {
-        $this->selectedCluster = $clusterName;
-        session(['selectedCluster' => $clusterName]);
-        $this->showDropdown = false;
+        // Reset to cluster selection mode while keeping existing clusters
+        session(['activeClusterTab' => null]);
+        session(['selectedCluster' => null]); // Clear current selection to show cluster grid
 
-        $this->dispatch('clusterSelected', $clusterName);
-
-        // Redirect to refresh the page with the new cluster
-        return redirect(request()->header('Referer'));
+        // Redirect to the dashboard to show cluster selection
+        return redirect()->route('dashboard-kubernetes');
     }
+
+
 
     public function toggleDropdown()
     {
@@ -198,6 +222,18 @@ class ClusterSelector extends Component
 
     public function render()
     {
+        // Always reload session data to ensure we have the latest state
+        $selectedClusters = session('selectedClusters', []);
+        $activeClusterTab = session('activeClusterTab', null);
+        $legacyCluster = session('selectedCluster', null);
+
+        // Update the selected cluster based on current session state
+        if ($legacyCluster === null && $activeClusterTab === null && !empty($selectedClusters)) {
+            $this->selectedCluster = null;
+        } else {
+            $this->selectedCluster = $activeClusterTab ?? $legacyCluster;
+        }
+
         return view('livewire.kubernetes.cluster-selector');
     }
 }

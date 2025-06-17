@@ -35,6 +35,8 @@ Route::middleware('auth')->group(function () {
 
     // Kubernetes Cluster Selection
     Route::post('/kubernetes/select-cluster', [\App\Http\Controllers\KubernetesController::class, 'selectCluster'])->name('kubernetes.select-cluster');
+    Route::post('/kubernetes/switch-cluster', [\App\Http\Controllers\KubernetesController::class, 'switchCluster'])->name('kubernetes.switch-cluster');
+    Route::post('/kubernetes/close-cluster', [\App\Http\Controllers\KubernetesController::class, 'closeCluster'])->name('kubernetes.close-cluster');
 
     // Kubernetes Upload Modal
     Route::post('/kubernetes/upload-modal', [\App\Http\Controllers\KubernetesController::class, 'showUploadModal'])->name('kubernetes.upload-modal');
