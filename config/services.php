@@ -46,7 +46,9 @@ return [
         'client_id' => env('AZURE_AD_CLIENT_ID'),
         'client_secret' => env('AZURE_AD_CLIENT_SECRET'),
         'redirect' => env('AZURE_AD_REDIRECT_URI'),
+        'redirect_uri' => env('AZURE_AD_REDIRECT_URI'),
         'tenant' => env('AZURE_AD_TENANT_ID'),
+        'tenant_id' => env('AZURE_AD_TENANT_ID'),
         'proxy' => env('PROXY'),
     ],
 
