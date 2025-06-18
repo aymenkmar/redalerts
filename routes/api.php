@@ -4,6 +4,7 @@ use App\Http\Controllers\KubernetesController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\FileUploadController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\KubectlAiController;
 
 // Public routes - no authentication required
 Route::match(['get', 'post'], '/login', [AuthController::class, 'login']);
@@ -83,4 +84,15 @@ Route::get('/{config}/helmreleases', [KubernetesController::class, 'getHelmRelea
 
 // Port forwarding (special case)
 //Route::post('/{config}/namespaces/{namespace}/pods/{pod}/portforward', [KubernetesController::class, 'createPortForward']);
+
+    // kubectl-ai routes
+    Route::middleware(['kubectl-ai.security'])->group(function () {
+        Route::post('/kubectl-ai/chat', [KubectlAiController::class, 'chat']);
+        Route::post('/kubectl-ai/validate', [KubectlAiController::class, 'validateCluster']);
+    });
+
+    // kubectl-ai routes without security middleware (read-only)
+    Route::get('/kubectl-ai/models', [KubectlAiController::class, 'getModels']);
+    Route::get('/kubectl-ai/config', [KubectlAiController::class, 'getConfig']);
+    Route::get('/kubectl-ai/test', [KubectlAiController::class, 'test']);
 });

@@ -21,3 +21,9 @@ yarn-error.log
 /.nova
 /.vscode
 /.zed
+
+# Keep kubectl-ai binary in version control
+# but allow for updates
+!/storage/kubectl-ai-google/
+!/storage/kubectl-ai-google/kubectl-ai
+!/storage/kubectl-ai-google/README.md

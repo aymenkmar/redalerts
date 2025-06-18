@@ -468,6 +468,9 @@
                 </div>
             </div>
         </div>
+
+        <!-- kubectl-ai Chatbot Widget -->
+        @livewire('kubectl-ai-chatbot')
     </div>
 
     @livewireScripts
