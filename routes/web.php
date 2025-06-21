@@ -56,6 +56,13 @@ Route::middleware('auth')->group(function () {
     // Kubernetes Events
     Route::get('/kubernetes/events', \App\Livewire\Kubernetes\EventList::class)->name('kubernetes.events');
 
+    // Kubernetes Security
+    Route::get('/kubernetes/security', \App\Livewire\Kubernetes\SecurityDashboard::class)->name('kubernetes.security');
+
+    // Security Report Downloads (direct routes to avoid Livewire UTF-8 issues)
+    Route::get('/kubernetes/security/download/{report}/json', [\App\Http\Controllers\SecurityReportController::class, 'downloadJson'])->name('security.download.json');
+    Route::get('/kubernetes/security/download/{report}/pdf', [\App\Http\Controllers\SecurityReportController::class, 'downloadPdf'])->name('security.download.pdf');
+
     // Kubernetes Access Control
     Route::get('/kubernetes/serviceaccounts', \App\Livewire\Kubernetes\AccessControl\ServiceAccountList::class)->name('kubernetes.serviceaccounts');
     Route::get('/kubernetes/clusterroles', \App\Livewire\Kubernetes\AccessControl\ClusterRoleList::class)->name('kubernetes.clusterroles');

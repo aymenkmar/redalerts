@@ -29,3 +29,9 @@ Schedule::command('ovh:check-expirations')
     ->dailyAt('09:00')
     ->withoutOverlapping()
     ->runInBackground();
+
+// Security Scanning Scheduled Tasks
+Schedule::command('security:scan --all --cleanup')
+    ->dailyAt('03:00')
+    ->withoutOverlapping()
+    ->runInBackground();

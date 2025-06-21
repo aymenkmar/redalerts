@@ -95,4 +95,14 @@ Route::get('/{config}/helmreleases', [KubernetesController::class, 'getHelmRelea
     Route::get('/kubectl-ai/models', [KubectlAiController::class, 'getModels']);
     Route::get('/kubectl-ai/config', [KubectlAiController::class, 'getConfig']);
     Route::get('/kubectl-ai/test', [KubectlAiController::class, 'test']);
+
+    // Security routes
+    Route::prefix('security')->group(function () {
+        Route::post('/scan', [\App\Http\Controllers\SecurityController::class, 'startScan']);
+        Route::get('/overview', [\App\Http\Controllers\SecurityController::class, 'getSecurityOverview']);
+        Route::get('/{clusterName}/latest', [\App\Http\Controllers\SecurityController::class, 'getLatestReport']);
+        Route::get('/{clusterName}/history', [\App\Http\Controllers\SecurityController::class, 'getScanHistory']);
+        Route::get('/{clusterName}/status', [\App\Http\Controllers\SecurityController::class, 'getScanStatus']);
+        Route::get('/report/{reportId}/download', [\App\Http\Controllers\SecurityController::class, 'downloadReport']);
+    });
 });
