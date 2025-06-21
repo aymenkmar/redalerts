@@ -8,7 +8,7 @@
         <div class="flex space-x-3">
             <button wire:click="refreshData"
                     onclick="manualRefresh()"
-                    class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-md transition duration-200">
+                    class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md transition duration-200">
                 🔄 Refresh
             </button>
             @if($selectedCluster && !$isScanning)
@@ -94,77 +94,77 @@
                 
                 <div class="p-6">
                     <!-- Security Metrics Cards -->
-                    <div class="grid grid-cols-2 md:grid-cols-5 gap-4 mb-8">
+                    <div class="grid grid-cols-3 md:grid-cols-5 gap-3 mb-6">
                         <!-- Total Vulnerabilities -->
-                        <div class="bg-white border border-gray-200 rounded-lg p-4 shadow-sm aspect-square flex flex-col justify-center">
+                        <div class="bg-white border border-gray-200 rounded-lg p-3 shadow-sm aspect-square flex flex-col justify-center">
                             <div class="text-center">
-                                <div class="w-10 h-10 bg-red-500 rounded-lg flex items-center justify-center mx-auto mb-3">
-                                    <svg class="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                <div class="w-8 h-8 bg-red-500 rounded-lg flex items-center justify-center mx-auto mb-2">
+                                    <svg class="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
                                         <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
                                     </svg>
                                 </div>
                                 <div class="text-xs font-medium text-gray-500 mb-1">Total Vulnerabilities</div>
-                                <div class="text-2xl font-bold text-gray-900">{{ $latestReport->total_vulnerabilities }}</div>
+                                <div class="text-xl font-bold text-gray-900">{{ $latestReport->total_vulnerabilities }}</div>
                             </div>
                         </div>
 
                         <!-- Critical -->
-                        <div class="bg-white border border-gray-200 rounded-lg p-4 shadow-sm aspect-square flex flex-col justify-center">
+                        <div class="bg-white border border-gray-200 rounded-lg p-3 shadow-sm aspect-square flex flex-col justify-center">
                             <div class="text-center">
-                                <div class="w-10 h-10 bg-red-600 rounded-lg flex items-center justify-center mx-auto mb-3">
-                                    <svg class="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                <div class="w-8 h-8 bg-red-600 rounded-lg flex items-center justify-center mx-auto mb-2">
+                                    <svg class="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
                                         <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
                                     </svg>
                                 </div>
                                 <div class="text-xs font-medium text-gray-500 mb-1">Critical</div>
-                                <div class="text-2xl font-bold text-red-600">{{ $latestReport->critical_count }}</div>
+                                <div class="text-xl font-bold text-red-600">{{ $latestReport->critical_count }}</div>
                             </div>
                         </div>
 
                         <!-- High -->
-                        <div class="bg-white border border-gray-200 rounded-lg p-4 shadow-sm aspect-square flex flex-col justify-center">
+                        <div class="bg-white border border-gray-200 rounded-lg p-3 shadow-sm aspect-square flex flex-col justify-center">
                             <div class="text-center">
-                                <div class="w-10 h-10 bg-orange-500 rounded-lg flex items-center justify-center mx-auto mb-3">
-                                    <svg class="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                <div class="w-8 h-8 bg-orange-500 rounded-lg flex items-center justify-center mx-auto mb-2">
+                                    <svg class="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
                                         <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
                                     </svg>
                                 </div>
                                 <div class="text-xs font-medium text-gray-500 mb-1">High</div>
-                                <div class="text-2xl font-bold text-orange-600">{{ $latestReport->high_count }}</div>
+                                <div class="text-xl font-bold text-orange-600">{{ $latestReport->high_count }}</div>
                             </div>
                         </div>
 
                         <!-- Medium -->
-                        <div class="bg-white border border-gray-200 rounded-lg p-4 shadow-sm aspect-square flex flex-col justify-center">
+                        <div class="bg-white border border-gray-200 rounded-lg p-3 shadow-sm aspect-square flex flex-col justify-center">
                             <div class="text-center">
-                                <div class="w-10 h-10 bg-yellow-500 rounded-lg flex items-center justify-center mx-auto mb-3">
-                                    <svg class="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                <div class="w-8 h-8 bg-yellow-500 rounded-lg flex items-center justify-center mx-auto mb-2">
+                                    <svg class="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
                                         <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
                                     </svg>
                                 </div>
                                 <div class="text-xs font-medium text-gray-500 mb-1">Medium</div>
-                                <div class="text-2xl font-bold text-yellow-600">{{ $latestReport->medium_count }}</div>
+                                <div class="text-xl font-bold text-yellow-600">{{ $latestReport->medium_count }}</div>
                             </div>
                         </div>
 
                         <!-- Low & Unknown Combined -->
-                        <div class="bg-white border border-gray-200 rounded-lg p-4 shadow-sm aspect-square flex flex-col justify-center">
+                        <div class="bg-white border border-gray-200 rounded-lg p-3 shadow-sm aspect-square flex flex-col justify-center">
                             <div class="text-center">
-                                <div class="w-10 h-10 bg-blue-500 rounded-lg flex items-center justify-center mx-auto mb-3">
-                                    <svg class="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                <div class="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center mx-auto mb-2">
+                                    <svg class="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
                                         <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
                                     </svg>
                                 </div>
                                 <div class="text-xs font-medium text-gray-500 mb-1">Low & Other</div>
-                                <div class="text-2xl font-bold text-blue-600">{{ $latestReport->low_count + $latestReport->unknown_count }}</div>
+                                <div class="text-xl font-bold text-blue-600">{{ $latestReport->low_count + $latestReport->unknown_count }}</div>
                             </div>
                         </div>
                     </div>
 
                     <!-- Vulnerability Severity Breakdown -->
-                    <div class="bg-white border border-gray-200 rounded-lg p-6 mb-6">
-                        <h3 class="text-lg font-semibold text-gray-900 mb-4">Vulnerability Severity Breakdown</h3>
-                        <div class="space-y-3">
+                    <div class="bg-white border border-gray-200 rounded-lg p-4 mb-4">
+                        <h3 class="text-base font-semibold text-gray-900 mb-3">Vulnerability Severity Breakdown</h3>
+                        <div class="space-y-2">
                             <div class="flex items-center justify-between">
                                 <div class="flex items-center">
                                     <div class="w-3 h-3 bg-red-600 rounded-full mr-3"></div>
@@ -206,7 +206,7 @@
                     </div>
 
                     <!-- Overall Security Status -->
-                    <div class="bg-white border border-gray-200 rounded-lg p-6 mb-6">
+                    <div class="bg-white border border-gray-200 rounded-lg p-4 mb-4">
                         <div class="flex items-center justify-between">
                             <div class="flex items-center">
                                 <span class="text-2xl mr-3">{{ $this->getSeverityIcon($latestReport->getSeverityLevel()) }}</span>
@@ -235,25 +235,25 @@
                     </div>
 
                     <!-- Download Actions -->
-                    <div class="bg-white border border-gray-200 rounded-lg p-6">
-                        <h3 class="text-lg font-semibold text-gray-900 mb-4">Download Reports</h3>
-                        <div class="flex flex-col sm:flex-row gap-3">
+                    <div class="bg-white border border-gray-200 rounded-lg p-4">
+                        <h3 class="text-base font-semibold text-gray-900 mb-3">Download Reports</h3>
+                        <div class="flex flex-col sm:flex-row gap-2">
                             <a href="{{ route('security.download.json', $latestReport->id) }}"
-                               class="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg transition duration-200 flex items-center justify-center space-x-2 font-medium">
-                                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                               class="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition duration-200 flex items-center justify-center space-x-2 text-sm font-medium">
+                                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                                     <path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clip-rule="evenodd" />
                                 </svg>
                                 <span>Download JSON</span>
                             </a>
                             <a href="{{ route('security.download.pdf', $latestReport->id) }}"
-                               class="flex-1 bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-lg transition duration-200 flex items-center justify-center space-x-2 font-medium">
-                                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                               class="flex-1 bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg transition duration-200 flex items-center justify-center space-x-2 text-sm font-medium">
+                                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                                     <path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clip-rule="evenodd" />
                                 </svg>
                                 <span>Download PDF</span>
                             </a>
                         </div>
-                        <div class="mt-3 text-sm text-gray-500 text-center">
+                        <div class="mt-2 text-xs text-gray-500 text-center">
                             JSON contains detailed vulnerability data • PDF provides executive summary
                         </div>
                     </div>
