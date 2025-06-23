@@ -64,7 +64,7 @@
                     <div>
                         <label for="name" class="block text-sm font-medium text-gray-700 mb-2">Website Name *</label>
                         <input type="text" id="name" wire:model="name"
-                               class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                               class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-red-500 focus:border-red-500"
                                placeholder="e.g., My Company Website">
                         @error('name') <span class="text-red-500 text-sm">{{ $message }}</span> @enderror
                     </div>
@@ -74,7 +74,7 @@
                         <label class="block text-sm font-medium text-gray-700 mb-2">Status</label>
                         <div class="flex items-center">
                             <input type="checkbox" id="is_active" wire:model="is_active"
-                                   class="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded">
+                                   class="h-4 w-4 text-red-600 focus:ring-red-500 border-gray-300 rounded">
                             <label for="is_active" class="ml-2 text-sm text-gray-700">Active monitoring</label>
                         </div>
                     </div>
@@ -84,7 +84,7 @@
                 <div class="mt-6">
                     <label for="description" class="block text-sm font-medium text-gray-700 mb-2">Description</label>
                     <textarea id="description" wire:model="description" rows="3"
-                              class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                              class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-red-500 focus:border-red-500"
                               placeholder="Optional description of this website"></textarea>
                     @error('description') <span class="text-red-500 text-sm">{{ $message }}</span> @enderror
                 </div>
@@ -95,12 +95,11 @@
                 <div class="flex items-center justify-between mb-6">
                     <h2 class="text-lg font-semibold text-gray-900">Notification Emails</h2>
                     <button type="button" wire:click="addEmail"
-                            class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition duration-200 flex items-center border border-green-700 shadow-md"
-                            style="background-color: #059669 !important; color: white !important; border: 1px solid #047857 !important;">
-                        <svg class="h-4 w-4 mr-2 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="color: white !important;">
+                            class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition duration-200 flex items-center border border-red-700 shadow-md">
+                        <svg class="h-4 w-4 mr-2 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
                         </svg>
-                        <span class="text-white font-semibold" style="color: white !important;">Add Email</span>
+                        <span class="text-white font-semibold">Add Email</span>
                     </button>
                 </div>
 
@@ -109,7 +108,7 @@
                         @foreach($notification_emails as $index => $email)
                             <div class="flex items-center space-x-3">
                                 <input type="email" wire:model="notification_emails.{{ $index }}"
-                                       class="flex-1 border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                                       class="flex-1 border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-red-500 focus:border-red-500"
                                        placeholder="email@example.com">
                                 @if(count($notification_emails) > 1)
                                     <button type="button" wire:click="removeEmail({{ $index }})"
@@ -135,12 +134,11 @@
                 <div class="flex items-center justify-between mb-6">
                     <h2 class="text-lg font-semibold text-gray-900">URLs to Monitor</h2>
                     <button type="button" wire:click="addUrl"
-                            class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition duration-200 flex items-center border border-green-700 shadow-md"
-                            style="background-color: #059669 !important; color: white !important; border: 1px solid #047857 !important;">
-                        <svg class="h-4 w-4 mr-2 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="color: white !important;">
+                            class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition duration-200 flex items-center border border-red-700 shadow-md">
+                        <svg class="h-4 w-4 mr-2 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
                         </svg>
-                        <span class="text-white font-semibold" style="color: white !important;">Add URL</span>
+                        <span class="text-white font-semibold">Add URL</span>
                     </button>
                 </div>
 
@@ -164,7 +162,7 @@
                                 <!-- URL Input -->
                                 <div class="mb-4">
                                     <input type="url" wire:model="urls.{{ $index }}.url"
-                                           class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                                           class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-red-500 focus:border-red-500"
                                            placeholder="https://example.com">
                                     @error("urls.{$index}.url") <span class="text-red-500 text-sm">{{ $message }}</span> @enderror
                                 </div>
@@ -173,17 +171,17 @@
                                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                                     <div class="flex items-center">
                                         <input type="checkbox" id="status_{{ $index }}" wire:model="urls.{{ $index }}.monitor_status"
-                                               class="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded">
+                                               class="h-4 w-4 text-red-600 focus:ring-red-500 border-gray-300 rounded">
                                         <label for="status_{{ $index }}" class="ml-2 text-sm text-gray-700">HTTP Status (every minute)</label>
                                     </div>
                                     <div class="flex items-center">
                                         <input type="checkbox" id="domain_{{ $index }}" wire:model="urls.{{ $index }}.monitor_domain"
-                                               class="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded">
+                                               class="h-4 w-4 text-red-600 focus:ring-red-500 border-gray-300 rounded">
                                         <label for="domain_{{ $index }}" class="ml-2 text-sm text-gray-700">Domain Validation (daily)</label>
                                     </div>
                                     <div class="flex items-center">
                                         <input type="checkbox" id="ssl_{{ $index }}" wire:model="urls.{{ $index }}.monitor_ssl"
-                                               class="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded">
+                                               class="h-4 w-4 text-red-600 focus:ring-red-500 border-gray-300 rounded">
                                         <label for="ssl_{{ $index }}" class="ml-2 text-sm text-gray-700">SSL Certificate (daily)</label>
                                     </div>
                                 </div>
@@ -207,7 +205,7 @@
                     Cancel
                 </a>
                 <button type="submit"
-                        class="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg font-medium transition duration-200">
+                        class="bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-lg font-medium transition duration-200">
                     Update Website
                 </button>
             </div>
