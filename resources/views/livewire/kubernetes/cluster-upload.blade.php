@@ -21,18 +21,20 @@
             <div class="flex items-center">
                 <label class="w-full flex items-center justify-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 cursor-pointer">
                     <span>{{ $kubeconfig ? $kubeconfig->getClientOriginalName() : 'Select Kubeconfig File' }}</span>
-                    <input 
-                        type="file" 
-                        id="kubeconfig" 
-                        wire:model="kubeconfig" 
+                    <input
+                        type="file"
+                        id="kubeconfig"
+                        wire:model="kubeconfig"
                         class="sr-only"
+                        accept=".yml,.yaml"
                         {{ $loading ? 'disabled' : '' }}
                     >
                 </label>
             </div>
-            @error('kubeconfig') 
-                <p class="mt-1 text-sm text-red-600">{{ $message }}</p> 
+            @error('kubeconfig')
+                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
             @enderror
+            <p class="mt-1 text-xs text-gray-500">Only YAML files (.yml, .yaml) or kubeconfig files without extension are allowed</p>
         </div>
 
         @if($error)
@@ -89,3 +91,5 @@
     </div>
     @endif
 </div>
+
+

@@ -5,6 +5,7 @@ namespace App\Livewire\Kubernetes;
 use Livewire\Component;
 use Livewire\WithFileUploads;
 use App\Models\Cluster;
+use App\Rules\YamlFileValidation;
 use Illuminate\Support\Facades\Storage;
 
 class ClusterUpload extends Component
@@ -28,13 +29,67 @@ class ClusterUpload extends Component
         'clusterName.required' => 'Please enter a cluster name.',
         'clusterName.regex' => 'Cluster name can only contain letters, numbers, underscores, and hyphens.',
         'kubeconfig.required' => 'Please select a kubeconfig file.',
-        'kubeconfig.file' => 'The kubeconfig must be a file.',
+        'kubeconfig.file' => 'Please upload a YAML file. The kubeconfig must be a valid file.',
         'kubeconfig.max' => 'The kubeconfig file size must not exceed 1MB.',
     ];
 
+    /**
+     * Custom validation method to include YAML validation
+     */
+    protected function validateData()
+    {
+        try {
+            $this->validate();
+
+            // Additional YAML validation
+            if ($this->kubeconfig) {
+                $yamlValidator = new YamlFileValidation();
+                $yamlValidator->validate('kubeconfig', $this->kubeconfig, function ($message) {
+                    $this->addError('kubeconfig', $message);
+                });
+
+                // If there are errors, stop execution and show errors
+                if ($this->getErrorBag()->has('kubeconfig')) {
+                    return false;
+                }
+            }
+            return true;
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            // Handle validation errors
+            foreach ($e->errors() as $field => $messages) {
+                foreach ($messages as $message) {
+                    $this->addError($field, $message);
+                }
+            }
+            return false;
+        }
+    }
+
+    /**
+     * Handle file upload validation when file is selected
+     */
+    public function updatedKubeconfig()
+    {
+        // Clear previous errors
+        $this->resetErrorBag('kubeconfig');
+        $this->error = null;
+
+        // Validate the uploaded file immediately
+        if ($this->kubeconfig) {
+            $yamlValidator = new YamlFileValidation();
+            $yamlValidator->validate('kubeconfig', $this->kubeconfig, function ($message) {
+                $this->addError('kubeconfig', $message);
+                // Don't set general error message to avoid duplication
+            });
+        }
+    }
+
     public function checkClusterExists()
     {
-        $this->validate();
+        // Validate data and stop if validation fails
+        if (!$this->validateData()) {
+            return;
+        }
 
         $this->loading = true;
         $this->error = null;
@@ -71,7 +126,10 @@ class ClusterUpload extends Component
 
     public function uploadKubeconfig()
     {
-        $this->validate();
+        // Validate data and stop if validation fails
+        if (!$this->validateData()) {
+            return;
+        }
 
         $this->loading = true;
         $this->error = null;

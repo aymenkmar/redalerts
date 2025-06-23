@@ -4,6 +4,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Cluster;
+use App\Rules\YamlFileValidation;
 use App\Services\KubernetesService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Session;
@@ -706,7 +707,7 @@ class KubernetesController extends Controller
     public function replaceKubeconfig(Request $request, $id)
     {
         $request->validate([
-            'kubeconfig' => 'required|file'
+            'kubeconfig' => ['required', 'file', new YamlFileValidation()]
         ]);
 
         try {

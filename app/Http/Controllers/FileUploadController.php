@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Cluster;
+use App\Rules\YamlFileValidation;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
@@ -12,7 +13,7 @@ class FileUploadController extends Controller
     public function upload(Request $request)
     {
         $request->validate([
-            'file' => 'required|file'
+            'file' => ['required', 'file', new YamlFileValidation()]
         ]);
 
         $file = $request->file('file');
@@ -52,7 +53,7 @@ class FileUploadController extends Controller
     public function uploadKubeconfig(Request $request)
     {
         $request->validate([
-            'file' => 'required|file',
+            'file' => ['required', 'file', new YamlFileValidation()],
             'clusterName' => 'required|string|max:255|regex:/^[a-zA-Z0-9_-]+$/'
         ]);
 
