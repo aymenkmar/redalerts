@@ -13,7 +13,7 @@
     <div class="flex justify-between items-center mb-6">
         <h2 class="text-2xl font-bold text-gray-900">SSO User Management</h2>
         <button wire:click="toggleAddForm"
-                class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md transition duration-200">
+                class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md transition duration-200">
             @if($showAddForm)
                 Cancel
             @else
