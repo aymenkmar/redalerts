@@ -196,7 +196,7 @@
 
                 <!-- Pagination -->
                 <div class="mt-6">
-                    {{ $dedicatedServers->links() }}
+                    {{ $dedicatedServers->links('custom.livewire-pagination') }}
                 </div>
             @else
                 <div class="text-center py-12 bg-white rounded-lg border border-gray-200">

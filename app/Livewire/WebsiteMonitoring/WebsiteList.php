@@ -15,11 +15,18 @@ class WebsiteList extends Component
     public $search = '';
     public $statusFilter = 'all';
     public $lastRefresh;
+    public $perPage = 10;
 
     protected $queryString = [
         'search' => ['except' => ''],
         'statusFilter' => ['except' => 'all'],
+        'perPage' => ['except' => 10],
     ];
+
+    public function updatedPerPage()
+    {
+        $this->resetPage();
+    }
 
     public function mount()
     {
@@ -103,7 +110,7 @@ class WebsiteList extends Component
             $query->where('overall_status', $this->statusFilter);
         }
 
-        $websites = $query->latest()->paginate(10);
+        $websites = $query->latest()->paginate($this->perPage);
 
         return view('livewire.website-monitoring.website-list', [
             'websites' => $websites

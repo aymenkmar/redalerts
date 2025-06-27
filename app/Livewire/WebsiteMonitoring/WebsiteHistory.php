@@ -21,6 +21,7 @@ class WebsiteHistory extends Component
     public $startDate = '';
     public $endDate = '';
     public $activeTab = 'logs'; // logs, incidents
+    public $perPage = 10;
 
     protected $queryString = [
         'selectedUrlId' => ['except' => 'all'],
@@ -29,7 +30,13 @@ class WebsiteHistory extends Component
         'startDate' => ['except' => ''],
         'endDate' => ['except' => ''],
         'activeTab' => ['except' => 'logs'],
+        'perPage' => ['except' => 10],
     ];
+
+    public function updatedPerPage()
+    {
+        $this->resetPage();
+    }
 
     public function mount(Website $website)
     {
@@ -166,7 +173,7 @@ class WebsiteHistory extends Component
                 ]);
             }
 
-            $data = $query->latest('checked_at')->paginate(20);
+            $data = $query->latest('checked_at')->paginate($this->perPage);
         } else {
             // Incidents tab
             $query = WebsiteDowntimeIncident::with('websiteUrl')
@@ -185,7 +192,7 @@ class WebsiteHistory extends Component
                 ]);
             }
 
-            $data = $query->latest('started_at')->paginate(20);
+            $data = $query->latest('started_at')->paginate($this->perPage);
         }
 
         return view('livewire.website-monitoring.website-history', [

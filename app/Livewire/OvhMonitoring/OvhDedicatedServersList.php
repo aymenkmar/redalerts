@@ -16,12 +16,19 @@ class OvhDedicatedServersList extends Component
     public $statusFilter = 'all';
     public $expirationFilter = 'all';
     public $lastRefresh;
+    public $perPage = 10;
 
     protected $queryString = [
         'search' => ['except' => ''],
         'statusFilter' => ['except' => 'all'],
         'expirationFilter' => ['except' => 'all'],
+        'perPage' => ['except' => 10],
     ];
+
+    public function updatedPerPage()
+    {
+        $this->resetPage();
+    }
 
     public function mount()
     {
@@ -103,7 +110,7 @@ class OvhDedicatedServersList extends Component
             $query->expired();
         }
 
-        $dedicatedServers = $query->latest('last_synced_at')->paginate(10);
+        $dedicatedServers = $query->latest('last_synced_at')->paginate($this->perPage);
 
         return view('livewire.ovh-monitoring.ovh-dedicated-servers-list', [
             'dedicatedServers' => $dedicatedServers

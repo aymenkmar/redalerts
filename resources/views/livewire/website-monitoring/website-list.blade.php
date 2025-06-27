@@ -282,7 +282,7 @@
                             Showing {{ $websites->firstItem() }} to {{ $websites->lastItem() }} of {{ $websites->total() }} websites
                         </div>
                         <div class="flex justify-center w-full">
-                            {{ $websites->links('custom.pagination') }}
+                            {{ $websites->links('custom.livewire-pagination') }}
                         </div>
                     </div>
                 </div>
