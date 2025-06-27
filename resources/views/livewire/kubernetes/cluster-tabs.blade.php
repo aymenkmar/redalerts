@@ -3,7 +3,7 @@
     <div class="flex items-center space-x-2">
         @foreach($selectedClusters as $clusterName)
         <div class="flex items-center">
-            @if(count($selectedClusters) > 1)
+            @if(count($selectedClusters) > 1 || !$activeClusterTab)
             <form action="{{ route('kubernetes.switch-cluster') }}" method="POST" class="inline">
                 @csrf
                 <input type="hidden" name="cluster_name" value="{{ $clusterName }}">

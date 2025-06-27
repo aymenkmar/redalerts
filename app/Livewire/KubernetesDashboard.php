@@ -259,6 +259,9 @@ class KubernetesDashboard extends Component
         // Set as active cluster tab
         $this->activeClusterTab = $clusterName;
 
+        // Clear previous cluster session since we're selecting a new one
+        session()->forget('previousActiveCluster');
+
         // Update session
         session(['selectedClusters' => $this->selectedClusters]);
         session(['activeClusterTab' => $this->activeClusterTab]);
@@ -281,6 +284,10 @@ class KubernetesDashboard extends Component
     {
         if (in_array($clusterName, $this->selectedClusters)) {
             $this->activeClusterTab = $clusterName;
+
+            // Clear previous cluster session since we're switching to a different one
+            session()->forget('previousActiveCluster');
+
             session(['activeClusterTab' => $this->activeClusterTab]);
             session(['selectedCluster' => $clusterName]); // Update legacy session
 
@@ -324,6 +331,11 @@ class KubernetesDashboard extends Component
     #[On('addNewCluster')]
     public function addNewCluster()
     {
+        // Store the current active cluster before clearing it
+        if ($this->activeClusterTab) {
+            session(['previousActiveCluster' => $this->activeClusterTab]);
+        }
+
         // Reset to cluster selection mode
         $this->activeClusterTab = null;
         $this->selectedCluster = null;
@@ -334,6 +346,8 @@ class KubernetesDashboard extends Component
         // Dispatch event to refresh the navbar
         $this->dispatch('clusterTabsUpdated');
     }
+
+
 
     public function toggleUploadForm()
     {

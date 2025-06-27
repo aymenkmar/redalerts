@@ -575,6 +575,9 @@ class KubernetesController extends Controller
             // Update active cluster tab and legacy session
             session(['activeClusterTab' => $clusterName]);
             session(['selectedCluster' => $clusterName]);
+
+            // Clear previous cluster session since we're switching to a different one
+            session()->forget('previousActiveCluster');
         }
 
         // Redirect back to the previous page
