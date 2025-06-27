@@ -22,7 +22,7 @@ class AddWebsite extends Component
     ];
 
     protected $rules = [
-        'name' => 'required|string|max:255',
+        'name' => 'required|string|max:255|unique:websites,name',
         'description' => 'nullable|string|max:1000',
         'notification_emails.*' => 'nullable|email',
         'urls.*.url' => 'required|url',
@@ -33,6 +33,7 @@ class AddWebsite extends Component
 
     protected $messages = [
         'name.required' => 'Website name is required.',
+        'name.unique' => 'This website name is already taken. Please choose a different name.',
         'notification_emails.*.email' => 'Please enter a valid email address.',
         'urls.*.url.required' => 'URL is required.',
         'urls.*.url.url' => 'Please enter a valid URL.',

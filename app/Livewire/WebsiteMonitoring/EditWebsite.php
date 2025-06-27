@@ -87,12 +87,14 @@ class EditWebsite extends Component
     public function save()
     {
         $this->validate([
-            'name' => 'required|string|max:255',
+            'name' => 'required|string|max:255|unique:websites,name,' . $this->website->id,
             'description' => 'nullable|string|max:500',
             'notification_emails' => 'required|array|min:1',
             'notification_emails.*' => 'required|email',
             'urls' => 'required|array|min:1',
             'urls.*.url' => 'required|url',
+        ], [
+            'name.unique' => 'This website name is already taken. Please choose a different name.',
         ]);
 
         // Update website
