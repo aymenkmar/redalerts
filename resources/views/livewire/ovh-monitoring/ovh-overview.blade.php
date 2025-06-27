@@ -108,7 +108,7 @@
             <a href="{{ route('ovh-monitoring.vps') }}" wire:navigate class="service-card bg-white rounded-lg shadow-md overflow-hidden">
                 <div class="p-6">
                     <div class="flex items-center mb-4">
-                        <div class="icon-container bg-blue-600 p-3 rounded-lg mr-4">
+                        <div class="icon-container bg-red-600 p-3 rounded-lg mr-4">
                             <svg class="h-8 w-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z" />
                             </svg>
@@ -135,7 +135,7 @@
                         </div>
                     </div>
 
-                    <div class="mt-4 text-blue-600 text-sm font-medium">
+                    <div class="mt-4 text-black text-sm font-medium">
                         View VPS Services →
                     </div>
                 </div>
@@ -145,7 +145,7 @@
             <a href="{{ route('ovh-monitoring.dedicated-servers') }}" wire:navigate class="service-card bg-white rounded-lg shadow-md overflow-hidden">
                 <div class="p-6">
                     <div class="flex items-center mb-4">
-                        <div class="icon-container bg-purple-600 p-3 rounded-lg mr-4">
+                        <div class="icon-container bg-red-600 p-3 rounded-lg mr-4">
                             <svg class="h-8 w-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h14M5 12a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v4a2 2 0 01-2 2M5 12a2 2 0 00-2 2v4a2 2 0 002 2h14a2 2 0 002-2v-4a2 2 0 00-2-2m-2-4h.01M17 16h.01" />
                             </svg>
@@ -172,7 +172,7 @@
                         </div>
                     </div>
 
-                    <div class="mt-4 text-purple-600 text-sm font-medium">
+                    <div class="mt-4 text-black text-sm font-medium">
                         View Dedicated Servers →
                     </div>
                 </div>
@@ -182,7 +182,7 @@
             <a href="{{ route('ovh-monitoring.domains') }}" wire:navigate class="service-card bg-white rounded-lg shadow-md overflow-hidden">
                 <div class="p-6">
                     <div class="flex items-center mb-4">
-                        <div class="icon-container bg-green-600 p-3 rounded-lg mr-4">
+                        <div class="icon-container bg-red-600 p-3 rounded-lg mr-4">
                             <svg class="h-8 w-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s-1.343-9 3-9m-9 9a9 9 0 919-9" />
                             </svg>
@@ -209,7 +209,7 @@
                         </div>
                     </div>
 
-                    <div class="mt-4 text-green-600 text-sm font-medium">
+                    <div class="mt-4 text-black text-sm font-medium">
                         View Domains →
                     </div>
                 </div>

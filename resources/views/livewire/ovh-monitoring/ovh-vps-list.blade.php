@@ -85,14 +85,14 @@
 
         <!-- Filters -->
         <div class="mb-6 flex flex-wrap gap-4">
-            <select wire:model.live="statusFilter" class="border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+            <select wire:model.live="statusFilter" class="border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-red-500 focus:border-red-500">
                 <option value="all">All States</option>
                 <option value="running">Running</option>
                 <option value="stopped">Stopped</option>
                 <option value="rebooting">Rebooting</option>
             </select>
 
-            <select wire:model.live="expirationFilter" class="border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+            <select wire:model.live="expirationFilter" class="border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-red-500 focus:border-red-500">
                 <option value="all">All Services</option>
                 <option value="expiring_soon">Expiring Soon (30 days)</option>
                 <option value="expired">Expired</option>

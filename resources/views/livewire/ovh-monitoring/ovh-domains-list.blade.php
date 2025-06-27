@@ -85,7 +85,7 @@
 
         <!-- Filters -->
         <div class="mb-6 flex flex-wrap gap-4">
-            <select wire:model.live="expirationFilter" class="border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-green-500 focus:border-green-500">
+            <select wire:model.live="expirationFilter" class="border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-red-500 focus:border-red-500">
                 <option value="all">All Domains</option>
                 <option value="expiring_soon">Expiring Soon (30 days)</option>
                 <option value="expired">Expired</option>
@@ -114,7 +114,7 @@
                         <div class="px-4 sm:px-6 py-4">
                             <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-4 lg:space-y-0">
                                 <div class="flex items-center space-x-3 min-w-0 flex-1">
-                                    <div class="w-3 h-3 rounded-full bg-green-500 flex-shrink-0"></div>
+                                    <div class="w-3 h-3 rounded-full bg-red-500 flex-shrink-0"></div>
 
                                     <div class="min-w-0 flex-1">
                                         <h3 class="text-lg font-semibold text-gray-900 truncate">{{ $domain->display_name }}</h3>
