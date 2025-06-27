@@ -88,7 +88,15 @@ class WebsiteList extends Component
         }]);
 
         if ($this->search) {
-            $query->where('name', 'like', '%' . $this->search . '%');
+            $searchTerm = strtolower($this->search);
+            $query->where(function ($q) use ($searchTerm) {
+                // Search in website name (case-insensitive)
+                $q->whereRaw('LOWER(name) LIKE ?', ['%' . $searchTerm . '%'])
+                  // Search in website URLs (case-insensitive)
+                  ->orWhereHas('urls', function ($urlQuery) use ($searchTerm) {
+                      $urlQuery->whereRaw('LOWER(url) LIKE ?', ['%' . $searchTerm . '%']);
+                  });
+            });
         }
 
         if ($this->statusFilter !== 'all') {
