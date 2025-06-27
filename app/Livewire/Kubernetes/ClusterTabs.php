@@ -23,8 +23,18 @@ class ClusterTabs extends Component
 
     public function addNewCluster()
     {
-        // Dispatch event to the main dashboard to add a new cluster
-        $this->dispatch('addNewCluster');
+        // Store the current active cluster before clearing it
+        $activeClusterTab = session('activeClusterTab');
+        if ($activeClusterTab) {
+            session(['previousActiveCluster' => $activeClusterTab]);
+        }
+
+        // Reset to cluster selection mode
+        session(['activeClusterTab' => null]);
+        session(['selectedCluster' => null]); // Update legacy session
+
+        // Redirect to the dashboard to show cluster selection
+        return redirect()->route('dashboard-kubernetes');
     }
 
     private function loadClusterTabs()

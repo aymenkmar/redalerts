@@ -108,22 +108,7 @@ class SecurityDashboard extends Component
         $this->loadSecurityData();
     }
 
-    #[On('addNewCluster')]
-    public function addNewCluster()
-    {
-        // Reset to cluster selection mode (similar to KubernetesDashboard)
-        $this->selectedCluster = null;
-        $this->latestReport = null;
-        $this->scanHistory = [];
-        $this->isScanning = false;
-        $this->scanProgress = '';
 
-        // Clear session data
-        session()->forget(['activeClusterTab', 'selectedCluster']);
-
-        // Redirect to cluster overview for selection
-        return redirect()->route('dashboard-kubernetes');
-    }
 
     public function loadSecurityData()
     {

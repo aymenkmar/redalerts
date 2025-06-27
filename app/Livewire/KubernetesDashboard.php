@@ -328,24 +328,7 @@ class KubernetesDashboard extends Component
         $this->dispatch('clusterTabsUpdated');
     }
 
-    #[On('addNewCluster')]
-    public function addNewCluster()
-    {
-        // Store the current active cluster before clearing it
-        if ($this->activeClusterTab) {
-            session(['previousActiveCluster' => $this->activeClusterTab]);
-        }
 
-        // Reset to cluster selection mode
-        $this->activeClusterTab = null;
-        $this->selectedCluster = null;
-        $this->clusterMetrics = $this->getDefaultMetrics();
-        session(['activeClusterTab' => null]);
-        session(['selectedCluster' => null]); // Update legacy session
-
-        // Dispatch event to refresh the navbar
-        $this->dispatch('clusterTabsUpdated');
-    }
 
 
 
