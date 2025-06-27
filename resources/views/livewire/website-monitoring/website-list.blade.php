@@ -273,6 +273,20 @@
                     </div>
                 </div>
             @endif
+
+            <!-- Pagination -->
+            @if($websites->hasPages())
+                <div class="mt-6 bg-white px-4 py-3 border border-gray-200 rounded-lg">
+                    <div class="flex flex-col items-center space-y-3">
+                        <div class="text-sm text-gray-700">
+                            Showing {{ $websites->firstItem() }} to {{ $websites->lastItem() }} of {{ $websites->total() }} websites
+                        </div>
+                        <div class="flex justify-center w-full">
+                            {{ $websites->links('custom.pagination') }}
+                        </div>
+                    </div>
+                </div>
+            @endif
         </div>
     </div>
 </div>
