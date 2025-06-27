@@ -125,18 +125,14 @@
                             <span class="text-gray-600">Total Services:</span>
                             <span class="font-semibold text-gray-800">{{ $vpsCount }}</span>
                         </div>
-                        @if($vpsExpiring > 0)
-                            <div class="flex justify-between items-center">
-                                <span class="text-yellow-600">Expiring Soon:</span>
-                                <span class="font-semibold text-yellow-600">{{ $vpsExpiring }}</span>
-                            </div>
-                        @endif
-                        @if($vpsExpired > 0)
-                            <div class="flex justify-between items-center">
-                                <span class="text-red-600">Expired:</span>
-                                <span class="font-semibold text-red-600">{{ $vpsExpired }}</span>
-                            </div>
-                        @endif
+                        <div class="flex justify-between items-center">
+                            <span class="text-yellow-600">Expiring Soon:</span>
+                            <span class="font-semibold text-yellow-600">{{ $vpsExpiring }}</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-red-600">Expired:</span>
+                            <span class="font-semibold text-red-600">{{ $vpsExpired }}</span>
+                        </div>
                     </div>
 
                     <div class="mt-4 text-blue-600 text-sm font-medium">
@@ -166,18 +162,14 @@
                             <span class="text-gray-600">Total Services:</span>
                             <span class="font-semibold text-gray-800">{{ $dedicatedCount }}</span>
                         </div>
-                        @if($dedicatedExpiring > 0)
-                            <div class="flex justify-between items-center">
-                                <span class="text-yellow-600">Expiring Soon:</span>
-                                <span class="font-semibold text-yellow-600">{{ $dedicatedExpiring }}</span>
-                            </div>
-                        @endif
-                        @if($dedicatedExpired > 0)
-                            <div class="flex justify-between items-center">
-                                <span class="text-red-600">Expired:</span>
-                                <span class="font-semibold text-red-600">{{ $dedicatedExpired }}</span>
-                            </div>
-                        @endif
+                        <div class="flex justify-between items-center">
+                            <span class="text-yellow-600">Expiring Soon:</span>
+                            <span class="font-semibold text-yellow-600">{{ $dedicatedExpiring }}</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-red-600">Expired:</span>
+                            <span class="font-semibold text-red-600">{{ $dedicatedExpired }}</span>
+                        </div>
                     </div>
 
                     <div class="mt-4 text-purple-600 text-sm font-medium">
@@ -207,18 +199,14 @@
                             <span class="text-gray-600">Total Services:</span>
                             <span class="font-semibold text-gray-800">{{ $domainCount }}</span>
                         </div>
-                        @if($domainExpiring > 0)
-                            <div class="flex justify-between items-center">
-                                <span class="text-yellow-600">Expiring Soon:</span>
-                                <span class="font-semibold text-yellow-600">{{ $domainExpiring }}</span>
-                            </div>
-                        @endif
-                        @if($domainExpired > 0)
-                            <div class="flex justify-between items-center">
-                                <span class="text-red-600">Expired:</span>
-                                <span class="font-semibold text-red-600">{{ $domainExpired }}</span>
-                            </div>
-                        @endif
+                        <div class="flex justify-between items-center">
+                            <span class="text-yellow-600">Expiring Soon:</span>
+                            <span class="font-semibold text-yellow-600">{{ $domainExpiring }}</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-red-600">Expired:</span>
+                            <span class="font-semibold text-red-600">{{ $domainExpired }}</span>
+                        </div>
                     </div>
 
                     <div class="mt-4 text-green-600 text-sm font-medium">
@@ -254,10 +242,6 @@
                     <span wire:loading.remove wire:target="syncAllServices">Sync All Services</span>
                     <span wire:loading wire:target="syncAllServices">Syncing...</span>
                 </button>
-                <a href="{{ route('notifications.index') }}" wire:navigate
-                   class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition duration-200">
-                    View Notifications
-                </a>
             </div>
         </div>
     </div>
