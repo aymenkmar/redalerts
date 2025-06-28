@@ -13,14 +13,12 @@ class OvhVpsList extends Component
     use WithPagination;
 
     public $search = '';
-    public $statusFilter = 'all';
     public $expirationFilter = 'all';
     public $lastRefresh;
     public $perPage = 10;
 
     protected $queryString = [
         'search' => ['except' => ''],
-        'statusFilter' => ['except' => 'all'],
         'expirationFilter' => ['except' => 'all'],
         'perPage' => ['except' => 10],
     ];
@@ -98,10 +96,6 @@ class OvhVpsList extends Component
                 $q->where('service_name', 'like', '%' . $this->search . '%')
                   ->orWhere('display_name', 'like', '%' . $this->search . '%');
             });
-        }
-
-        if ($this->statusFilter !== 'all') {
-            $query->where('state', $this->statusFilter);
         }
 
         if ($this->expirationFilter === 'expiring_soon') {

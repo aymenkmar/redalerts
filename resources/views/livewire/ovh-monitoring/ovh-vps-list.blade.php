@@ -85,42 +85,14 @@
 
         <!-- Filters -->
         <div class="mb-6 flex flex-wrap gap-4">
-            <select wire:model.live="statusFilter" class="border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-red-500 focus:border-red-500">
-                <option value="all">All States</option>
-                <option value="running">Running</option>
-                <option value="stopped">Stopped</option>
-                <option value="rebooting">Rebooting</option>
-            </select>
-
             <select wire:model.live="expirationFilter" class="border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-red-500 focus:border-red-500">
-                <option value="all">All Services</option>
+                <option value="all">All VPS</option>
                 <option value="expiring_soon">Expiring Soon (30 days)</option>
                 <option value="expired">Expired</option>
             </select>
         </div>
 
-        <!-- Auto-refresh Status -->
-        <div class="mb-4 flex items-center justify-between bg-blue-50 border border-blue-200 rounded-lg px-4 py-3">
-            <div class="flex items-center space-x-2">
-                <div class="flex items-center space-x-2">
-                    <div class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-                    <span class="text-sm font-medium text-blue-800">Auto-refresh enabled</span>
-                </div>
-                <span class="text-sm text-blue-600">Updates every 60 seconds</span>
-            </div>
-            <div class="flex items-center space-x-3">
-                <div class="text-sm text-blue-600">
-                    Last updated: {{ $lastRefresh }}
-                </div>
-                <button wire:click="refreshData"
-                        class="inline-flex items-center px-3 py-1 border border-blue-300 rounded-md text-xs font-medium text-blue-700 bg-white hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1">
-                    <svg class="h-3 w-3 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                    </svg>
-                    Refresh Now
-                </button>
-            </div>
-        </div>
+
 
         <!-- Flash Messages -->
         @if (session()->has('message'))
@@ -238,7 +210,7 @@
                 @endforeach
 
                 <!-- Pagination -->
-                <div class="mt-6">
+                <div class="mt-6 flex justify-center">
                     {{ $vpsServices->links('custom.livewire-pagination') }}
                 </div>
             @else

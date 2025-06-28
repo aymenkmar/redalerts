@@ -83,6 +83,15 @@
             </div>
         </div>
 
+        <!-- Filters -->
+        <div class="mb-6 flex flex-wrap gap-4">
+            <select wire:model.live="expirationFilter" class="border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-red-500 focus:border-red-500">
+                <option value="all">All Dedicated Servers</option>
+                <option value="expiring_soon">Expiring Soon (30 days)</option>
+                <option value="expired">Expired</option>
+            </select>
+        </div>
+
         <!-- Flash Messages -->
         @if (session()->has('message'))
             <div class="bg-green-50 border border-green-200 text-green-800 px-4 py-3 rounded-lg mb-6">
@@ -195,7 +204,7 @@
                 @endforeach
 
                 <!-- Pagination -->
-                <div class="mt-6">
+                <div class="mt-6 flex justify-center">
                     {{ $dedicatedServers->links('custom.livewire-pagination') }}
                 </div>
             @else

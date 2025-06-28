@@ -177,7 +177,7 @@
                 @endforeach
 
                 <!-- Pagination -->
-                <div class="mt-6">
+                <div class="mt-6 flex justify-center">
                     {{ $domains->links('custom.livewire-pagination') }}
                 </div>
             @else
