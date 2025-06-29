@@ -101,7 +101,7 @@
 
         <!-- Namespace Filter Dropdown -->
         @if($showNamespaceFilter && count($namespaces) > 0)
-        <div x-show="showNamespaceFilter" x-transition x-cloak class="bg-white border border-gray-200 rounded-md shadow-lg p-4">
+        <div x-show="showNamespaceFilter" x-transition x-cloak @click.outside="showNamespaceFilter = false" class="bg-white border border-gray-200 rounded-md shadow-lg p-4">
             <div class="flex items-center justify-between mb-3">
                 <h4 class="text-sm font-medium text-gray-900">Filter by Namespace</h4>
                 <button
