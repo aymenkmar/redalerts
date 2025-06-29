@@ -278,6 +278,9 @@ class KubernetesDashboard extends Component
 
         // Dispatch event to refresh the navbar
         $this->dispatch('clusterTabsUpdated');
+
+        // Dispatch custom event for cluster change
+        $this->dispatch('clusterChanged', cluster: $clusterName);
     }
 
     public function switchToClusterTab($clusterName)
@@ -297,6 +300,9 @@ class KubernetesDashboard extends Component
 
             // Dispatch event to refresh the navbar
             $this->dispatch('clusterTabsUpdated');
+
+            // Dispatch custom event for cluster change
+            $this->dispatch('clusterChanged', cluster: $clusterName);
         }
     }
 
@@ -326,6 +332,9 @@ class KubernetesDashboard extends Component
 
         // Dispatch event to refresh the navbar
         $this->dispatch('clusterTabsUpdated');
+
+        // Dispatch custom event for cluster change
+        $this->dispatch('clusterChanged', cluster: $this->activeClusterTab);
     }
 
 

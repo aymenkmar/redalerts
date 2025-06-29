@@ -51,11 +51,26 @@ trait HasKubernetesTable
 
     public function loadNamespaceSelection()
     {
-        // Load namespace selection from session if available
-        $savedNamespaces = session('selectedNamespaces');
+        // Load namespace selection from session if available (cluster-specific)
+        $cluster = $this->getSelectedCluster();
+        $sessionKey = $cluster ? "selectedNamespaces_{$cluster}" : 'selectedNamespaces';
+        $savedNamespaces = session($sessionKey);
         if ($savedNamespaces && is_array($savedNamespaces)) {
             $this->selectedNamespaces = $savedNamespaces;
+        } else {
+            // Default to 'all' for new clusters
+            $this->selectedNamespaces = ['all'];
         }
+    }
+
+    protected function getSelectedCluster()
+    {
+        // Try to get cluster from component property first, then session
+        if (property_exists($this, 'selectedCluster') && $this->selectedCluster) {
+            return $this->selectedCluster;
+        }
+
+        return session('activeClusterTab') ?? session('selectedCluster');
     }
 
     public function toggleNamespace($namespace)
@@ -78,8 +93,10 @@ trait HasKubernetesTable
             }
         }
 
-        // Save to session for persistence across components
-        session(['selectedNamespaces' => $this->selectedNamespaces]);
+        // Save to session for persistence across components (cluster-specific)
+        $cluster = $this->getSelectedCluster();
+        $sessionKey = $cluster ? "selectedNamespaces_{$cluster}" : 'selectedNamespaces';
+        session([$sessionKey => $this->selectedNamespaces]);
 
         $this->currentPage = 1;
     }
@@ -92,8 +109,10 @@ trait HasKubernetesTable
             $this->selectedNamespaces = ['all'];
         }
 
-        // Save to session for persistence across components
-        session(['selectedNamespaces' => $this->selectedNamespaces]);
+        // Save to session for persistence across components (cluster-specific)
+        $cluster = $this->getSelectedCluster();
+        $sessionKey = $cluster ? "selectedNamespaces_{$cluster}" : 'selectedNamespaces';
+        session([$sessionKey => $this->selectedNamespaces]);
 
         $this->currentPage = 1;
     }

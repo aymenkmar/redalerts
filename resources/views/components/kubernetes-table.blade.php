@@ -316,6 +316,7 @@
                 searchTerm: '',
                 selectedNamespaces: ['all'],
                 showNamespaceFilter: false,
+                currentCluster: '',
 
                 // Sorting
                 sortField: '',
@@ -336,12 +337,63 @@
                     console.log('Initializing table...');
                     // Ensure namespace filter starts closed
                     this.showNamespaceFilter = false;
-                    // Load saved namespace selection
+                    // Store initial cluster for change detection
+                    this.currentCluster = this.getSelectedCluster();
+                    // Load saved namespace selection for this cluster
                     this.loadNamespaceSelection();
                     this.loadColumnWidths();
                     this.initColumnResizing();
                     this.filterData();
                     console.log('Column widths after init:', this.columnWidths);
+
+                    // Set up cluster change detection
+                    this.setupClusterChangeDetection();
+                },
+
+                setupClusterChangeDetection() {
+                    // Listen for Livewire cluster change events
+                    if (typeof Livewire !== 'undefined') {
+                        Livewire.on('clusterChanged', (event) => {
+                            const newCluster = event.cluster;
+                            if (newCluster && newCluster !== this.currentCluster) {
+                                console.log('Cluster changed from', this.currentCluster, 'to', newCluster);
+                                this.currentCluster = newCluster;
+                                window.selectedCluster = newCluster;
+                                // Reset namespace selection for new cluster
+                                this.loadNamespaceSelection();
+                                this.filterData();
+                            }
+                        });
+                    } else {
+                        // Fallback: listen after Livewire is loaded
+                        document.addEventListener('livewire:initialized', () => {
+                            Livewire.on('clusterChanged', (event) => {
+                                const newCluster = event.cluster;
+                                if (newCluster && newCluster !== this.currentCluster) {
+                                    console.log('Cluster changed from', this.currentCluster, 'to', newCluster);
+                                    this.currentCluster = newCluster;
+                                    window.selectedCluster = newCluster;
+                                    // Reset namespace selection for new cluster
+                                    this.loadNamespaceSelection();
+                                    this.filterData();
+                                }
+                            });
+                        });
+                    }
+
+                    // Also listen for storage changes (when cluster changes in another tab)
+                    window.addEventListener('storage', (event) => {
+                        if (event.key === 'selectedCluster') {
+                            const newCluster = event.newValue;
+                            if (newCluster && newCluster !== this.currentCluster) {
+                                console.log('Cluster changed via storage from', this.currentCluster, 'to', newCluster);
+                                this.currentCluster = newCluster;
+                                window.selectedCluster = newCluster;
+                                this.loadNamespaceSelection();
+                                this.filterData();
+                            }
+                        }
+                    });
                 },
 
                 getDefaultWidth(field) {
@@ -620,7 +672,9 @@
 
                 // Namespace filter methods
                 loadNamespaceSelection() {
-                    const saved = localStorage.getItem('selectedNamespaces');
+                    const cluster = this.getSelectedCluster();
+                    const storageKey = cluster ? `selectedNamespaces_${cluster}` : 'selectedNamespaces';
+                    const saved = localStorage.getItem(storageKey);
                     if (saved) {
                         try {
                             this.selectedNamespaces = JSON.parse(saved);
@@ -628,11 +682,21 @@
                             console.error('Failed to parse saved namespace selection:', e);
                             this.selectedNamespaces = ['all'];
                         }
+                    } else {
+                        // Default to 'all' for new clusters
+                        this.selectedNamespaces = ['all'];
                     }
                 },
 
                 saveNamespaceSelection() {
-                    localStorage.setItem('selectedNamespaces', JSON.stringify(this.selectedNamespaces));
+                    const cluster = this.getSelectedCluster();
+                    const storageKey = cluster ? `selectedNamespaces_${cluster}` : 'selectedNamespaces';
+                    localStorage.setItem(storageKey, JSON.stringify(this.selectedNamespaces));
+                },
+
+                getSelectedCluster() {
+                    // Get the selected cluster from the global variable
+                    return window.selectedCluster || '';
                 },
 
                 toggleNamespace(namespace) {
