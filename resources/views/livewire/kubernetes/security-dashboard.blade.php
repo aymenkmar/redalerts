@@ -51,14 +51,111 @@
             <p class="text-gray-600">Please upload kubeconfig files to start security scanning.</p>
         </div>
     @elseif(!$selectedCluster)
-        <div class="bg-white rounded-lg shadow p-8 text-center">
-            <div class="text-gray-500 mb-4">
-                <svg class="mx-auto h-12 w-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-                </svg>
+        <!-- Cluster Selection Modal for Security Dashboard -->
+        <!-- Show a button to reopen modal if user closed it -->
+        <div x-data="{ modalClosed: false }" x-show="!modalClosed" x-init="$watch('modalClosed', value => { if(value) { setTimeout(() => modalClosed = false, 5000); } })">
+            <!-- Button to go to cluster overview if modal was closed -->
+            <div x-show="modalClosed" class="bg-yellow-50 border border-yellow-200 rounded-md p-4 mb-6">
+                <div class="flex">
+                    <div class="flex-shrink-0">
+                        <svg class="h-5 w-5 text-yellow-400" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+                        </svg>
+                    </div>
+                    <div class="ml-3 flex-1">
+                        <p class="text-sm text-yellow-700">
+                            No cluster selected. You need to select a cluster to view security reports.
+                        </p>
+                    </div>
+                    <div class="ml-3 flex-shrink-0">
+                        <div class="flex space-x-2">
+                            <button @click="modalClosed = false" class="bg-yellow-100 hover:bg-yellow-200 text-yellow-800 px-3 py-1 rounded text-sm font-medium transition-colors">
+                                Select Cluster
+                            </button>
+                            <a href="{{ route('dashboard-kubernetes') }}" class="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded text-sm font-medium transition-colors">
+                                Go to Overview
+                            </a>
+                        </div>
+                    </div>
+                </div>
             </div>
-            <h3 class="text-lg font-medium text-gray-900 mb-2">Select a Cluster</h3>
-            <p class="text-gray-600">Please select a cluster from the header to view security reports.</p>
+
+            <!-- Cluster Selection Modal -->
+            <div x-data="{
+                showClusterModal: true,
+                init() {
+                    // Listen for cluster selection events
+                    if (typeof Livewire !== 'undefined') {
+                        Livewire.on('clusterChanged', () => {
+                            setTimeout(() => {
+                                this.showClusterModal = false;
+                            }, 1500);
+                        });
+                    } else {
+                        document.addEventListener('livewire:initialized', () => {
+                            Livewire.on('clusterChanged', () => {
+                                setTimeout(() => {
+                                    this.showClusterModal = false;
+                                }, 1500);
+                            });
+                        });
+                    }
+                }
+            }"
+                 x-show="showClusterModal"
+                 x-transition:enter="transition ease-out duration-300"
+                 x-transition:enter-start="opacity-0"
+                 x-transition:enter-end="opacity-100"
+                 x-transition:leave="transition ease-in duration-200"
+                 x-transition:leave-start="opacity-100"
+                 x-transition:leave-end="opacity-0"
+                 class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+                 @click.self="showClusterModal = false; $parent.modalClosed = true"
+                 @keydown.escape.window="showClusterModal = false; $parent.modalClosed = true">
+                <div class="bg-white rounded-lg shadow-xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto"
+                     x-transition:enter="transition ease-out duration-300"
+                     x-transition:enter-start="opacity-0 transform scale-95"
+                     x-transition:enter-end="opacity-100 transform scale-100"
+                     x-transition:leave="transition ease-in duration-200"
+                     x-transition:leave-start="opacity-100 transform scale-100"
+                     x-transition:leave-end="opacity-0 transform scale-95">
+                    <div class="p-6">
+                        <div class="flex justify-between items-center mb-4">
+                            <div class="flex items-center space-x-3">
+                                <div class="flex-shrink-0">
+                                    <svg class="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path>
+                                    </svg>
+                                </div>
+                                <h2 class="text-xl font-semibold text-gray-900">Security Dashboard - Cluster Required</h2>
+                            </div>
+                            <button @click="showClusterModal = false; $parent.modalClosed = true" class="text-gray-400 hover:text-red-600 transition-colors">
+                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                </svg>
+                            </button>
+                        </div>
+
+                        <div class="bg-red-50 border-l-4 border-red-400 p-4 mb-6">
+                            <div class="flex">
+                                <div class="flex-shrink-0">
+                                    <svg class="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+                                        <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+                                    </svg>
+                                </div>
+                                <div class="ml-3">
+                                    <p class="text-sm text-red-700">
+                                        <strong>No cluster selected for security scanning.</strong> You need to select a Kubernetes cluster to view security reports and perform vulnerability scans. Please choose a cluster from the list below or upload a new kubeconfig file.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Cluster Selection Component -->
+                        <livewire:kubernetes.cluster-selection-modal />
+                    </div>
+                </div>
+            </div>
         </div>
     @else
         <!-- Current Scan Status -->

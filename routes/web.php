@@ -147,6 +147,10 @@ Route::middleware('auth')->group(function () {
         return view('api-test');
     });
 
+
+
+
+
     // Debug route for testing cluster connection
     Route::get('/debug-cluster', function() {
         try {
