@@ -18,6 +18,11 @@ class LoginPage extends Component
 
     public function mount()
     {
+        // Check if user is already authenticated and redirect to main dashboard
+        if (Auth::check()) {
+            return redirect('/main-dashboard');
+        }
+
         // Initialize SSO check if email is already set
         if (!empty($this->email)) {
             $this->checkSSO();
