@@ -22,6 +22,218 @@
         }
 
         /* We're not using custom red colors anymore, using Tailwind's built-in red-600 instead */
+
+        /* VS Code Terminal Style */
+        .terminal-vscode {
+            background: #1e1e1e;
+            border: 1px solid #3c3c3c;
+            border-radius: 8px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+
+        .terminal-vscode .terminal-header {
+            background: #2d2d30;
+            border-bottom: 1px solid #3c3c3c;
+            border-radius: 8px 8px 0 0;
+            padding: 8px 16px;
+        }
+
+        .terminal-vscode .terminal-tab {
+            background: #1e1e1e;
+            border: 1px solid #3c3c3c;
+            border-radius: 4px 4px 0 0;
+            padding: 6px 12px;
+            margin-right: 4px;
+            font-size: 12px;
+            color: #cccccc;
+        }
+
+        .terminal-vscode .terminal-controls {
+            display: flex;
+            gap: 8px;
+        }
+
+        .terminal-vscode .terminal-btn {
+            background: #0e639c;
+            border: none;
+            border-radius: 4px;
+            color: white;
+            padding: 4px 8px;
+            font-size: 11px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .terminal-vscode .terminal-btn:hover {
+            background: #1177bb;
+        }
+
+        .terminal-vscode .terminal-btn.danger {
+            background: #d73a49;
+        }
+
+        .terminal-vscode .terminal-btn.danger:hover {
+            background: #e53e3e;
+        }
+
+        /* Compact Terminal Buttons */
+        .terminal-btn-compact {
+            background: #0e639c;
+            border: none;
+            border-radius: 3px;
+            color: white;
+            padding: 2px 6px;
+            font-size: 10px;
+            cursor: pointer;
+            transition: background 0.2s;
+            min-width: auto;
+        }
+
+        .terminal-btn-compact:hover {
+            background: #1177bb;
+        }
+
+        .terminal-btn-compact.danger {
+            background: #d73a49;
+        }
+
+        .terminal-btn-compact.danger:hover {
+            background: #e53e3e;
+        }
+
+        /* Terminal Scrollbar Styling */
+        .terminal-scrollable .xterm-viewport {
+            overflow-y: auto !important;
+            scrollbar-width: thin;
+            scrollbar-color: #4a5568 #2d3748;
+        }
+
+        .terminal-scrollable .xterm-viewport::-webkit-scrollbar {
+            width: 12px;
+        }
+
+        .terminal-scrollable .xterm-viewport::-webkit-scrollbar-track {
+            background: #2d3748;
+            border-radius: 6px;
+        }
+
+        .terminal-scrollable .xterm-viewport::-webkit-scrollbar-thumb {
+            background: #4a5568;
+            border-radius: 6px;
+            border: 2px solid #2d3748;
+        }
+
+        .terminal-scrollable .xterm-viewport::-webkit-scrollbar-thumb:hover {
+            background: #718096;
+        }
+
+        .terminal-scrollable .xterm-viewport::-webkit-scrollbar-thumb:active {
+            background: #a0aec0;
+        }
+
+        /* Ensure terminal content is scrollable */
+        .terminal-scrollable .xterm-screen {
+            overflow-y: visible !important;
+        }
+
+        /* Terminal container styling */
+        .terminal-scrollable {
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* Optimized scrolling performance */
+        .terminal-scrollable .xterm-viewport {
+            scroll-behavior: auto;
+            will-change: scroll-position;
+            transform: translateZ(0);
+        }
+
+        /* Faster mouse wheel scrolling */
+        .terminal-scrollable {
+            scroll-behavior: auto;
+        }
+
+        /* Logs Container Scrollbar Styling */
+        #logs-container {
+            overflow-y: scroll !important;
+            overflow-x: hidden !important;
+            scrollbar-width: thin;
+            scrollbar-color: #4a5568 #1e1e1e;
+            box-sizing: border-box;
+            height: 100% !important;
+            min-height: 300px !important;
+            max-height: 100% !important;
+        }
+
+        #logs-container::-webkit-scrollbar {
+            width: 14px !important;
+            background: #1e1e1e !important;
+            display: block !important;
+        }
+
+        #logs-container::-webkit-scrollbar-track {
+            background: #1e1e1e !important;
+            border-radius: 7px;
+            display: block !important;
+        }
+
+        #logs-container::-webkit-scrollbar-thumb {
+            background: #4a5568 !important;
+            border-radius: 7px;
+            border: 2px solid #1e1e1e;
+            min-height: 30px !important;
+            display: block !important;
+        }
+
+        #logs-container::-webkit-scrollbar-thumb:hover {
+            background: #718096;
+        }
+
+        #logs-container::-webkit-scrollbar-thumb:active {
+            background: #a0aec0;
+        }
+
+        #logs-container::-webkit-scrollbar-corner {
+            background: #1e1e1e;
+        }
+
+        /* Logs content styling for better readability */
+        #logs-content {
+            font-family: 'Courier New', 'Monaco', 'Menlo', monospace;
+            line-height: 1.4;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            min-height: calc(100% + 1px);
+            padding-bottom: 1px;
+        }
+
+        #logs-content pre {
+            margin: 0;
+            padding: 0;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+
+        /* Force scrollbar visibility for Firefox */
+        @-moz-document url-prefix() {
+            #logs-container {
+                scrollbar-width: auto !important;
+            }
+        }
+
+        /* Ensure scrollbar is always visible by adding pseudo content */
+        #logs-container::after {
+            content: '';
+            display: block;
+            height: 1px;
+            width: 1px;
+        }
+
+        /* Force scrollbar to appear immediately */
+        #logs-panel:not(.hidden) #logs-container {
+            overflow-y: scroll !important;
+        }
     </style>
 </head>
 <body x-data="{ sidebarOpen: false }">
@@ -477,6 +689,103 @@
             </div>
         </div>
 
+        <!-- Terminal Panel (Hidden by default) - Compact Style -->
+        <div id="terminal-panel" class="hidden fixed bottom-0 left-0 right-0 terminal-vscode z-50" style="height: 450px; margin: 8px; bottom: 0;">
+            <div class="terminal-header flex items-center justify-between" style="padding: 4px 12px; min-height: 32px;">
+                <div class="flex items-center space-x-2">
+                    <svg class="w-3 h-3 text-green-400" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M2 5a2 2 0 012-2h12a2 2 0 012 2v10a2 2 0 01-2 2H4a2 2 0 01-2-2V5zm3.293 1.293a1 1 0 011.414 0l3 3a1 1 0 010 1.414l-3 3a1 1 0 01-1.414-1.414L7.586 10 5.293 7.707a1 1 0 010-1.414zM11 12a1 1 0 100 2h3a1 1 0 100-2h-3z" clip-rule="evenodd"></path>
+                    </svg>
+                    <span id="terminal-title" class="text-xs text-gray-300">Terminal</span>
+                </div>
+                <div class="terminal-controls" style="gap: 4px;">
+                    <button
+                        onclick="window.podTerminal?.showHistory()"
+                        class="terminal-btn-compact"
+                        title="Show Command History (or type 'history')"
+                    >
+                        📜
+                    </button>
+                    <button
+                        onclick="window.podTerminal?.clear()"
+                        class="terminal-btn-compact"
+                        title="Clear Terminal"
+                    >
+                        Clear
+                    </button>
+                    <button
+                        onclick="window.podTerminal?.disconnect()"
+                        class="terminal-btn-compact danger"
+                        title="Close Terminal"
+                    >
+                        ✕
+                    </button>
+                </div>
+            </div>
+            <div id="terminal-container" class="w-full h-full bg-black terminal-scrollable"></div>
+        </div>
+
+        <!-- Logs Panel (Hidden by default) - Similar to Terminal Style -->
+        <div id="logs-panel" class="hidden fixed bottom-0 left-0 right-0 terminal-vscode z-50" style="height: 450px; margin: 8px; bottom: 0;">
+            <div class="terminal-header flex items-center justify-between" style="padding: 4px 12px; min-height: 32px;">
+                <div class="flex items-center space-x-2">
+                    <svg class="w-3 h-3 text-blue-400" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M3 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clip-rule="evenodd"></path>
+                    </svg>
+                    <span id="logs-title" class="text-xs text-gray-300">Pod Logs</span>
+                </div>
+                <div class="terminal-controls" style="gap: 4px;">
+                    <select id="container-selector" class="text-xs bg-gray-700 text-white border-gray-600 rounded px-2 py-1" style="display: none;">
+                        <option value="">Select Container</option>
+                    </select>
+                    <select id="lines-selector" class="text-xs bg-gray-700 text-white border-gray-600 rounded px-2 py-1">
+                        <option value="100">100 lines</option>
+                        <option value="500">500 lines</option>
+                        <option value="1000" selected>1000 lines</option>
+                        <option value="5000">5000 lines</option>
+                    </select>
+                    <button
+                        onclick="scrollLogsToTop()"
+                        class="terminal-btn-compact"
+                        title="Scroll to Top"
+                    >
+                        ⬆️
+                    </button>
+                    <button
+                        onclick="scrollLogsToBottom()"
+                        class="terminal-btn-compact"
+                        title="Scroll to Bottom"
+                    >
+                        ⬇️
+                    </button>
+                    <button
+                        onclick="refreshLogs()"
+                        class="terminal-btn-compact"
+                        title="Refresh Logs"
+                    >
+                        🔄
+                    </button>
+                    <button
+                        onclick="downloadLogs()"
+                        class="terminal-btn-compact"
+                        title="Download Logs"
+                    >
+                        💾
+                    </button>
+                    <button
+                        onclick="closeLogs()"
+                        class="terminal-btn-compact danger"
+                        title="Close Logs"
+                    >
+                        ✕
+                    </button>
+                </div>
+            </div>
+            <div id="logs-container" class="w-full h-full bg-black text-green-400 font-mono text-xs p-4">
+                <div id="logs-content">Loading logs...</div>
+            </div>
+        </div>
+
         <!-- kubectl-ai Chatbot Widget -->
         @livewire('kubectl-ai-chatbot')
     </div>
@@ -487,6 +796,15 @@
     <div id="notification-container" class="fixed top-4 right-4 z-50"></div>
 
     <script>
+        // Set selected cluster for JavaScript (from session)
+        // Try activeClusterTab first, then fall back to selectedCluster
+        window.selectedCluster = @json(session('activeClusterTab') ?? session('selectedCluster'));
+
+        // Debug cluster selection
+        console.log('Debug - Session activeClusterTab:', @json(session('activeClusterTab')));
+        console.log('Debug - Session selectedCluster:', @json(session('selectedCluster')));
+        console.log('Debug - Final window.selectedCluster:', window.selectedCluster);
+
         // Ensure all dropdowns are closed on page load
         document.addEventListener('DOMContentLoaded', () => {
             // Force close any Alpine dropdowns on page load immediately
@@ -621,6 +939,316 @@
                 }
                 if (element.__x && element.__x.$data.showNamespaceFilter !== undefined) {
                     element.__x.$data.showNamespaceFilter = false;
+                }
+            });
+        });
+
+        // Pod Shell and Logs Functions
+        function openPodShell(namespace, podName) {
+            try {
+                // Get the first container if multiple containers exist
+                const container = null; // Will use default container
+
+                // Update terminal title
+                const terminalTitle = document.getElementById('terminal-title');
+                if (terminalTitle) {
+                    terminalTitle.textContent = `${namespace}/${podName}${container ? `/${container}` : ''}`;
+                }
+
+                // Connect to pod shell
+                if (window.podTerminal) {
+                    window.podTerminal.connect(namespace, podName, container).then(success => {
+                        if (!success) {
+                            alert('Failed to connect to pod shell');
+                        }
+                    }).catch(error => {
+                        console.error('Error opening pod shell:', error);
+                        alert('Error opening pod shell: ' + error.message);
+                    });
+                } else {
+                    alert('Pod terminal not available');
+                }
+            } catch (error) {
+                console.error('Error opening pod shell:', error);
+                alert('Error opening pod shell: ' + error.message);
+            }
+        }
+
+        // Global variables for logs functionality
+        let currentLogsData = {
+            namespace: '',
+            pod: '',
+            container: '',
+            cluster: ''
+        };
+
+        function openPodLogs(namespace, podName) {
+            try {
+                // Store current pod info
+                currentLogsData.namespace = namespace;
+                currentLogsData.pod = podName;
+                currentLogsData.cluster = getSelectedCluster();
+
+                // Check if cluster is selected
+                if (!currentLogsData.cluster) {
+                    alert('Please select a cluster first before viewing pod logs.');
+                    return;
+                }
+
+                // Update logs title
+                const logsTitle = document.getElementById('logs-title');
+                if (logsTitle) {
+                    logsTitle.textContent = `${namespace}/${podName} - Logs`;
+                }
+
+                // First, get containers for this pod
+                fetchPodContainers(namespace, podName).then(() => {
+                    // Show logs panel
+                    showLogsPanel();
+                    // Load initial logs
+                    loadPodLogs();
+                }).catch(error => {
+                    console.error('Error fetching pod containers:', error);
+                    // Show logs panel anyway with default container
+                    showLogsPanel();
+                    loadPodLogs();
+                });
+
+            } catch (error) {
+                console.error('Error opening pod logs:', error);
+                alert('Error opening pod logs: ' + error.message);
+            }
+        }
+
+        function getSelectedCluster() {
+            // Get the selected cluster from the global variable
+            const cluster = window.selectedCluster || '';
+            console.log('Debug - Selected cluster:', cluster);
+            console.log('Debug - Window.selectedCluster:', window.selectedCluster);
+            return cluster;
+        }
+
+        async function fetchPodContainers(namespace, podName) {
+            try {
+                const response = await fetch(`/kubernetes/logs/containers?cluster=${encodeURIComponent(currentLogsData.cluster)}&namespace=${encodeURIComponent(namespace)}&pod=${encodeURIComponent(podName)}`, {
+                    headers: {
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to fetch containers');
+                }
+
+                const data = await response.json();
+                const containerSelector = document.getElementById('container-selector');
+
+                if (data.containers && data.containers.length > 1) {
+                    // Multiple containers - show selector
+                    containerSelector.style.display = 'block';
+                    containerSelector.innerHTML = '<option value="">All containers</option>';
+
+                    data.containers.forEach(container => {
+                        const option = document.createElement('option');
+                        option.value = container.name;
+                        option.textContent = container.name;
+                        containerSelector.appendChild(option);
+                    });
+
+                    // Set up change handler
+                    containerSelector.onchange = function() {
+                        currentLogsData.container = this.value;
+                        loadPodLogs();
+                    };
+                } else {
+                    // Single or no containers - hide selector
+                    containerSelector.style.display = 'none';
+                    currentLogsData.container = data.containers && data.containers.length > 0 ? data.containers[0].name : '';
+                }
+
+            } catch (error) {
+                console.error('Error fetching containers:', error);
+                // Hide container selector on error
+                document.getElementById('container-selector').style.display = 'none';
+            }
+        }
+
+        function showLogsPanel() {
+            // Hide terminal panel if open
+            const terminalPanel = document.getElementById('terminal-panel');
+            if (terminalPanel) {
+                terminalPanel.classList.add('hidden');
+            }
+
+            // Show logs panel
+            const logsPanel = document.getElementById('logs-panel');
+            if (logsPanel) {
+                logsPanel.classList.remove('hidden');
+
+                // Force scrollbar to appear immediately
+                const logsContainer = document.getElementById('logs-container');
+                if (logsContainer) {
+                    // Force a reflow to ensure scrollbar appears
+                    logsContainer.style.display = 'none';
+                    logsContainer.offsetHeight; // Trigger reflow
+                    logsContainer.style.display = 'block';
+
+                    // Ensure scrollbar is visible
+                    logsContainer.style.overflowY = 'scroll';
+                }
+            }
+        }
+
+        async function loadPodLogs() {
+            const logsContent = document.getElementById('logs-content');
+            if (!logsContent) return;
+
+            logsContent.innerHTML = 'Loading logs...';
+
+            try {
+                const lines = document.getElementById('lines-selector').value;
+                const container = currentLogsData.container;
+
+                const params = new URLSearchParams({
+                    cluster: currentLogsData.cluster,
+                    namespace: currentLogsData.namespace,
+                    pod: currentLogsData.pod,
+                    lines: lines
+                });
+
+                if (container) {
+                    params.append('container', container);
+                }
+
+                const response = await fetch(`/kubernetes/logs/get?${params.toString()}`, {
+                    headers: {
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to fetch logs');
+                }
+
+                const data = await response.json();
+
+                if (data.logs) {
+                    // Format logs with proper line breaks and timestamps
+                    const formattedLogs = data.logs
+                        .split('\n')
+                        .map(line => line.trim())
+                        .filter(line => line.length > 0)
+                        .join('\n');
+
+                    // Remember current scroll position and check if this is initial load
+                    const logsContainer = document.getElementById('logs-container');
+                    const isInitialLoad = logsContent.textContent === 'Loading logs...';
+                    const wasAtBottom = logsContainer &&
+                        (logsContainer.scrollTop + logsContainer.clientHeight >= logsContainer.scrollHeight - 10);
+
+                    logsContent.innerHTML = `<pre>${escapeHtml(formattedLogs)}</pre>`;
+
+                    // Only auto-scroll to bottom if user was already at the bottom or this is initial load
+                    if (logsContainer && (wasAtBottom || isInitialLoad)) {
+                        setTimeout(() => {
+                            logsContainer.scrollTop = logsContainer.scrollHeight;
+                        }, 100);
+                    }
+                } else {
+                    logsContent.innerHTML = '<div class="text-yellow-400">No logs available</div>';
+                }
+
+            } catch (error) {
+                console.error('Error loading logs:', error);
+                logsContent.innerHTML = `<div class="text-red-400">Error loading logs: ${error.message}</div>`;
+            }
+        }
+
+        function refreshLogs() {
+            loadPodLogs();
+        }
+
+        function downloadLogs() {
+            const logsContent = document.getElementById('logs-content');
+            if (!logsContent) return;
+
+            const logs = logsContent.textContent || logsContent.innerText;
+            const blob = new Blob([logs], { type: 'text/plain' });
+            const url = window.URL.createObjectURL(blob);
+
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `${currentLogsData.namespace}-${currentLogsData.pod}-logs.txt`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
+        }
+
+        function closeLogs() {
+            const logsPanel = document.getElementById('logs-panel');
+            if (logsPanel) {
+                logsPanel.classList.add('hidden');
+            }
+        }
+
+        function scrollLogsToTop() {
+            const logsContainer = document.getElementById('logs-container');
+            if (logsContainer) {
+                logsContainer.scrollTop = 0;
+            }
+        }
+
+        function scrollLogsToBottom() {
+            const logsContainer = document.getElementById('logs-container');
+            if (logsContainer) {
+                logsContainer.scrollTop = logsContainer.scrollHeight;
+            }
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // Set up lines selector change handler and keyboard shortcuts
+        document.addEventListener('DOMContentLoaded', function() {
+            const linesSelector = document.getElementById('lines-selector');
+            if (linesSelector) {
+                linesSelector.onchange = function() {
+                    if (currentLogsData.pod) {
+                        loadPodLogs();
+                    }
+                };
+            }
+
+            // Add keyboard shortcuts for logs panel
+            document.addEventListener('keydown', function(e) {
+                const logsPanel = document.getElementById('logs-panel');
+                if (!logsPanel || logsPanel.classList.contains('hidden')) {
+                    return; // Only work when logs panel is open
+                }
+
+                // Ctrl/Cmd + Home: Scroll to top
+                if ((e.ctrlKey || e.metaKey) && e.key === 'Home') {
+                    e.preventDefault();
+                    scrollLogsToTop();
+                }
+                // Ctrl/Cmd + End: Scroll to bottom
+                else if ((e.ctrlKey || e.metaKey) && e.key === 'End') {
+                    e.preventDefault();
+                    scrollLogsToBottom();
+                }
+                // Ctrl/Cmd + R: Refresh logs
+                else if ((e.ctrlKey || e.metaKey) && e.key === 'r') {
+                    e.preventDefault();
+                    refreshLogs();
+                }
+                // Escape: Close logs panel
+                else if (e.key === 'Escape') {
+                    e.preventDefault();
+                    closeLogs();
                 }
             });
         });

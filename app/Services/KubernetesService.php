@@ -71,7 +71,7 @@ class KubernetesService
     }
 
     // Generic function to make any Kubernetes request
-    private function makeK8SRequest($endpoint)
+    private function makeK8SRequest($endpoint, $decodeJson = true)
     {
         $kubeconfig = $this->getKubeconfig();
 
@@ -89,11 +89,11 @@ class KubernetesService
         $response = $this->makeRequest($url, $caCertFile, $clientCertFile, $clientKeyFile);
 
         // Clean up temp files
-        unlink($caCertFile);
-        unlink($clientCertFile);
-        unlink($clientKeyFile);
+        if ($caCertFile) unlink($caCertFile);
+        if ($clientCertFile) unlink($clientCertFile);
+        if ($clientKeyFile) unlink($clientKeyFile);
 
-        return json_decode($response, true);
+        return $decodeJson ? json_decode($response, true) : $response;
     }
 
     // Example method to get nodes
@@ -106,6 +106,35 @@ class KubernetesService
     public function getPods()
     {
         return $this->makeK8SRequest('/api/v1/pods');
+    }
+
+    // Get pod logs
+    public function getPodLogs($namespace, $podName, $container = null, $lines = 1000, $follow = false)
+    {
+        $url = "/api/v1/namespaces/{$namespace}/pods/{$podName}/log";
+        $params = [
+            'tailLines' => $lines,
+            'timestamps' => 'true'
+        ];
+
+        if ($container) {
+            $params['container'] = $container;
+        }
+
+        if ($follow) {
+            $params['follow'] = 'true';
+        }
+
+        $queryString = http_build_query($params);
+        $fullUrl = $url . '?' . $queryString;
+
+        return $this->makeK8SRequest($fullUrl, false); // false = don't decode as JSON, return raw text
+    }
+
+    // Get pod details
+    public function getPodDetails($namespace, $podName)
+    {
+        return $this->makeK8SRequest("/api/v1/namespaces/{$namespace}/pods/{$podName}");
     }
 
     // You can easily add more methods for other endpoints

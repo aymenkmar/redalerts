@@ -88,6 +88,12 @@ Route::middleware('auth')->group(function () {
         Route::post('/cleanup', [\App\Http\Controllers\PodShellController::class, 'cleanup'])->name('kubernetes.shell.cleanup');
     });
 
+    // Pod Logs Routes
+    Route::prefix('kubernetes/logs')->group(function () {
+        Route::get('/get', [\App\Http\Controllers\PodLogsController::class, 'getLogs'])->name('kubernetes.logs.get');
+        Route::get('/containers', [\App\Http\Controllers\PodLogsController::class, 'getPodContainers'])->name('kubernetes.logs.containers');
+    });
+
     // Test route for shell functionality
     Route::get('/test-shell', function () {
         return view('test-shell');
