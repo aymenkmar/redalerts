@@ -94,8 +94,7 @@ class ClusterSelectionModal extends Component
             $this->dispatch('clusterChanged', cluster: $clusterName);
             $this->dispatch('clusterTabsUpdated');
 
-            // Refresh the page to load data for the newly selected cluster
-            $this->dispatch('refreshPage');
+            // No need to refresh the page - let the components handle the cluster change
 
         } catch (\Exception $e) {
             $this->error = 'Failed to select cluster: ' . $e->getMessage();

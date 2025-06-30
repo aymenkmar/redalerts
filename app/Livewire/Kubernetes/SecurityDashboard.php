@@ -30,16 +30,24 @@ class SecurityDashboard extends Component
 
     public function mount()
     {
-        $this->loadClusters();
-        $this->loadSelectedClusterFromSession();
+        try {
+            $this->loadClusters();
+            $this->loadSelectedClusterFromSession();
 
-        // Check if a cluster is selected, similar to other Kubernetes components
-        if (!$this->selectedCluster) {
-            // Don't load security data if no cluster is selected
-            return;
+            // Check if a cluster is selected, similar to other Kubernetes components
+            if (!$this->selectedCluster) {
+                // Don't load security data if no cluster is selected
+                return;
+            }
+
+            $this->loadSecurityData();
+        } catch (\Exception $e) {
+            Log::error('SecurityDashboard mount failed: ' . $e->getMessage(), [
+                'trace' => $e->getTraceAsString()
+            ]);
+            // Set a user-friendly error message
+            session()->flash('error', 'Failed to initialize security dashboard. Please try refreshing the page.');
         }
-
-        $this->loadSecurityData();
     }
 
     public function loadClusters()
@@ -95,9 +103,14 @@ class SecurityDashboard extends Component
         ]);
     }
 
-    public function handleClusterChange($clusterName)
+    public function handleClusterChange($cluster)
     {
-        $this->selectedCluster = $clusterName;
+        Log::info('SecurityDashboard handling cluster change', [
+            'newCluster' => $cluster,
+            'previousCluster' => $this->selectedCluster
+        ]);
+
+        $this->selectedCluster = $cluster;
         $this->loadSecurityData();
     }
 

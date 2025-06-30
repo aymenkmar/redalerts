@@ -179,15 +179,8 @@
     @endif
 
     <script>
-        // Listen for page refresh event
+        // Listen for cluster change events to close modal
         document.addEventListener('livewire:initialized', () => {
-            Livewire.on('refreshPage', () => {
-                setTimeout(() => {
-                    window.location.reload();
-                }, 1000); // Small delay to show success message
-            });
-
-            // Listen for cluster change events to close modal
             Livewire.on('clusterChanged', () => {
                 // Find and close any open modals
                 const modals = document.querySelectorAll('[x-data*="showClusterModal"]');
