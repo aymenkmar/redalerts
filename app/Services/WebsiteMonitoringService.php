@@ -7,6 +7,8 @@ use App\Models\WebsiteMonitoringLog;
 use App\Services\WebsiteNotificationService;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\RequestException;
+use GuzzleHttp\Exception\ConnectException;
+use GuzzleHttp\Exception\GuzzleException;
 use Carbon\Carbon;
 
 class WebsiteMonitoringService
@@ -94,7 +96,34 @@ class WebsiteMonitoringService
                 'error' => $errorMessage,
             ];
 
+        } catch (ConnectException $e) {
+            // Handle connection-specific errors (connection refused, timeout, etc.)
+            $responseTime = (int) ((microtime(true) - $startTime) * 1000);
+            $errorMessage = $this->formatConnectionError($e->getMessage());
+
+            $logData = [
+                'website_url_id' => $websiteUrl->id,
+                'check_type' => 'status',
+                'status' => 'down',
+                'response_time' => $responseTime,
+                'status_code' => null,
+                'error_message' => $errorMessage,
+                'checked_at' => $checkedAt,
+            ];
+
+            WebsiteMonitoringLog::create($logData);
+
+            // Update the status properly (this will trigger overall status update)
+            $websiteUrl->updateStatus('down', $errorMessage);
+
+            return [
+                'status' => 'down',
+                'response_time' => $responseTime,
+                'status_code' => null,
+                'error' => $errorMessage,
+            ];
         } catch (RequestException $e) {
+            // Handle other HTTP-related errors
             $responseTime = (int) ((microtime(true) - $startTime) * 1000);
             $statusCode = $e->getResponse() ? $e->getResponse()->getStatusCode() : null;
             $errorMessage = $e->getMessage();
@@ -118,6 +147,32 @@ class WebsiteMonitoringService
                 'status' => 'down',
                 'response_time' => $responseTime,
                 'status_code' => $statusCode,
+                'error' => $errorMessage,
+            ];
+        } catch (GuzzleException $e) {
+            // Handle any other Guzzle-related errors
+            $responseTime = (int) ((microtime(true) - $startTime) * 1000);
+            $errorMessage = $e->getMessage();
+
+            $logData = [
+                'website_url_id' => $websiteUrl->id,
+                'check_type' => 'status',
+                'status' => 'down',
+                'response_time' => $responseTime,
+                'status_code' => null,
+                'error_message' => $errorMessage,
+                'checked_at' => $checkedAt,
+            ];
+
+            WebsiteMonitoringLog::create($logData);
+
+            // Update the status properly (this will trigger overall status update)
+            $websiteUrl->updateStatus('down', $errorMessage);
+
+            return [
+                'status' => 'down',
+                'response_time' => $responseTime,
+                'status_code' => null,
                 'error' => $errorMessage,
             ];
         }
@@ -364,5 +419,35 @@ class WebsiteMonitoringService
         }
 
         $websiteUrl->updateStatus($overallStatus);
+    }
+
+    /**
+     * Format connection error messages to be more user-friendly.
+     */
+    private function formatConnectionError(string $errorMessage): string
+    {
+        // Extract meaningful information from cURL error messages
+        if (strpos($errorMessage, 'Connection refused') !== false) {
+            return 'Connection refused - The server is not accepting connections';
+        }
+
+        if (strpos($errorMessage, 'Connection timed out') !== false) {
+            return 'Connection timed out - The server did not respond in time';
+        }
+
+        if (strpos($errorMessage, 'Could not resolve host') !== false) {
+            return 'DNS resolution failed - The domain name could not be resolved';
+        }
+
+        if (strpos($errorMessage, 'SSL connect error') !== false) {
+            return 'SSL connection failed - Unable to establish secure connection';
+        }
+
+        if (strpos($errorMessage, 'Operation timed out') !== false) {
+            return 'Request timed out - The server took too long to respond';
+        }
+
+        // Return the original message if no specific pattern is matched
+        return $errorMessage;
     }
 }

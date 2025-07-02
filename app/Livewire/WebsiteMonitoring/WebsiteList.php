@@ -56,17 +56,30 @@ class WebsiteList extends Component
 
     public function checkWebsite($websiteId)
     {
-        $website = Website::with('urls')->findOrFail($websiteId);
-        $monitoringService = new WebsiteMonitoringService();
+        try {
+            $website = Website::with('urls')->findOrFail($websiteId);
+            $monitoringService = new WebsiteMonitoringService();
 
-        foreach ($website->urls as $url) {
-            if ($url->monitor_status || $url->monitor_domain || $url->monitor_ssl) {
-                $monitoringService->monitorWebsiteUrl($url);
+            foreach ($website->urls as $url) {
+                if ($url->monitor_status || $url->monitor_domain || $url->monitor_ssl) {
+                    $monitoringService->monitorWebsiteUrl($url);
+                }
             }
-        }
 
-        session()->flash('message', 'Website monitoring check completed.');
-        $this->dispatch('refreshWebsites');
+            session()->flash('message', 'Website monitoring check completed.');
+            $this->dispatch('refreshWebsites');
+        } catch (\Exception $e) {
+            // Log the error for debugging
+            \Illuminate\Support\Facades\Log::error('Website monitoring check failed', [
+                'website_id' => $websiteId,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            // Show user-friendly error message
+            session()->flash('error', 'Failed to check website: ' . $e->getMessage());
+            $this->dispatch('refreshWebsites');
+        }
     }
 
     public function deleteWebsite($websiteId)
