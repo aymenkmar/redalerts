@@ -66,6 +66,10 @@ class WebsiteList extends Component
                 }
             }
 
+            // Process notifications for any status changes
+            $notificationService = new \App\Services\WebsiteNotificationService();
+            $notificationService->processAllNotifications();
+
             session()->flash('message', 'Website monitoring check completed.');
             $this->dispatch('refreshWebsites');
         } catch (\Exception $e) {

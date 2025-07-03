@@ -83,7 +83,16 @@ class OvhOverview extends Component
                 $syncedCount++;
             }
 
-            session()->flash('message', "Successfully synced {$syncedCount} services across all OVH service types.");
+            // Check for expiring services and create notifications
+            $notificationService = new \App\Services\OvhNotificationService();
+            $notificationResults = $notificationService->checkAndNotifyExpiringServices();
+
+            $totalNotifications = array_sum($notificationResults);
+            $notificationMessage = $totalNotifications > 0
+                ? " Created {$totalNotifications} expiration notifications."
+                : "";
+
+            session()->flash('message', "Successfully synced {$syncedCount} services across all OVH service types.{$notificationMessage}");
         } catch (\Exception $e) {
             session()->flash('error', 'Failed to sync services: ' . $e->getMessage());
         } finally {

@@ -52,6 +52,17 @@ class WebsiteNotificationService
                 'website_id' => $website->id,
                 'url_id' => $websiteUrl->id,
             ]);
+
+            // Mark as attempted even if email failed to prevent repeated attempts
+            $incident->update([
+                'notification_sent' => true,
+                'last_notification_sent_at' => now(),
+                'notification_count' => 1,
+            ]);
+
+            // Create notification in database even if email failed
+            $notificationService = new NotificationService();
+            $notificationService->createWebsiteDownNotification($incident);
         }
     }
 
@@ -86,6 +97,13 @@ class WebsiteNotificationService
                 'website_id' => $website->id,
                 'url_id' => $websiteUrl->id,
             ]);
+
+            // Mark as attempted even if email failed to prevent repeated attempts
+            $incident->update(['recovery_notification_sent' => true]);
+
+            // Create notification in database even if email failed
+            $notificationService = new NotificationService();
+            $notificationService->createWebsiteUpNotification($incident);
         }
     }
 
