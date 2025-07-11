@@ -20,7 +20,7 @@ class MonitorWebsiteDomainSsl extends Command
      *
      * @var string
      */
-    protected $description = 'Monitor website domain and SSL validation - runs every 24 hours';
+    protected $description = 'Monitor website domain expiration and SSL validation - runs every 24 hours';
 
     /**
      * Execute the console command.
@@ -63,10 +63,10 @@ class MonitorWebsiteDomainSsl extends Command
                 $this->line("  Checking: {$url->url}");
 
                 try {
-                    // Domain validation
+                    // Domain expiration check
                     if ($url->monitor_domain) {
                         $totalChecks++;
-                        $this->line("    Checking domain validation...");
+                        $this->line("    Checking domain expiration...");
 
                         $result = $monitoringService->checkDomain($url);
                         $status = $result['status'];
@@ -78,8 +78,9 @@ class MonitorWebsiteDomainSsl extends Command
                             $this->line("        Error: {$result['error']}");
                         }
 
-                        if (isset($result['dns_records'])) {
-                            $this->line("        DNS records: " . count($result['dns_records']) . " found");
+                        if (isset($result['days_until_expiry'])) {
+                            $days = (int) $result['days_until_expiry'];
+                            $this->line("        Expires in: {$days} days");
                         }
 
                         $successfulChecks++;

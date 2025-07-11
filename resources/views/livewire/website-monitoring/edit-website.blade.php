@@ -177,7 +177,7 @@
                                     <div class="flex items-center">
                                         <input type="checkbox" id="domain_{{ $index }}" wire:model="urls.{{ $index }}.monitor_domain"
                                                class="h-4 w-4 text-red-600 focus:ring-red-500 border-gray-300 rounded">
-                                        <label for="domain_{{ $index }}" class="ml-2 text-sm text-gray-700">Domain Validation (daily)</label>
+                                        <label for="domain_{{ $index }}" class="ml-2 text-sm text-gray-700">Domain Expiration (daily)</label>
                                     </div>
                                     <div class="flex items-center">
                                         <input type="checkbox" id="ssl_{{ $index }}" wire:model="urls.{{ $index }}.monitor_ssl"

@@ -195,14 +195,14 @@
                                             </label>
                                         </div>
 
-                                        <!-- Domain Validation -->
+                                        <!-- Domain Expiration -->
                                         <div class="flex items-center">
                                             <input type="checkbox" id="domain_{{ $index }}"
                                                    wire:model="urls.{{ $index }}.monitor_domain"
                                                    class="h-4 w-4 text-red-600 focus:ring-red-500 border-gray-300 rounded">
                                             <label for="domain_{{ $index }}" class="ml-2 text-sm text-gray-700">
-                                                <span class="font-medium">Domain Validation</span>
-                                                <span class="text-gray-500 block">Check DNS records and domain availability (every 24 hours)</span>
+                                                <span class="font-medium">Domain Expiration</span>
+                                                <span class="text-gray-500 block">Check domain expiration date using whois (every 24 hours)</span>
                                             </label>
                                         </div>
 

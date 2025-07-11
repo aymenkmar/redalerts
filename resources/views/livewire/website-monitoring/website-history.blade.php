@@ -331,10 +331,10 @@
                                                         </div>
                                                     @endif
 
-                                                    @if($log->check_type === 'domain' && isset($log->additional_data['dns_records']))
+                                                    @if($log->check_type === 'domain' && isset($log->additional_data['days_until_expiry']))
                                                         <div class="text-xs">
-                                                            <span class="font-medium">DNS Records:</span>
-                                                            {{ count($log->additional_data['dns_records']) }} found
+                                                            <span class="font-medium">Domain Expires:</span>
+                                                            {{ (int) $log->additional_data['days_until_expiry'] }} days
                                                         </div>
                                                     @endif
                                                 @endif

@@ -77,7 +77,7 @@ class WebsiteMonitoringLog extends Model
     {
         return match ($this->check_type) {
             'status' => 'Status Check',
-            'domain' => 'Domain Validation',
+            'domain' => 'Domain Expiration',
             'ssl' => 'SSL Certificate',
             default => ucfirst($this->check_type),
         };

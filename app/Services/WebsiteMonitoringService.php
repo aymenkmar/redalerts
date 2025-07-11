@@ -179,7 +179,7 @@ class WebsiteMonitoringService
     }
 
     /**
-     * Check domain validation.
+     * Check domain expiration date.
      */
     public function checkDomain(WebsiteUrl $websiteUrl): array
     {
@@ -204,26 +204,65 @@ class WebsiteMonitoringService
             ];
         }
 
+        // Clean domain name for whois lookup (remove www. prefix)
+        $cleanDomain = $this->cleanDomainForWhois($domain);
+
         try {
-            $dnsRecords = dns_get_record($domain, DNS_A);
-            $status = !empty($dnsRecords) ? 'up' : 'down';
-            $errorMessage = empty($dnsRecords) ? 'No DNS records found' : null;
+            // Use whois command to get domain expiration date
+            $whoisOutput = shell_exec("whois " . escapeshellarg($cleanDomain) . " 2>&1");
+
+            if (empty($whoisOutput)) {
+                throw new \Exception('Failed to retrieve whois information');
+            }
+
+            // Parse expiration date from whois output
+            $expirationDate = $this->parseExpirationDateFromWhois($whoisOutput);
+
+            if (!$expirationDate) {
+                throw new \Exception('Could not parse expiration date from whois output');
+            }
+
+            $now = Carbon::now();
+
+            // Calculate days until expiry (positive = future, negative = past)
+            $daysUntilExpiry = $expirationDate->diffInDays($now, false);
+
+            // For display purposes, show absolute value as integer
+            $daysUntilExpiryDisplay = (int) abs($daysUntilExpiry);
+
+            $status = 'up';
+            if ($expirationDate->isPast()) {
+                $status = 'down';
+            } elseif ($daysUntilExpiry <= 30) {
+                $status = 'warning';
+            }
 
             $logData = [
                 'website_url_id' => $websiteUrl->id,
                 'check_type' => 'domain',
                 'status' => $status,
-                'error_message' => $errorMessage,
-                'additional_data' => ['dns_records' => $dnsRecords],
+                'additional_data' => [
+                    'domain' => $domain,
+                    'expiration_date' => $expirationDate->toISOString(),
+                    'days_until_expiry' => $daysUntilExpiryDisplay,
+                    'is_expired' => $expirationDate->isPast(),
+                ],
                 'checked_at' => $checkedAt,
             ];
 
             WebsiteMonitoringLog::create($logData);
 
+            // Check if domain expiry notification should be sent (< 30 days)
+            if ($daysUntilExpiryDisplay <= 30 && !$expirationDate->isPast()) {
+                $this->checkDomainExpiryNotification($websiteUrl, $daysUntilExpiryDisplay);
+            }
+
             return [
                 'status' => $status,
-                'dns_records' => $dnsRecords,
-                'error' => $errorMessage,
+                'expiration_date' => $expirationDate,
+                'days_until_expiry' => $daysUntilExpiryDisplay,
+                'is_expired' => $expirationDate->isPast(),
+                'domain' => $domain,
             ];
 
         } catch (\Exception $e) {
@@ -419,6 +458,84 @@ class WebsiteMonitoringService
         }
 
         $websiteUrl->updateStatus($overallStatus);
+    }
+
+    /**
+     * Parse expiration date from whois output.
+     */
+    private function parseExpirationDateFromWhois(string $whoisOutput): ?Carbon
+    {
+        // Common patterns for expiration dates in whois output
+        $patterns = [
+            // Registry Expiry Date: 2024-12-31T23:59:59Z
+            '/Registry Expiry Date:\s*(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z?)/i',
+            // Registrar Registration Expiration Date: 2025-07-20T16:00:14+02:00
+            '/Registrar Registration Expiration Date:\s*(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}[+-]\d{2}:\d{2})/i',
+            // Expiry Date: 31-Dec-2024
+            '/Expiry Date:\s*(\d{1,2}-\w{3}-\d{4})/i',
+            // Expiration Date: 2024-12-31
+            '/Expiration Date:\s*(\d{4}-\d{2}-\d{2})/i',
+            // expires: 2024-12-31
+            '/expires:\s*(\d{4}-\d{2}-\d{2})/i',
+            // Expiry : 31/12/2024
+            '/Expiry\s*:\s*(\d{1,2}\/\d{1,2}\/\d{4})/i',
+            // expire: 20241231
+            '/expire:\s*(\d{8})/i',
+            // Expiration Time: 2024-12-31 23:59:59
+            '/Expiration Time:\s*(\d{4}-\d{2}-\d{2}\s+\d{2}:\d{2}:\d{2})/i',
+            // paid-till: 2024-12-31T23:59:59Z
+            '/paid-till:\s*(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z?)/i',
+        ];
+
+        foreach ($patterns as $pattern) {
+            if (preg_match($pattern, $whoisOutput, $matches)) {
+                $dateString = $matches[1];
+
+                try {
+                    // Handle different date formats
+                    if (preg_match('/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z?$/', $dateString)) {
+                        // ISO format: 2024-12-31T23:59:59Z
+                        return Carbon::parse($dateString);
+                    } elseif (preg_match('/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}[+-]\d{2}:\d{2}$/', $dateString)) {
+                        // ISO format with timezone: 2025-07-20T16:00:14+02:00
+                        return Carbon::parse($dateString);
+                    } elseif (preg_match('/^\d{1,2}-\w{3}-\d{4}$/', $dateString)) {
+                        // Format: 31-Dec-2024
+                        return Carbon::createFromFormat('d-M-Y', $dateString);
+                    } elseif (preg_match('/^\d{4}-\d{2}-\d{2}$/', $dateString)) {
+                        // Format: 2024-12-31
+                        return Carbon::createFromFormat('Y-m-d', $dateString);
+                    } elseif (preg_match('/^\d{1,2}\/\d{1,2}\/\d{4}$/', $dateString)) {
+                        // Format: 31/12/2024
+                        return Carbon::createFromFormat('d/m/Y', $dateString);
+                    } elseif (preg_match('/^\d{8}$/', $dateString)) {
+                        // Format: 20241231
+                        return Carbon::createFromFormat('Ymd', $dateString);
+                    } elseif (preg_match('/^\d{4}-\d{2}-\d{2}\s+\d{2}:\d{2}:\d{2}$/', $dateString)) {
+                        // Format: 2024-12-31 23:59:59
+                        return Carbon::createFromFormat('Y-m-d H:i:s', $dateString);
+                    }
+                } catch (\Exception $e) {
+                    // Continue to next pattern if parsing fails
+                    continue;
+                }
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Clean domain name for whois lookup.
+     */
+    private function cleanDomainForWhois(string $domain): string
+    {
+        // Remove www. prefix if present
+        if (str_starts_with(strtolower($domain), 'www.')) {
+            $domain = substr($domain, 4);
+        }
+
+        return strtolower($domain);
     }
 
     /**

@@ -7,7 +7,7 @@ This comprehensive website monitoring system provides real-time monitoring of we
 ### ✨ Key Features
 
 - **HTTP Status Monitoring** - Every minute checks (200 = up, others = down)
-- **Domain Validation** - Every 24 hours DNS record verification
+- **Domain Expiration Monitoring** - Every 24 hours domain expiration date checking using whois
 - **SSL Certificate Monitoring** - Every 24 hours certificate validity and expiration
 - **Email Notifications** - Down/up alerts with beautiful HTML templates
 - **Historical Tracking** - Complete logs and downtime incident tracking
@@ -46,10 +46,12 @@ This comprehensive website monitoring system provides real-time monitoring of we
 - **Response Time**: Measured in milliseconds
 - **Automatic Notifications**: Email sent when status changes
 
-### Domain Validation (Every 24 Hours)
-- **DNS Record Check**: Verifies domain resolves correctly
-- **✅ Up**: DNS records found
-- **❌ Down**: No DNS records or resolution failure
+### Domain Expiration Monitoring (Every 24 Hours)
+- **Whois Check**: Retrieves domain expiration date using whois command
+- **✅ Up**: Domain expires in more than 30 days
+- **⚠️ Warning**: Domain expires within 30 days
+- **❌ Down**: Domain has expired
+- **Email Notifications**: Sent when domain expires within 30 days
 
 ### SSL Certificate Monitoring (Every 24 Hours)
 - **Certificate Validity**: Checks if certificate is valid
