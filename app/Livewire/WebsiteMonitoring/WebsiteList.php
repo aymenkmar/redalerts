@@ -80,6 +80,12 @@ class WebsiteList extends Component
                 }
             }
 
+            // Process notifications for any status changes
+            if ($checkedUrls > 0) {
+                $notificationService = new \App\Services\WebsiteNotificationService();
+                $notificationService->processAllNotifications();
+            }
+
             if ($checkedUrls > 0) {
                 $message = 'Website monitoring check completed.';
             } else {

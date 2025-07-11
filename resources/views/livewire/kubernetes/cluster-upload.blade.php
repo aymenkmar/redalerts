@@ -69,18 +69,39 @@
     </form>
 
     @if($showConfirmDialog)
-    <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-        <div class="bg-white rounded-lg shadow-xl max-w-md w-full p-6">
+    <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+         wire:click.self="cancelUpload"
+         x-data="{ show: @entangle('showConfirmDialog') }"
+         x-show="show"
+         @keydown.escape.window="$wire.cancelUpload()"
+         x-transition:enter="transition ease-out duration-300"
+         x-transition:enter-start="opacity-0"
+         x-transition:enter-end="opacity-100"
+         x-transition:leave="transition ease-in duration-200"
+         x-transition:leave-start="opacity-100"
+         x-transition:leave-end="opacity-0">
+        <div class="bg-white rounded-lg shadow-xl max-w-md w-full p-6"
+             @click.stop
+             x-transition:enter="transition ease-out duration-300 transform"
+             x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+             x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100"
+             x-transition:leave="transition ease-in duration-200 transform"
+             x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100"
+             x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95">
             <h2 class="text-xl font-bold text-gray-800 mb-4">Confirm Overwrite</h2>
             <p class="text-gray-600 mb-6">A cluster with the name "{{ $clusterName }}" already exists. Do you want to overwrite it?</p>
             <div class="flex justify-end space-x-3">
-                <button 
+                <button
+                    type="button"
                     wire:click="cancelUpload"
+                    @click="show = false; $wire.cancelUpload()"
+                    onclick="this.closest('.fixed').style.display='none'"
                     class="px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
                 >
                     Cancel
                 </button>
-                <button 
+                <button
+                    type="button"
                     wire:click="confirmUpload"
                     class="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
                 >

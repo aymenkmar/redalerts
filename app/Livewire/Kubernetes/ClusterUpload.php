@@ -121,7 +121,15 @@ class ClusterUpload extends Component
     public function cancelUpload()
     {
         $this->showConfirmDialog = false;
+        $this->clusterExists = false;
         $this->loading = false;
+        $this->error = null;
+
+        // Clear any validation errors
+        $this->resetValidation();
+
+        // Dispatch event to ensure UI updates
+        $this->dispatch('modalClosed');
     }
 
     public function uploadKubeconfig()
