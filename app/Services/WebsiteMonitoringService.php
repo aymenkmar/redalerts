@@ -208,11 +208,20 @@ class WebsiteMonitoringService
         $cleanDomain = $this->cleanDomainForWhois($domain);
 
         try {
-            // Use whois command to get domain expiration date
-            $whoisOutput = shell_exec("whois " . escapeshellarg($cleanDomain) . " 2>&1");
+            // Use whois command to get domain expiration date with timeout
+            $whoisOutput = shell_exec("timeout 10 whois " . escapeshellarg($cleanDomain) . " 2>&1");
 
             if (empty($whoisOutput)) {
-                throw new \Exception('Failed to retrieve whois information');
+                throw new \Exception('Failed to retrieve whois information - server may be unavailable');
+            }
+
+            // Check for common whois error messages
+            if (stripos($whoisOutput, 'connection refused') !== false) {
+                throw new \Exception('Whois server connection refused');
+            }
+
+            if (stripos($whoisOutput, 'no match') !== false || stripos($whoisOutput, 'not found') !== false) {
+                throw new \Exception('Domain not found in whois database');
             }
 
             // Parse expiration date from whois output
@@ -449,12 +458,25 @@ class WebsiteMonitoringService
     {
         $statuses = array_column($results, 'status');
 
-        if (in_array('down', $statuses) || in_array('error', $statuses)) {
+        // Priority order: down > warning > up
+        // Note: 'error' status from domain/SSL checks should not override 'up' status from HTTP checks
+        // Only 'down' status from HTTP checks should mark the website as down
+
+        if (isset($results['status']) && $results['status']['status'] === 'down') {
+            // HTTP status check failed - this is the most critical
             $overallStatus = 'down';
-        } elseif (in_array('warning', $statuses)) {
+        } elseif (in_array('down', $statuses)) {
+            // Other checks (domain/SSL) are down
             $overallStatus = 'warning';
-        } else {
+        } elseif (in_array('warning', $statuses)) {
+            // Some checks have warnings
+            $overallStatus = 'warning';
+        } elseif (isset($results['status']) && $results['status']['status'] === 'up') {
+            // HTTP status is up - this is the primary indicator
             $overallStatus = 'up';
+        } else {
+            // Fallback
+            $overallStatus = 'unknown';
         }
 
         $websiteUrl->updateStatus($overallStatus);
@@ -535,7 +557,18 @@ class WebsiteMonitoringService
             $domain = substr($domain, 4);
         }
 
-        return strtolower($domain);
+        $domain = strtolower($domain);
+
+        // Extract root domain for subdomains
+        // This handles cases like subdomain.example.com -> example.com
+        $parts = explode('.', $domain);
+        if (count($parts) > 2) {
+            // For most cases, take the last two parts (domain.tld)
+            // Special handling for known multi-part TLDs could be added here if needed
+            $domain = implode('.', array_slice($parts, -2));
+        }
+
+        return $domain;
     }
 
     /**

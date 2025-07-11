@@ -60,17 +60,33 @@ class WebsiteList extends Component
             $website = Website::with('urls')->findOrFail($websiteId);
             $monitoringService = new WebsiteMonitoringService();
 
+            $checkedUrls = 0;
+            $skippedChecks = 0;
+
             foreach ($website->urls as $url) {
                 if ($url->monitor_status || $url->monitor_domain || $url->monitor_ssl) {
-                    $monitoringService->monitorWebsiteUrl($url);
+                    // Only do fast HTTP status check to avoid timeouts
+                    if ($url->monitor_status) {
+                        $monitoringService->checkStatus($url);
+                    }
+
+                    // Skip slow domain/SSL checks during manual refresh to prevent 504 timeouts
+                    // These will be handled by the scheduled monitoring (every 24 hours)
+                    if ($url->monitor_domain || $url->monitor_ssl) {
+                        $skippedChecks++;
+                    }
+
+                    $checkedUrls++;
                 }
             }
 
-            // Process notifications for any status changes
-            $notificationService = new \App\Services\WebsiteNotificationService();
-            $notificationService->processAllNotifications();
+            if ($checkedUrls > 0) {
+                $message = 'Website monitoring check completed.';
+            } else {
+                $message = 'No monitoring enabled for this website.';
+            }
 
-            session()->flash('message', 'Website monitoring check completed.');
+            session()->flash('message', $message);
             $this->dispatch('refreshWebsites');
         } catch (\Exception $e) {
             // Log the error for debugging
