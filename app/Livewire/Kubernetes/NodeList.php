@@ -363,7 +363,12 @@ class NodeList extends Component
     {
         $this->selectedNode = $nodeName;
         $this->showNodeDetails = true;
+
+        // Show panel immediately, then load data
         $this->dispatch('nodeSelected', $nodeName);
+
+        // Trigger immediate panel display
+        $this->dispatch('showPanelInstantly');
     }
 
     public function closeNodeDetails()
@@ -376,6 +381,33 @@ class NodeList extends Component
     {
         // Ensure width is within reasonable bounds (min 300px, max 800px)
         $this->panelWidth = max(300, min(800, intval($width)));
+    }
+
+    public function preloadNodeData($nodeName)
+    {
+        // Preload node data in background without showing panel
+        if (!$nodeName || $nodeName === $this->selectedNode || !$this->selectedCluster) {
+            return;
+        }
+
+        try {
+            $kubeconfigPath = env('KUBECONFIG_PATH', storage_path('app/kubeconfigs')) . '/' . $this->selectedCluster;
+
+            if (!file_exists($kubeconfigPath)) {
+                return;
+            }
+
+            $service = new CachedKubernetesService($kubeconfigPath);
+
+            // Preload data into cache (don't force refresh, just ensure it's cached)
+            $service->getNodeDetails($nodeName, false);
+            $service->getPodsOnNode($nodeName, false);
+            $service->getNodeEvents($nodeName, false);
+
+        } catch (\Exception $e) {
+            // Silent fail for preloading
+            \Log::info('Preload failed for node: ' . $nodeName . ' - ' . $e->getMessage());
+        }
     }
 
     protected $listeners = ['nodeDetailsClose' => 'closeNodeDetails'];

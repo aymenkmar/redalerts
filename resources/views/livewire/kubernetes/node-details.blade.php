@@ -37,12 +37,7 @@
 
     <!-- Content -->
     <div class="flex-1 overflow-y-auto">
-        @if($loading)
-            <div class="flex items-center justify-center h-32">
-                <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-red-600"></div>
-                <span class="ml-3 text-gray-600">Loading node details...</span>
-            </div>
-        @elseif($error)
+        @if($error)
             <div class="p-4">
                 <div class="bg-red-50 border border-red-200 rounded-md p-4">
                     <div class="flex">
@@ -58,7 +53,16 @@
                     </div>
                 </div>
             </div>
-        @elseif($nodeDetails)
+        @elseif($nodeDetails || $showInstantly)
+            <!-- Loading indicator overlay when refreshing -->
+            @if($loading && $nodeDetails)
+                <div class="absolute top-0 left-0 right-0 bg-blue-50 border-b border-blue-200 px-4 py-2 z-10">
+                    <div class="flex items-center text-sm text-blue-700">
+                        <div class="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600 mr-2"></div>
+                        Refreshing node details...
+                    </div>
+                </div>
+            @endif
             <div class="p-4 space-y-6">
                 <!-- Properties Section -->
                 <div class="bg-white border border-gray-200 rounded-lg">

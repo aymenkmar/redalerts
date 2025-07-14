@@ -16,7 +16,9 @@
             <template x-for="node in paginatedData" :key="node.metadata.name">
                 <tr class="hover:bg-gray-50 cursor-pointer {{ $selectedNode ? 'transition-colors' : '' }}"
                     :class="'{{ $selectedNode }}' === node.metadata?.name ? 'bg-blue-50 border-l-4 border-blue-500' : ''"
-                    @click="$wire.selectNode(node.metadata?.name); showDetails = true;">
+                    @click="$wire.selectNode(node.metadata?.name); showDetails = true;"
+                    @mouseenter="preloadNodeData(node.metadata?.name)"
+                    @mouseleave="cancelPreload()">
                     <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900" x-text="node.metadata?.name || 'Unknown'"></td>
                     <td class="px-6 py-4 whitespace-nowrap">
                         <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full"
@@ -44,10 +46,10 @@
     @if($showNodeDetails)
         <!-- Panel -->
         <div x-show="showDetails"
-             x-transition:enter="transition-transform ease-out duration-300"
+             x-transition:enter="transition-transform ease-out duration-150"
              x-transition:enter-start="transform translate-x-full"
              x-transition:enter-end="transform translate-x-0"
-             x-transition:leave="transition-transform ease-in duration-200"
+             x-transition:leave="transition-transform ease-in duration-100"
              x-transition:leave-start="transform translate-x-0"
              x-transition:leave-end="transform translate-x-full"
              class="fixed right-0 z-60 shadow-2xl bg-white border-l-2 border-gray-300"
@@ -100,6 +102,10 @@ function nodeListPanel() {
 
             // Listen for Livewire updates
             this.$wire.on('nodeSelected', () => {
+                this.showDetails = true;
+            });
+
+            this.$wire.on('showPanelInstantly', () => {
                 this.showDetails = true;
             });
 
@@ -195,6 +201,30 @@ function nodeListPanel() {
         closePanel() {
             this.showDetails = false;
             this.$wire.closeNodeDetails();
+        },
+
+        preloadTimeout: null,
+
+        preloadNodeData(nodeName) {
+            // Cancel any existing preload
+            if (this.preloadTimeout) {
+                clearTimeout(this.preloadTimeout);
+            }
+
+            // Preload after 500ms hover (enough time to indicate intent)
+            this.preloadTimeout = setTimeout(() => {
+                if (nodeName && nodeName !== '{{ $selectedNode }}') {
+                    // Trigger background preload without showing panel
+                    this.$wire.call('preloadNodeData', nodeName);
+                }
+            }, 500);
+        },
+
+        cancelPreload() {
+            if (this.preloadTimeout) {
+                clearTimeout(this.preloadTimeout);
+                this.preloadTimeout = null;
+            }
         }
     }
 }

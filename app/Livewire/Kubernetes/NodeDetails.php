@@ -14,6 +14,7 @@ class NodeDetails extends Component
     public $nodeDetails = null;
     public $podsOnNode = [];
     public $nodeEvents = [];
+    public $showInstantly = false;
     public $loading = true;
     public $error = null;
 
@@ -31,7 +32,41 @@ class NodeDetails extends Component
     public function nodeSelected($nodeName)
     {
         $this->nodeName = $nodeName;
+        $this->showInstantly = true;
+
+        // Try to load from cache first for instant display
+        $this->loadCachedDataFirst();
+
+        // Then load fresh data in background
         $this->loadNodeDetails();
+    }
+
+    private function loadCachedDataFirst()
+    {
+        if (!$this->nodeName || !$this->selectedCluster) return;
+
+        try {
+            $kubeconfigPath = env('KUBECONFIG_PATH', storage_path('app/kubeconfigs')) . '/' . $this->selectedCluster;
+
+            if (!file_exists($kubeconfigPath)) return;
+
+            $service = new CachedKubernetesService($kubeconfigPath);
+
+            // Try to get cached data without forcing refresh
+            $cachedNodeDetails = $service->getNodeDetails($this->nodeName, false);
+            $cachedPods = $service->getPodsOnNode($this->nodeName, false);
+            $cachedEvents = $service->getNodeEvents($this->nodeName, false);
+
+            // If we have cached data, show it immediately
+            if ($cachedNodeDetails && isset($cachedNodeDetails['metadata'])) {
+                $this->nodeDetails = $cachedNodeDetails;
+                $this->podsOnNode = $cachedPods['items'] ?? [];
+                $this->nodeEvents = $cachedEvents['items'] ?? [];
+            }
+        } catch (\Exception $e) {
+            // If cache fails, we'll load fresh data anyway
+            \Log::info('Cache load failed for node details: ' . $e->getMessage());
+        }
     }
 
     public function refreshNodeDetails()
@@ -43,7 +78,10 @@ class NodeDetails extends Component
 
     public function loadNodeDetails($forceRefresh = false)
     {
-        $this->loading = true;
+        // Only show loading if we don't have cached data already
+        if (!$this->nodeDetails) {
+            $this->loading = true;
+        }
         $this->error = null;
 
         try {
@@ -63,16 +101,15 @@ class NodeDetails extends Component
 
             $service = new CachedKubernetesService($kubeconfigPath);
 
-            // Load node details
-            $this->nodeDetails = $service->getNodeDetails($this->nodeName, $forceRefresh);
+            // Load fresh data (this will update cache)
+            $freshNodeDetails = $service->getNodeDetails($this->nodeName, $forceRefresh);
+            $freshPodsResponse = $service->getPodsOnNode($this->nodeName, $forceRefresh);
+            $freshEventsResponse = $service->getNodeEvents($this->nodeName, $forceRefresh);
 
-            // Load pods on this node
-            $podsResponse = $service->getPodsOnNode($this->nodeName, $forceRefresh);
-            $this->podsOnNode = $podsResponse['items'] ?? [];
-
-            // Load node events
-            $eventsResponse = $service->getNodeEvents($this->nodeName, $forceRefresh);
-            $this->nodeEvents = $eventsResponse['items'] ?? [];
+            // Update with fresh data
+            $this->nodeDetails = $freshNodeDetails;
+            $this->podsOnNode = $freshPodsResponse['items'] ?? [];
+            $this->nodeEvents = $freshEventsResponse['items'] ?? [];
 
         } catch (\Exception $e) {
             $this->error = $e->getMessage();
