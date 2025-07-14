@@ -763,12 +763,43 @@ class KubernetesController extends Controller
                 }
             }
 
+            // Check if this was the selected cluster before deletion
+            $wasSelectedCluster = session('selectedCluster') === $clusterName;
+            $selectedClusters = session('selectedClusters', []);
+            $activeClusterTab = session('activeClusterTab');
+
             // Delete cluster from database
             $cluster->delete();
 
-            // Clear session if this was the selected cluster
-            if (session('selectedCluster') === $clusterName) {
+            // Clear all session data related to this cluster
+            if ($wasSelectedCluster) {
                 session()->forget('selectedCluster');
+                session()->forget('activeClusterTab');
+                session()->forget('selectedClusters');
+                session()->forget('previousActiveCluster');
+
+                // Redirect to cluster overview to select a new cluster
+                return redirect()->route('dashboard-kubernetes')->with('success', 'Cluster deleted successfully.');
+            }
+
+            // If it wasn't the selected cluster, remove it from selected clusters if present
+            if (in_array($clusterName, $selectedClusters)) {
+                $selectedClusters = array_values(array_filter($selectedClusters, function($cluster) use ($clusterName) {
+                    return $cluster !== $clusterName;
+                }));
+                session(['selectedClusters' => $selectedClusters]);
+
+                // If this was the active tab, switch to another tab or clear
+                if ($activeClusterTab === $clusterName) {
+                    $newActiveTab = !empty($selectedClusters) ? $selectedClusters[0] : null;
+                    session(['activeClusterTab' => $newActiveTab]);
+                    if ($newActiveTab) {
+                        session(['selectedCluster' => $newActiveTab]);
+                    } else {
+                        session()->forget('selectedCluster');
+                        return redirect()->route('dashboard-kubernetes')->with('success', 'Cluster deleted successfully.');
+                    }
+                }
             }
 
             return redirect()->back()->with('success', 'Cluster deleted successfully.');
