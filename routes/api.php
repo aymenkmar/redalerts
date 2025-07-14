@@ -22,6 +22,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/upload-kubeconfig', [FileUploadController::class, 'uploadKubeconfig']);
 
 Route::get('/{config}/nodes', [KubernetesController::class, 'getNodes']);
+Route::get('/{config}/nodes/{nodeName}', [KubernetesController::class, 'getNodeDetails']);
+Route::get('/{config}/nodes/{nodeName}/pods', [KubernetesController::class, 'getPodsOnNode']);
+Route::get('/{config}/nodes/{nodeName}/events', [KubernetesController::class, 'getNodeEvents']);
 Route::get('/{config}/pods', [KubernetesController::class, 'getPods']);
 Route::get('/{config}/services', [KubernetesController::class, 'getServices']);
 Route::get('/{config}/namespaces', [KubernetesController::class, 'getNamespaces']);

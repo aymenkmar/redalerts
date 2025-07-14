@@ -39,6 +39,39 @@ class KubernetesController extends Controller
         }
     }
 
+    public function getNodeDetails($configName, $nodeName)
+    {
+        try {
+            $service = $this->getServiceByConfigName($configName);
+            $nodeDetails = $service->getNodeDetails($nodeName);
+            return response()->json($nodeDetails);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+
+    public function getPodsOnNode($configName, $nodeName)
+    {
+        try {
+            $service = $this->getServiceByConfigName($configName);
+            $pods = $service->getPodsOnNode($nodeName);
+            return response()->json($pods);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+
+    public function getNodeEvents($configName, $nodeName)
+    {
+        try {
+            $service = $this->getServiceByConfigName($configName);
+            $events = $service->getNodeEvents($nodeName);
+            return response()->json($events);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+
     public function getServices($configName)
     {
         try {

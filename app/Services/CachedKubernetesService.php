@@ -834,6 +834,72 @@ class CachedKubernetesService
     }
 
     /**
+     * Get node details with caching
+     */
+    public function getNodeDetails($nodeName, $forceRefresh = false)
+    {
+        $cacheKey = $this->cachePrefix . 'node_details_' . $nodeName;
+
+        if ($forceRefresh) {
+            Cache::forget($cacheKey);
+        }
+
+        return Cache::remember($cacheKey, $this->defaultCacheTtl, function () use ($nodeName) {
+            try {
+                Log::info('Fetching node details from Kubernetes API for node: ' . $nodeName);
+                return $this->kubernetesService->getNodeDetails($nodeName);
+            } catch (\Exception $e) {
+                Log::error('Failed to fetch node details for ' . $nodeName . ': ' . $e->getMessage());
+                throw $e;
+            }
+        });
+    }
+
+    /**
+     * Get pods on node with caching
+     */
+    public function getPodsOnNode($nodeName, $forceRefresh = false)
+    {
+        $cacheKey = $this->cachePrefix . 'pods_on_node_' . $nodeName;
+
+        if ($forceRefresh) {
+            Cache::forget($cacheKey);
+        }
+
+        return Cache::remember($cacheKey, $this->defaultCacheTtl, function () use ($nodeName) {
+            try {
+                Log::info('Fetching pods on node from Kubernetes API for node: ' . $nodeName);
+                return $this->kubernetesService->getPodsOnNode($nodeName);
+            } catch (\Exception $e) {
+                Log::error('Failed to fetch pods on node for ' . $nodeName . ': ' . $e->getMessage());
+                throw $e;
+            }
+        });
+    }
+
+    /**
+     * Get node events with caching
+     */
+    public function getNodeEvents($nodeName, $forceRefresh = false)
+    {
+        $cacheKey = $this->cachePrefix . 'node_events_' . $nodeName;
+
+        if ($forceRefresh) {
+            Cache::forget($cacheKey);
+        }
+
+        return Cache::remember($cacheKey, $this->defaultCacheTtl, function () use ($nodeName) {
+            try {
+                Log::info('Fetching node events from Kubernetes API for node: ' . $nodeName);
+                return $this->kubernetesService->getNodeEvents($nodeName);
+            } catch (\Exception $e) {
+                Log::error('Failed to fetch node events for ' . $nodeName . ': ' . $e->getMessage());
+                throw $e;
+            }
+        });
+    }
+
+    /**
      * Clear all cached data for this cluster
      */
     public function clearCache()
@@ -876,6 +942,13 @@ class CachedKubernetesService
             $this->cachePrefix . 'clusterissuers',
             $this->cachePrefix . 'namespaces',
         ];
+
+        // Also clear node-specific caches (node details, pods on node, node events)
+        $allCacheKeys = Cache::getRedis()->keys(config('cache.prefix') . ':' . $this->cachePrefix . 'node_*');
+        foreach ($allCacheKeys as $key) {
+            $cleanKey = str_replace(config('cache.prefix') . ':', '', $key);
+            Cache::forget($cleanKey);
+        }
 
         foreach ($keys as $key) {
             Cache::forget($key);

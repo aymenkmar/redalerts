@@ -137,6 +137,54 @@ class KubernetesService
         return $this->makeK8SRequest("/api/v1/namespaces/{$namespace}/pods/{$podName}");
     }
 
+    // Get node details
+    public function getNodeDetails($nodeName)
+    {
+        return $this->makeK8SRequest("/api/v1/nodes/{$nodeName}");
+    }
+
+    // Get pods running on a specific node
+    public function getPodsOnNode($nodeName)
+    {
+        $pods = $this->makeK8SRequest('/api/v1/pods');
+
+        if (!isset($pods['items'])) {
+            return ['items' => []];
+        }
+
+        $filteredPods = array_filter($pods['items'], function($pod) use ($nodeName) {
+            return isset($pod['spec']['nodeName']) && $pod['spec']['nodeName'] === $nodeName;
+        });
+
+        return ['items' => array_values($filteredPods)];
+    }
+
+    // Get events for a specific node
+    public function getNodeEvents($nodeName)
+    {
+        $events = $this->makeK8SRequest('/api/v1/events');
+
+        if (!isset($events['items'])) {
+            return ['items' => []];
+        }
+
+        $filteredEvents = array_filter($events['items'], function($event) use ($nodeName) {
+            return isset($event['involvedObject']['name']) &&
+                   $event['involvedObject']['name'] === $nodeName &&
+                   isset($event['involvedObject']['kind']) &&
+                   $event['involvedObject']['kind'] === 'Node';
+        });
+
+        // Sort events by timestamp (newest first)
+        usort($filteredEvents, function($a, $b) {
+            $timeA = $a['lastTimestamp'] ?? $a['firstTimestamp'] ?? '';
+            $timeB = $b['lastTimestamp'] ?? $b['firstTimestamp'] ?? '';
+            return strcmp($timeB, $timeA);
+        });
+
+        return ['items' => array_values($filteredEvents)];
+    }
+
     // You can easily add more methods for other endpoints
     public function getServices()
     {

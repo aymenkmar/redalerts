@@ -16,6 +16,9 @@ class NodeList extends Component
     public $loading = true;
     public $error = null;
     public $selectedCluster = null;
+    public $selectedNode = null;
+    public $showNodeDetails = false;
+    public $panelWidth = 384; // Default width in pixels (24rem = 384px)
 
     public function mount()
     {
@@ -355,6 +358,27 @@ class NodeList extends Component
     }
 
 
+
+    public function selectNode($nodeName)
+    {
+        $this->selectedNode = $nodeName;
+        $this->showNodeDetails = true;
+        $this->dispatch('nodeSelected', $nodeName);
+    }
+
+    public function closeNodeDetails()
+    {
+        $this->selectedNode = null;
+        $this->showNodeDetails = false;
+    }
+
+    public function updatePanelWidth($width)
+    {
+        // Ensure width is within reasonable bounds (min 300px, max 800px)
+        $this->panelWidth = max(300, min(800, intval($width)));
+    }
+
+    protected $listeners = ['nodeDetailsClose' => 'closeNodeDetails'];
 
     public function render()
     {
