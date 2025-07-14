@@ -80,13 +80,13 @@ class WebsiteMonitoringService
 
             WebsiteMonitoringLog::create($logData);
 
-            // Update URL status and response data
+            // Update URL status and response data (but not the status itself yet)
             $websiteUrl->update([
                 'response_time' => $responseTime,
                 'status_code' => $statusCode,
             ]);
 
-            // Update the status properly (this will trigger overall status update)
+            // Update the status properly (this will trigger incident resolution and overall status update)
             $websiteUrl->updateStatus($status, $errorMessage);
 
             return [
