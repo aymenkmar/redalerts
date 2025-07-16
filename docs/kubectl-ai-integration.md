@@ -32,7 +32,7 @@ This document describes the kubectl-ai integration in redalertsv2, which provide
    Add the following to your `.env` file:
    ```env
    # kubectl-ai Configuration
-   KUBECTL_AI_MODEL=gemini-2.5-flash-preview-04-17
+   KUBECTL_AI_MODEL=gemini-2.0-flash
    KUBECTL_AI_PROVIDER=gemini
    KUBECTL_AI_MAX_ITERATIONS=20
    GEMINI_API_KEY=your_gemini_api_key_here

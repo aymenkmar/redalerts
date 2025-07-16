@@ -17,7 +17,7 @@ class KubectlAiService
         $this->kubeconfigPath = $kubeconfigPath;
         $this->kubectlAiBinaryPath = $this->getKubectlAiBinaryPath();
         $this->defaultConfig = [
-            'model' => env('KUBECTL_AI_MODEL', 'gemini-2.5-flash-preview-04-17'),
+            'model' => env('KUBECTL_AI_MODEL', 'gemini-2.0-flash'),
             'provider' => env('KUBECTL_AI_PROVIDER', 'gemini'),
             'max_iterations' => env('KUBECTL_AI_MAX_ITERATIONS', 20),
             'timeout' => env('KUBECTL_AI_TIMEOUT', 120),
